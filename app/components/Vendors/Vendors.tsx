@@ -102,7 +102,7 @@ function Vendors() {
   const handleVendorDelete = async () => {
     if (!selectedVendor) return;
     try {
-      const url = `http://127.0.0.1:8000/vendor/${selectedVendor._id}`;
+      const url = `http://127.0.0.1:8000/vendors/${selectedVendor._id}`;
       const response = await axios.delete<{ status: string }>(url);
       if (response.data.status === "success") {
         console.log("Vendor deleted", response.data);
@@ -135,7 +135,7 @@ function Vendors() {
           </div>
 
           <Table className="w-full">
-            <TableCaption>A list of your vendors.</TableCaption>
+            <TableCaption>A list of WordScape's vendors.</TableCaption>
             <TableHeader>
               <TableRow className="bg-gray-800 hover:bg-gray-800">
                 <TableHead className="font-bold text-white text-center">
