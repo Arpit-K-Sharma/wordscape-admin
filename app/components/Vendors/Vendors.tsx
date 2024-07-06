@@ -24,6 +24,7 @@ import {
 import VendorForm from "./VendorForm";
 import UpdateVendorDialog from "./UpdateVendorDialog";
 import { FiEdit2, FiTrash2, FiPlus, FiX } from "react-icons/fi";
+import InventorySidebar from "../Sidebar/InventorySidebar";
 
 interface Vendor {
   _id: string;
@@ -117,120 +118,134 @@ function Vendors() {
   };
 
   return (
-    <div className="container mx-auto px-5 py-8 font-archivo">
-      <h1 className="flex items-center justify-center text-5xl font-bold text-gray-900 mb-8 mx-auto">
-        Vendors
-      </h1>
-      <div className="flex justify-between items-center mb-4">
-        <Button
-          onClick={() => setIsAddDialogOpen(true)}
-          className="flex items-center justify-center mx-auto"
-        >
-          Add Vendor
-        </Button>
-      </div>
-
-      <Table className="lg:w-[70%] mx-auto">
-        <TableCaption>A list of your vendors.</TableCaption>
-        <TableHeader>
-          <TableRow className="bg-gray-800 hover:bg-gray-800">
-            <TableHead className="font-bold text-white text-center">
-              Name
-            </TableHead>
-            <TableHead className="font-bold text-white text-center">
-              Address
-            </TableHead>
-            <TableHead className="font-bold text-white text-center text-center">
-              VAT
-            </TableHead>
-            <TableHead className="font-bold text-white text-center">
-              Phone
-            </TableHead>
-            <TableHead className="text-center text-white">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {vendors.map((vendor) => (
-            <TableRow key={vendor._id}>
-              <TableCell className="text-center">{vendor.vendorName}</TableCell>
-              <TableCell className="text-center">
-                {vendor.vendorAddress}
-              </TableCell>
-              <TableCell className="text-center">{vendor.vendorVAT}</TableCell>
-              <TableCell className="text-center">
-                {vendor.vendorPhone}
-              </TableCell>
-              <TableCell className="text-center">
-                <Button
-                  variant="outline"
-                  className="mr-4 text-blue-600 hover:text-white hover:bg-blue-600 transition-colors"
-                  onClick={() => openUpdateDialog(vendor)}
-                >
-                  <FiEdit2 className="mr-1" /> Update
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="bg-red-600 hover:bg-red-700 transition-colors"
-                  onClick={() => openDeleteDialog(vendor)}
-                >
-                  <FiTrash2 className="mr-1" /> Delete
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      {/* Add Vendor Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Vendor</DialogTitle>
-          </DialogHeader>
-          <VendorForm onSubmit={onSubmit} buttonText="Add Vendor" />
-          <DialogFooter>
+    <div className="flex h-screen bg-gray-100">
+      <InventorySidebar />
+      <main className="flex-1 overflow-y-auto">
+        <div className="container mx-auto px-5 py-8 font-archivo">
+          <h1 className="flex items-center justify-center text-5xl font-bold text-gray-900 mb-8 mx-auto">
+            Vendors
+          </h1>
+          <div className="flex justify-between items-center mb-4">
             <Button
-              variant="secondary"
-              onClick={() => setIsAddDialogOpen(false)}
-              className="w-full bg-red-700 text-white hover:bg-red-900 hover:text-white"
+              onClick={() => setIsAddDialogOpen(true)}
+              className="flex items-center justify-center mx-auto"
             >
-              Cancel
+              Add Vendor
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
 
-      {/* Update Vendor Dialog */}
-      {selectedVendor && (
-        <UpdateVendorDialog
-          isOpen={isUpdateDialogOpen}
-          closeModal={closeUpdateDialog}
-          vendor={selectedVendor}
-        />
-      )}
+          <Table className="w-full">
+            <TableCaption>A list of your vendors.</TableCaption>
+            <TableHeader>
+              <TableRow className="bg-gray-800 hover:bg-gray-800">
+                <TableHead className="font-bold text-white text-center">
+                  Name
+                </TableHead>
+                <TableHead className="font-bold text-white text-center">
+                  Address
+                </TableHead>
+                <TableHead className="font-bold text-white text-center">
+                  VAT
+                </TableHead>
+                <TableHead className="font-bold text-white text-center">
+                  Phone
+                </TableHead>
+                <TableHead className="text-center text-white">
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {vendors.map((vendor) => (
+                <TableRow key={vendor._id}>
+                  <TableCell className="text-center">
+                    {vendor.vendorName}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {vendor.vendorAddress}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {vendor.vendorVAT}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {vendor.vendorPhone}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Button
+                      variant="outline"
+                      className="mr-4 text-blue-600 hover:text-white hover:bg-blue-600 transition-colors"
+                      onClick={() => openUpdateDialog(vendor)}
+                    >
+                      <FiEdit2 className="mr-1" /> Update
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      className="bg-red-600 hover:bg-red-700 transition-colors"
+                      onClick={() => openDeleteDialog(vendor)}
+                    >
+                      <FiTrash2 className="mr-1" /> Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-      {/* Delete Vendor Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Vendor</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this vendor? This action cannot be
-              undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="destructive" onClick={handleVendorDelete}>
-              <FiTrash2 className="mr-2" />
-              Delete
-            </Button>
-            <Button variant="secondary" onClick={closeDeleteDialog}>
-              <FiX className="mr-2" />
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          {/* Add Vendor Dialog */}
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Vendor</DialogTitle>
+              </DialogHeader>
+              <VendorForm onSubmit={onSubmit} buttonText="Add Vendor" />
+              <DialogFooter>
+                <Button
+                  variant="secondary"
+                  onClick={() => setIsAddDialogOpen(false)}
+                  className="w-full bg-red-700 text-white hover:bg-red-900 hover:text-white"
+                >
+                  Cancel
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Update Vendor Dialog */}
+          {selectedVendor && (
+            <UpdateVendorDialog
+              isOpen={isUpdateDialogOpen}
+              closeModal={closeUpdateDialog}
+              vendor={selectedVendor}
+            />
+          )}
+
+          {/* Delete Vendor Dialog */}
+          <Dialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Vendor</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this vendor? This action
+                  cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="destructive" onClick={handleVendorDelete}>
+                  <FiTrash2 className="mr-2" />
+                  Delete
+                </Button>
+                <Button variant="secondary" onClick={closeDeleteDialog}>
+                  <FiX className="mr-2" />
+                  Cancel
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </main>
     </div>
   );
 }
