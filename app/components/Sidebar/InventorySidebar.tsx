@@ -28,6 +28,7 @@ const InventorySidebar: React.FC = () => {
             />
             <h2 className="text-2xl font-bold">WordScape</h2>
           </div>
+
           <nav>
             <Button
               variant="ghost"
