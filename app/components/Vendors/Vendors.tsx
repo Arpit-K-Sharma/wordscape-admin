@@ -118,7 +118,7 @@ function Vendors() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-white-50">
       <InventorySidebar />
       <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-5 py-8 font-archivo">
@@ -128,7 +128,7 @@ function Vendors() {
           <div className="flex justify-between items-center mb-4">
             <Button
               onClick={() => setIsAddDialogOpen(true)}
-              className="flex items-center justify-center mx-auto"
+              className="flex items-center justify-center"
             >
               Add Vendor
             </Button>

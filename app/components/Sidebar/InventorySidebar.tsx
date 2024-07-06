@@ -15,7 +15,7 @@ const InventorySidebar = () => {
   const router = useRouter();
 
   return (
-    <div className="flex h-screen bg-gray-100 font-archivo">
+    <div className="flex h-screen bg-gray-100 font-archivo font-semibold">
       <aside className="w-64 bg-white shadow-md">
         <div className="p-4">
           <h2 className="text-2xl font-bold mb-5">WordScape</h2>
