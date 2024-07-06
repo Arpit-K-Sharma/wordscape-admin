@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { FiEdit2, FiTrash2, FiX } from "react-icons/fi";
 
 interface Vendor {
   _id: string;
@@ -52,7 +53,7 @@ function UpdateVendorDialog({
 
   const onSubmit = async (data: Omit<Vendor, "_id">) => {
     console.log("vendor: " + JSON.stringify(vendor));
-    const url = `http://localhost:8000/vendor/${vendor._id}`;
+    const url = `http://localhost:8000/vendors/${vendor._id}`;
     try {
       const response = await axios.put<{ status: string; data: Vendor }>(
         url,
@@ -79,13 +80,19 @@ function UpdateVendorDialog({
         <VendorForm
           onSubmit={onSubmit}
           defaultValues={{ ...vendor, id: vendor._id }}
-          buttonText="Update Vendor"
+          buttonText={
+            <span className="flex items-center justify-center">
+              <FiEdit2 className="mr-2" />
+              Update Vendor
+            </span>
+          }
         />
         <Button
           variant="destructive"
           onClick={closeModal}
-          className="mt-4 w-full"
+          className="mt-4 w-full bg-red-600"
         >
+          <FiX className="mr-2" />
           Cancel
         </Button>
       </DialogContent>

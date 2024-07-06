@@ -90,6 +90,7 @@ function VendorForm({ onSubmit, defaultValues, buttonText }: VendorFormProps) {
                 <Input
                   placeholder="Insert the Vendor's phone number"
                   {...field}
+                  maxLength={10}
                 />
               </FormControl>
               <FormMessage />

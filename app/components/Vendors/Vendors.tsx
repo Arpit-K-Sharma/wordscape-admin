@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import VendorForm from "./VendorForm";
 import UpdateVendorDialog from "./UpdateVendorDialog";
-import { FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiPlus, FiX } from "react-icons/fi";
 
 interface Vendor {
   _id: string;
@@ -117,12 +117,20 @@ function Vendors() {
   };
 
   return (
-    <div className="container mx-auto px-5 py-8">
-      <h1 className="text-5xl font-bold text-gray-900 mb-8">Vendors</h1>
+    <div className="container mx-auto px-5 py-8 font-archivo">
+      <h1 className="flex items-center justify-center text-5xl font-bold text-gray-900 mb-8 mx-auto">
+        Vendors
+      </h1>
       <div className="flex justify-between items-center mb-4">
-        <Button onClick={() => setIsAddDialogOpen(true)}>Add Vendor</Button>
+        <Button
+          onClick={() => setIsAddDialogOpen(true)}
+          className="flex items-center justify-center mx-auto"
+        >
+          Add Vendor
+        </Button>
       </div>
-      <Table>
+
+      <Table className="lg:w-[70%] mx-auto">
         <TableCaption>A list of your vendors.</TableCaption>
         <TableHeader>
           <TableRow className="bg-gray-800 hover:bg-gray-800">
@@ -184,6 +192,7 @@ function Vendors() {
             <Button
               variant="secondary"
               onClick={() => setIsAddDialogOpen(false)}
+              className="w-full bg-red-700 text-white hover:bg-red-900 hover:text-white"
             >
               Cancel
             </Button>
@@ -212,9 +221,11 @@ function Vendors() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="destructive" onClick={handleVendorDelete}>
+              <FiTrash2 className="mr-2" />
               Delete
             </Button>
             <Button variant="secondary" onClick={closeDeleteDialog}>
+              <FiX className="mr-2" />
               Cancel
             </Button>
           </DialogFooter>
