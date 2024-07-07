@@ -101,7 +101,7 @@ export function PurchaseEntrySlip() {
   useEffect(() => {
     const fetchVendors = async () => {
       try {
-        const response = await axios.get("/vendors");
+        const response = await axios.get("http://127.0.0.1:8000/vendors");
         setVendors(response.data.data);
       } catch (error) {
         console.error("Error fetching vendors:", error);

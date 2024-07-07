@@ -59,7 +59,7 @@ const InventorySidebar: React.FC = () => {
               className="w-full justify-start mb-4 text-lg"
             >
               <ClipboardList className="mr-2 h-6 w-6" />
-              Jobs
+              Reorders
             </Button>
             <Button
               variant="ghost"
