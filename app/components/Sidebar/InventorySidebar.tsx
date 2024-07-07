@@ -18,44 +18,54 @@ const InventorySidebar: React.FC = () => {
     <div className="flex h-screen bg-gray-100 font-archivo font-semibold">
       <aside className="w-64 bg-white shadow-md">
         <div className="p-4 mt-10">
+          <Image
+            src={LogoOnly}
+            alt="WordScape Logo"
+            width={140}
+            height={100}
+            className="mx-[20%] items-center"
+          />
           <div className="flex items-center mb-5">
-            <Image
-              src={LogoOnly}
-              alt="WordScape Logo"
-              width={40}
-              height={40}
-              className="mr-2"
-            />
-            <h2 className="text-2xl font-bold">WordScape</h2>
+            <h2 className="text-3xl mt-6 font-light mx-[15%]">WordScape</h2>
           </div>
 
-          <nav>
+          <nav className="">
             <Button
               variant="ghost"
-              className="w-full justify-start mb-2"
+              className="w-full justify-start mb-4 mt-5 text-lg"
               onClick={() => router.push("/inventory")}
             >
-              <LayoutDashboard className="mr-2 h-4 w-4" />
+              <LayoutDashboard className="mr-2 h-6 w-6" />
               Overview
             </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start mb-2"
+              className="w-full justify-start mb-4 text-lg"
               onClick={() => router.push("/inventory/vendors")}
             >
-              <Printer className="mr-2 h-4 w-4" />
+              <Printer className="mr-2 h-6 w-6" />
               Vendors
             </Button>
-            <Button variant="ghost" className="w-full justify-start mb-2">
-              <Package className="mr-2 h-4 w-4" />
-              Orders
+            <Button
+              variant="ghost"
+              className="w-full justify-start mb-4 text-lg"
+              onClick={() => router.push("/entry")}
+            >
+              <Package className="mr-2 h-6 w-6" />
+              Purchase Entry
             </Button>
-            <Button variant="ghost" className="w-full justify-start mb-2">
-              <ClipboardList className="mr-2 h-4 w-4" />
+            <Button
+              variant="ghost"
+              className="w-full justify-start mb-4 text-lg"
+            >
+              <ClipboardList className="mr-2 h-6 w-6" />
               Jobs
             </Button>
-            <Button variant="ghost" className="w-full justify-start">
-              <Settings className="mr-2 h-4 w-4" />
+            <Button
+              variant="ghost"
+              className="w-full mb-4 justify-start text-lg"
+            >
+              <Settings className="mr-2 h-6 w-6" />
               Stock Level
             </Button>
           </nav>
