@@ -67,7 +67,7 @@ function Vendors() {
 
   const onSubmit = async (data: Omit<Vendor, "_id">) => {
     try {
-      const url = "http://localhost:8000/vendors";
+      const url = "http://localhost:8000/vendor";
       const response = await axios.post<Vendor>(url, data);
       console.log("Vendor created", response.data);
       setVendors([...vendors, response.data]);
@@ -102,7 +102,7 @@ function Vendors() {
   const handleVendorDelete = async () => {
     if (!selectedVendor) return;
     try {
-      const url = `http://127.0.0.1:8000/vendors/${selectedVendor._id}`;
+      const url = `http://127.0.0.1:8000/vendor/${selectedVendor._id}`;
       const response = await axios.delete<{ status: string }>(url);
       if (response.data.status === "success") {
         console.log("Vendor deleted", response.data);

@@ -53,13 +53,13 @@ function UpdateVendorDialog({
 
   const onSubmit = async (data: Omit<Vendor, "_id">) => {
     console.log("vendor: " + JSON.stringify(vendor));
-    const url = `http://localhost:8000/vendors/${vendor._id}`;
+    const url = `http://localhost:8000/vendor/${vendor._id}`;
     try {
       const response = await axios.put<{ status: string; data: Vendor }>(
         url,
         data
       );
-      if (response.data.status === "success" && response.data.data) {
+      if (response.data.status === "success") {
         console.log("Vendor updated", response.data.data);
         closeModal();
         fetchVendors();

@@ -49,7 +49,7 @@ const InventorySidebar: React.FC = () => {
             <Button
               variant="ghost"
               className="w-full justify-start mb-4 text-lg"
-              onClick={() => router.push("/entry")}
+              onClick={() => router.push("/inventory/entry")}
             >
               <Package className="mr-2 h-6 w-6" />
               Purchase Entry
