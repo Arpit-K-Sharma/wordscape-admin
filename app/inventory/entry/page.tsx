@@ -1,8 +1,8 @@
-import PurchaseEntry from "@/app/components/PurchaseEntry/PurchaseEntry";
+import { PurchaseEntrySlip } from "@/app/components/PurchaseEntry/PurchaseEntry";
 import React from "react";
 
 const page = () => {
-  return <PurchaseEntry />;
+  return <PurchaseEntrySlip />;
 };
 
 export default page;
