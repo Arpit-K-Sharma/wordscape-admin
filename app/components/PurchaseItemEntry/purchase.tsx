@@ -10,6 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface PurchaseOrderItem {
   itemId: string;
@@ -40,25 +47,50 @@ interface PurchaseOrder {
   }>;
 }
 
+interface InventoryItem {
+  _id: string;
+  itemName: string;
+  availability: number;
+  type: string;
+}
+
 const PurchaseWithEntry: React.FC = () => {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
+  const [selectedItems, setSelectedItems] = useState<PurchaseOrderItem[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
 
   useEffect(() => {
-    const fetchPurchaseOrders = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "http://127.0.0.1:8000/purchase_orders_with_entries"
-        );
-        if (response.data.status === "success") {
-          setPurchaseOrders(response.data.data);
+        const [purchaseOrdersResponse, inventoryResponse] = await Promise.all([
+          axios.get("http://127.0.0.1:8000/purchase_orders_with_entries"),
+          axios.get("http://127.0.0.1:8000/inventory"),
+        ]);
+
+        if (purchaseOrdersResponse.data.status === "success") {
+          setPurchaseOrders(purchaseOrdersResponse.data.data);
+        }
+
+        if (inventoryResponse.data.status === "success") {
+          setInventoryItems(inventoryResponse.data.data);
         }
       } catch (error) {
-        console.error("Error fetching purchase orders:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    fetchPurchaseOrders();
+    fetchData();
   }, []);
+
+  const handleItemClick = (items: PurchaseOrderItem[]) => {
+    setSelectedItems(items);
+    setIsDialogOpen(true);
+  };
+
+  const getItemDetails = (itemId: string) => {
+    return inventoryItems.find((item) => item._id === itemId);
+  };
 
   return (
     <div className="flex">
@@ -86,7 +118,11 @@ const PurchaseWithEntry: React.FC = () => {
                   <TableCell>{order.orderId}</TableCell>
                   <TableCell>{order.isCompleted ? "Yes" : "No"}</TableCell>
                   <TableCell>{entry.vendorId}</TableCell>
-                  <TableCell>{entry.items.length}</TableCell>
+                  <TableCell>
+                    <Button onClick={() => handleItemClick(entry.items)}>
+                      View {entry.items.length} Items
+                    </Button>
+                  </TableCell>
                   <TableCell>{entry.discount || "N/A"}</TableCell>
                   <TableCell>{entry.vat || "N/A"}</TableCell>
                   <TableCell>{entry.grandTotal}</TableCell>
@@ -97,6 +133,43 @@ const PurchaseWithEntry: React.FC = () => {
             )}
           </TableBody>
         </Table>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Item Details</DialogTitle>
+            </DialogHeader>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item Code</TableHead>
+                  <TableHead>Item Name</TableHead>
+                  <TableHead>Item Type</TableHead>
+                  <TableHead>Quantity (Vendor)</TableHead>
+                  <TableHead>Quantity (Stock)</TableHead>
+                  <TableHead>Rate</TableHead>
+                  <TableHead>Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {selectedItems.map((item) => {
+                  const itemDetails = getItemDetails(item.itemId);
+                  return (
+                    <TableRow key={item.itemId}>
+                      <TableCell>{item.itemCode}</TableCell>
+                      <TableCell>{itemDetails?.itemName || "N/A"}</TableCell>
+                      <TableCell>{itemDetails?.type || "N/A"}</TableCell>
+                      <TableCell>{item.quantityFromVendor}</TableCell>
+                      <TableCell>{item.quantityFromStock}</TableCell>
+                      <TableCell>{item.rate}</TableCell>
+                      <TableCell>{item.amount}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
