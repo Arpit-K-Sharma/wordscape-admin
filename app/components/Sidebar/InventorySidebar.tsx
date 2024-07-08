@@ -17,8 +17,8 @@ const InventorySidebar: React.FC = () => {
   const router = useRouter();
 
   return (
-    <aside className="w-56 bg-white shadow-md h-screen font-archivo">
-      <div className="p-3 flex flex-col h-full mt-2">
+    <aside className="w-56 bg-white shadow-md  font-archivo">
+      <div className="p-3 flex flex-col h-auto mt-2">
         <div className="flex items-center mb-4">
           <Image
             src={LogoOnly}
