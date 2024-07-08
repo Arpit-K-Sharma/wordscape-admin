@@ -22,29 +22,31 @@ interface PurchaseOrderItem {
   itemId: string;
   quantityFromVendor: number;
   quantityFromStock: number;
-  itemCode: string;
-  rate: number;
-  amount: number;
+  itemCode: string | null;
+  rate: number | null;
+  amount: number | null;
+}
+
+interface PurchaseEntry {
+  _id: string;
+  vendorId: string;
+  isCompleted: boolean;
+  items: PurchaseOrderItem[];
+  tag: string | null;
+  remarks: string | null;
+  image: string | null;
+  discount: number | null;
+  vat: number | null;
+  grandTotal: number | null;
+  invoiceNo: string | null;
+  invoiceDate: string | null;
 }
 
 interface PurchaseOrder {
   _id: string;
   orderId: string;
   isCompleted: boolean;
-  purchaseEntry: Array<{
-    _id: string;
-    vendorId: string;
-    isCompleted: boolean;
-    items: PurchaseOrderItem[];
-    tag: string | null;
-    remarks: string | null;
-    image: string | null;
-    discount: number | null;
-    vat: number | null;
-    grandTotal: number;
-    invoiceNo: string;
-    invoiceDate: string;
-  }>;
+  purchaseEntry: PurchaseEntry[];
 }
 
 interface InventoryItem {
@@ -54,19 +56,32 @@ interface InventoryItem {
   type: string;
 }
 
+interface Vendor {
+  _id: string;
+  vendorName: string;
+  vendorAddress: string;
+  vendorVAT: string;
+  vendorPhone: string;
+}
+
 const PurchaseWithEntry: React.FC = () => {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [selectedItems, setSelectedItems] = useState<PurchaseOrderItem[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+  const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
+  const [isVendorDialogOpen, setIsVendorDialogOpen] = useState(false);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [purchaseOrdersResponse, inventoryResponse] = await Promise.all([
-          axios.get("http://127.0.0.1:8000/purchase_orders_with_entries"),
-          axios.get("http://127.0.0.1:8000/inventory"),
-        ]);
+        const [purchaseOrdersResponse, inventoryResponse, vendorsResponse] =
+          await Promise.all([
+            axios.get("http://127.0.0.1:8000/purchase_orders_with_entries"),
+            axios.get("http://127.0.0.1:8000/inventory"),
+            axios.get("http://127.0.0.1:8000/vendors"),
+          ]);
 
         if (purchaseOrdersResponse.data.status === "success") {
           setPurchaseOrders(purchaseOrdersResponse.data.data);
@@ -74,6 +89,10 @@ const PurchaseWithEntry: React.FC = () => {
 
         if (inventoryResponse.data.status === "success") {
           setInventoryItems(inventoryResponse.data.data);
+        }
+
+        if (vendorsResponse.data.status === "success") {
+          setVendors(vendorsResponse.data.data);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -85,7 +104,15 @@ const PurchaseWithEntry: React.FC = () => {
 
   const handleItemClick = (items: PurchaseOrderItem[]) => {
     setSelectedItems(items);
-    setIsDialogOpen(true);
+    setIsItemDialogOpen(true);
+  };
+
+  const handleVendorClick = (vendorId: string) => {
+    const vendor = vendors.find((v) => v._id === vendorId);
+    if (vendor) {
+      setSelectedVendor(vendor);
+      setIsVendorDialogOpen(true);
+    }
   };
 
   const getItemDetails = (itemId: string) => {
@@ -102,7 +129,7 @@ const PurchaseWithEntry: React.FC = () => {
             <TableRow>
               <TableHead>Order ID</TableHead>
               <TableHead>Completed</TableHead>
-              <TableHead>Vendor ID</TableHead>
+              <TableHead>Vendor</TableHead>
               <TableHead>Items</TableHead>
               <TableHead>Discount</TableHead>
               <TableHead>VAT</TableHead>
@@ -112,29 +139,40 @@ const PurchaseWithEntry: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {purchaseOrders.map((order) =>
-              order.purchaseEntry.map((entry) => (
-                <TableRow key={entry._id}>
-                  <TableCell>{order.orderId}</TableCell>
-                  <TableCell>{order.isCompleted ? "Yes" : "No"}</TableCell>
-                  <TableCell>{entry.vendorId}</TableCell>
-                  <TableCell>
-                    <Button onClick={() => handleItemClick(entry.items)}>
-                      View {entry.items.length} Items
-                    </Button>
-                  </TableCell>
-                  <TableCell>{entry.discount || "N/A"}</TableCell>
-                  <TableCell>{entry.vat || "N/A"}</TableCell>
-                  <TableCell>{entry.grandTotal}</TableCell>
-                  <TableCell>{entry.invoiceNo}</TableCell>
-                  <TableCell>{entry.invoiceDate}</TableCell>
-                </TableRow>
-              ))
-            )}
+            {purchaseOrders &&
+              Array.isArray(purchaseOrders) &&
+              purchaseOrders.map(
+                (order) =>
+                  order.purchaseEntry &&
+                  Array.isArray(order.purchaseEntry) &&
+                  order.purchaseEntry.map((entry) => (
+                    <TableRow key={entry._id}>
+                      <TableCell>{order.orderId}</TableCell>
+                      <TableCell>{order.isCompleted ? "Yes" : "No"}</TableCell>
+                      <TableCell>
+                        <Button
+                          onClick={() => handleVendorClick(entry.vendorId)}
+                        >
+                          View Vendor
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <Button onClick={() => handleItemClick(entry.items)}>
+                          View {entry.items.length} Items
+                        </Button>
+                      </TableCell>
+                      <TableCell>{entry.discount || "N/A"}</TableCell>
+                      <TableCell>{entry.vat || "N/A"}</TableCell>
+                      <TableCell>{entry.grandTotal || "N/A"}</TableCell>
+                      <TableCell>{entry.invoiceNo || "N/A"}</TableCell>
+                      <TableCell>{entry.invoiceDate || "N/A"}</TableCell>
+                    </TableRow>
+                  ))
+              )}
           </TableBody>
         </Table>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isItemDialogOpen} onOpenChange={setIsItemDialogOpen}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Item Details</DialogTitle>
@@ -152,22 +190,46 @@ const PurchaseWithEntry: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {selectedItems.map((item) => {
+                {selectedItems.map((item, index) => {
                   const itemDetails = getItemDetails(item.itemId);
                   return (
-                    <TableRow key={item.itemId}>
-                      <TableCell>{item.itemCode}</TableCell>
+                    <TableRow key={index}>
+                      <TableCell>{item.itemCode || "N/A"}</TableCell>
                       <TableCell>{itemDetails?.itemName || "N/A"}</TableCell>
                       <TableCell>{itemDetails?.type || "N/A"}</TableCell>
                       <TableCell>{item.quantityFromVendor}</TableCell>
                       <TableCell>{item.quantityFromStock}</TableCell>
-                      <TableCell>{item.rate}</TableCell>
-                      <TableCell>{item.amount}</TableCell>
+                      <TableCell>{item.rate || "N/A"}</TableCell>
+                      <TableCell>{item.amount || "N/A"}</TableCell>
                     </TableRow>
                   );
                 })}
               </TableBody>
             </Table>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isVendorDialogOpen} onOpenChange={setIsVendorDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Vendor Details</DialogTitle>
+            </DialogHeader>
+            {selectedVendor && (
+              <div>
+                <p>
+                  <strong>Name:</strong> {selectedVendor.vendorName}
+                </p>
+                <p>
+                  <strong>Address:</strong> {selectedVendor.vendorAddress}
+                </p>
+                <p>
+                  <strong>VAT:</strong> {selectedVendor.vendorVAT}
+                </p>
+                <p>
+                  <strong>Phone:</strong> {selectedVendor.vendorPhone}
+                </p>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>

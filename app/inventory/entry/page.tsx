@@ -1,4 +1,4 @@
-import { PurchaseEntrySlip } from "@/app/components/PurchaseEntryForm/PurchaseEntry";
+import { PurchaseEntrySlip } from "@/app/components/PurchaseEntryForm/PurchaseEntryForm";
 import React from "react";
 
 const page = () => {
