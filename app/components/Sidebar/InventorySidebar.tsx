@@ -42,6 +42,14 @@ const InventorySidebar: React.FC = () => {
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/inventory/stocks")}
+          >
+            <Warehouse className="mr-2 h-4 w-4" />
+            Stock Level
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
             onClick={() => router.push("/inventory/vendors")}
           >
             <Printer className="mr-2 h-4 w-4" />
@@ -74,10 +82,6 @@ const InventorySidebar: React.FC = () => {
           <Button variant="ghost" className="w-full justify-start mb-2 text-sm">
             <ListRestart className="mr-2 h-4 w-4" />
             Reorders
-          </Button>
-          <Button variant="ghost" className="w-full justify-start mb-2 text-sm">
-            <Warehouse className="mr-2 h-4 w-4" />
-            Stock Level
           </Button>
         </nav>
       </div>
