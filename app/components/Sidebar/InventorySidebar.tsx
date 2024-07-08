@@ -15,7 +15,7 @@ const InventorySidebar: React.FC = () => {
   const router = useRouter();
 
   return (
-    <div className="flex h-screen bg-gray-100 font-archivo font-semibold">
+    <div className="flex h-[100vh] bg-gray-100 font-archivo font-semibold">
       <aside className="w-64 bg-white shadow-md">
         <div className="p-4 mt-10">
           <Image
@@ -52,7 +52,23 @@ const InventorySidebar: React.FC = () => {
               onClick={() => router.push("/inventory/entry")}
             >
               <Package className="mr-2 h-6 w-6" />
-              Purchase Entry
+              Entry Form
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start mb-4 text-lg"
+              onClick={() => router.push("/inventory/no-entries")}
+            >
+              <Package className="mr-2 h-6 w-6" />
+              PO w/o Entries
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start mb-4 text-lg"
+              onClick={() => router.push("/inventory/entries")}
+            >
+              <Package className="mr-2 h-6 w-6" />
+              PO with Entries
             </Button>
             <Button
               variant="ghost"

@@ -123,8 +123,8 @@ export function PurchaseEntrySlip() {
   return (
     <div className="flex font-archivo">
       <InventorySidebar />
-      <div className="flex-1 p-8 mt-5">
-        <Card className="w-full max-w-2xl mt-8 justify-center items-center mx-auto">
+      <div className="flex-1 p-8">
+        <Card className="w-full max-w-2xl justify-center items-center mx-auto">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
               Purchase Entry Slip
