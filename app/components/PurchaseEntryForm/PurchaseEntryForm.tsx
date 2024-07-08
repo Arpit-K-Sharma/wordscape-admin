@@ -4,7 +4,6 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
@@ -21,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import InventorySidebar from "../Sidebar/InventorySidebar";
@@ -30,28 +29,17 @@ const itemSchema = z.object({
   itemId: z.string(),
   quantityFromVendor: z.number(),
   quantityFromStock: z.number(),
-  itemCode: z.string(),
-  rate: z.number(),
-  amount: z.number(),
 });
 
 const purchaseEntrySchema = z.object({
   vendorId: z.string(),
-  isCompleted: z.boolean(),
+  isCompleted: z.boolean().default(false),
   items: z.array(itemSchema),
-  tag: z.string(),
-  remarks: z.string(),
-  image: z.string(),
-  discount: z.number(),
-  vat: z.number(),
-  grandTotal: z.number(),
-  invoiceNo: z.string(),
-  invoiceDate: z.string(),
 });
 
 const formSchema = z.object({
   orderId: z.string(),
-  isCompleted: z.boolean(),
+  isCompleted: z.boolean().default(false),
   purchaseEntry: z.array(purchaseEntrySchema),
 });
 
@@ -63,8 +51,14 @@ interface Vendor {
   vendorPhone: string;
 }
 
+interface Item {
+  _id: string;
+  itemName: string;
+}
+
 export function PurchaseEntrySlip() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -80,54 +74,98 @@ export function PurchaseEntrySlip() {
               itemId: "",
               quantityFromVendor: 0,
               quantityFromStock: 0,
-              itemCode: "",
-              rate: 0,
-              amount: 0,
             },
           ],
-          tag: "",
-          remarks: "",
-          image: "",
-          discount: 0,
-          vat: 0,
-          grandTotal: 0,
-          invoiceNo: "",
-          invoiceDate: "",
         },
       ],
     },
   });
 
+  const {
+    fields: purchaseEntryFields,
+    append: appendPurchaseEntry,
+    remove: removePurchaseEntry,
+  } = useFieldArray({
+    control: form.control,
+    name: "purchaseEntry",
+  });
+
   useEffect(() => {
     const fetchVendors = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/vendors");
+        const response = await axios.get("http://localhost:8000/vendors");
         setVendors(response.data.data);
       } catch (error) {
         console.error("Error fetching vendors:", error);
       }
     };
 
+    const fetchItems = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/inventory");
+        console.log(response);
+        setItems(response.data.data);
+      } catch (error) {
+        console.error("Error fetching items:", error);
+      }
+    };
+
     fetchVendors();
+    fetchItems();
   }, []);
+
+  const addItem = (index: number) => {
+    form.setValue(`purchaseEntry.${index}.items`, [
+      ...form.getValues(`purchaseEntry.${index}.items`),
+      {
+        itemId: "",
+        quantityFromVendor: 0,
+        quantityFromStock: 0,
+      },
+    ]);
+  };
+
+  const removeItem = (entryIndex: number, itemIndex: number) => {
+    const items = form.getValues(`purchaseEntry.${entryIndex}.items`);
+    items.splice(itemIndex, 1);
+    form.setValue(`purchaseEntry.${entryIndex}.items`, items);
+  };
+
+  const addVendor = () => {
+    appendPurchaseEntry({
+      vendorId: "",
+      isCompleted: false,
+      items: [
+        {
+          itemId: "",
+          quantityFromVendor: 0,
+          quantityFromStock: 0,
+        },
+      ],
+    });
+  };
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      const response = await axios.post("/purchase_order", data);
+      const response = await axios.post(
+        "http://localhost:8000/purchase_order",
+        data
+      );
       console.log("Purchase order created:", response.data);
+      alert("Purchase Order Placed");
     } catch (error) {
       console.error("Error creating purchase order:", error);
     }
   };
 
   return (
-    <div className="flex font-archivo">
+    <div className="flex font-archivo bg-[#f7f7f9]">
       <InventorySidebar />
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-5">
         <Card className="w-full max-w-2xl justify-center items-center mx-auto">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
-              Purchase Entry Slip
+              Purchase Order Slip
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -150,28 +188,11 @@ export function PurchaseEntrySlip() {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="isCompleted"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2">
-                      <FormControl>
-                        <input
-                          type="checkbox"
-                          checked={field.value}
-                          onChange={field.onChange}
-                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                      </FormControl>
-                      <FormLabel className="text-sm font-medium text-gray-700">
-                        Is Completed
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
-
-                {form.watch("purchaseEntry").map((entry, index) => (
-                  <div key={index} className="space-y-4 p-4 border rounded-lg">
+                {purchaseEntryFields.map((entry, index) => (
+                  <div
+                    key={entry.id}
+                    className="space-y-4 p-4 border rounded-lg"
+                  >
                     <FormField
                       control={form.control}
                       name={`purchaseEntry.${index}.vendorId`}
@@ -196,58 +217,121 @@ export function PurchaseEntrySlip() {
                             </SelectContent>
                           </Select>
                           <FormMessage />
+                          <div className="flex justify-end h-[0px] ">
+                            <Label
+                              className=" w-[110px] hover:text-[red] mt-[8px]"
+                              onClick={() => removePurchaseEntry(index)}
+                            >
+                              - Remove Vendor
+                            </Label>
+                          </div>
                         </FormItem>
                       )}
                     />
 
-                    <FormField
-                      control={form.control}
-                      name={`purchaseEntry.${index}.invoiceNo`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Invoice No</FormLabel>
-                          <FormControl>
-                            <Input {...field} className="w-full" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {form
+                      .watch(`purchaseEntry.${index}.items`)
+                      .map((item, itemIndex) => (
+                        <div key={itemIndex} className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name={`purchaseEntry.${index}.items.${itemIndex}.itemId`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Item</FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select an item" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {items.map((item) => (
+                                      <SelectItem
+                                        key={item._id}
+                                        value={item._id}
+                                      >
+                                        {item.itemName}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                    <FormField
-                      control={form.control}
-                      name={`purchaseEntry.${index}.invoiceDate`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Invoice Date</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} className="w-full" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                          <FormField
+                            control={form.control}
+                            name={`purchaseEntry.${index}.items.${itemIndex}.quantityFromVendor`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Quantity from Vendor</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                      field.onChange(Number(e.target.value))
+                                    }
+                                    className="w-full"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                    <FormField
-                      control={form.control}
-                      name={`purchaseEntry.${index}.remarks`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Remarks</FormLabel>
-                          <FormControl>
-                            <Textarea {...field} className="w-full" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* You can add more fields here for items, discount, vat, etc. */}
+                          <FormField
+                            control={form.control}
+                            name={`purchaseEntry.${index}.items.${itemIndex}.quantityFromStock`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Quantity from Stock</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                      field.onChange(Number(e.target.value))
+                                    }
+                                    className="w-full"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <div className="flex justify-between">
+                            <Button
+                              type="button"
+                              onClick={() => addItem(index)}
+                            >
+                              + Add Item
+                            </Button>
+                            <Label
+                              className="hover:text-[red]"
+                              onClick={() => removeItem(index, itemIndex)}
+                            >
+                              - Remove Item
+                            </Label>
+                          </div>
+                        </div>
+                      ))}
                   </div>
                 ))}
 
+                <Button type="button" onClick={addVendor}>
+                  + Add Vendor
+                </Button>
+
                 <Button type="submit" className="w-full">
-                  Submit Purchase Entry
+                  Submit Purchase Order
                 </Button>
               </form>
             </Form>

@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Eye, Upload } from "lucide-react";
+import { Eye, Upload, RefreshCw } from "lucide-react";
 
 interface PurchaseEntryItem {
   itemId: string;
@@ -117,17 +117,17 @@ const PurchaseEntryList: React.FC = () => {
     vendorId: string,
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    // Handle file upload logic here
     console.log(
       "File uploaded for:",
       entryId,
       vendorId,
       event.target.files?.[0]
     );
+    // Handle file upload logic here
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 font-archivo">
       <InventorySidebar />
       <div className="flex-1 p-8 overflow-auto">
         <h1 className="text-3xl font-bold mb-6 text-gray-800">
@@ -164,6 +164,14 @@ const PurchaseEntryList: React.FC = () => {
                       <Eye className="mr-2 h-4 w-4" />
                       View Details
                     </Button>
+                    {entry.purchaseEntry.some(
+                      (purchase) => purchase.tag === "reorder"
+                    ) && (
+                      <span className="text-sm font-medium text-orange-500 flex items-center">
+                        <RefreshCw className="mr-1 h-4 w-4" />
+                        Reorder
+                      </span>
+                    )}
                   </div>
                   <div className="text-sm text-gray-600">
                     <p>
@@ -190,6 +198,15 @@ const PurchaseEntryList: React.FC = () => {
                         .filter(Boolean)
                         .join(", ") || "N/A"}
                     </p>
+                    {entry.purchaseEntry.some((purchase) => purchase.tag) && (
+                      <p>
+                        Tags:{" "}
+                        {entry.purchaseEntry
+                          .map((purchase) => purchase.tag)
+                          .filter(Boolean)
+                          .join(", ")}
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -201,9 +218,9 @@ const PurchaseEntryList: React.FC = () => {
           open={isDetailsDialogOpen}
           onOpenChange={setIsDetailsDialogOpen}
         >
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="max-w-4xl font-archivo">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-gray-800 mb-4">
+              <DialogTitle className="text-3xl font-bold text-gray-800 mb-4">
                 Purchase Order Details
               </DialogTitle>
             </DialogHeader>
@@ -216,7 +233,7 @@ const PurchaseEntryList: React.FC = () => {
                     className="mb-8 pb-8 border border-gray-200 rounded-lg p-4 last:mb-0"
                   >
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-xl font-semibold text-blue-600 underline-offset-1">
+                      <h3 className="text-2xl font-black text-zinc-900 underline-offset-1">
                         {vendorDetails?.vendorName || "Unknown Vendor"}
                       </h3>
                       <div>
@@ -224,12 +241,12 @@ const PurchaseEntryList: React.FC = () => {
                           htmlFor={`file-${selectedEntry._id}-${purchase.vendorId}`}
                           className="cursor-pointer"
                         >
-                          <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md p-2 hover:border-blue-500 transition-colors duration-300">
+                          {/* <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md p-2 hover:border-blue-500 transition-colors duration-300">
                             <Upload className="h-4 w-4 text-gray-400 mr-2" />
                             <span className="text-sm text-gray-600">
                               Upload Files
                             </span>
-                          </div>
+                          </div> */}
                         </Label>
                         <Input
                           id={`file-${selectedEntry._id}-${purchase.vendorId}`}
@@ -274,9 +291,21 @@ const PurchaseEntryList: React.FC = () => {
                           <span className="font-medium">Grand Total:</span> Rs.{" "}
                           {purchase.grandTotal?.toFixed(2) || "N/A"}
                         </p>
+                        {purchase.tag && (
+                          <p>
+                            <span className="font-medium">Tag:</span>{" "}
+                            {purchase.tag}
+                          </p>
+                        )}
+                        {purchase.remarks && (
+                          <p>
+                            <span className="font-medium">Remarks:</span>{" "}
+                            {purchase.remarks}
+                          </p>
+                        )}
                       </div>
                     </div>
-                    <h4 className="text-lg font-semibold mb-2 text-zinc-700">
+                    <h4 className="text-lg font-bold mb-2 text-zinc-800">
                       Items
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -287,8 +316,16 @@ const PurchaseEntryList: React.FC = () => {
                             key={item.itemId}
                             className="bg-white p-4 rounded-md shadow-sm border border-gray-200"
                           >
-                            <h5 className="font-semibold mb-2">
-                              {itemDetails?.itemName || "Unknown Item"}
+                            <h5 className="font-semibold mb-2 flex justify-between items-center">
+                              <span>
+                                {itemDetails?.itemName || "Unknown Item"}
+                              </span>
+                              {purchase.tag === "reorder" && (
+                                <span className="text-xs font-medium text-orange-500 flex items-center">
+                                  <RefreshCw className="mr-1 h-3 w-3" />
+                                  Reordered
+                                </span>
+                              )}
                             </h5>
                             <div className="text-sm">
                               <p>
