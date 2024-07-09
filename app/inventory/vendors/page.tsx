@@ -1,4 +1,4 @@
-import Vendors from "@/app/components/Vendors/vendors";
+import Vendors from "@/app/components/Vendors/Vendors";
 import React from "react";
 
 const page = () => {

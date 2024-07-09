@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,24 +18,54 @@ import InventorySidebar from "../Sidebar/InventorySidebar";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+
+
 interface ApprovedOrders {
   _id: string;
   date: string;
   customer: string;
   estimatedAmount: string;
+  deadline: string;
+  paperSize: string;
+  pages: string;
+  quantity: string;
+  binding: string;
+  coverTreatment: string;
+  innerPaper: string;
+  innerPaperThickness: string;
+  outerPaper: string;
+  outerPaperThickness: string;
+  innerLamination: string;
+  outerLamination: string;
+  inkType: string;
+  deliveryOption: string;
+  status: string;
 
+}
+
+interface User {
+  fullName: string;
 }
 
 const Dashboard = () => {
   const [approvedOrders, setApprovedOrders] = useState<ApprovedOrders[]>([]);
+  const [user, setUser] = useState<User[]>([])
   useEffect(() => {
     const fetch_approved_orders = async () => {
       try {
-        const response = await axios.get(
+        const orders = await axios.get(
           "http://127.0.0.1:8000/get/approved_orders"
         );
-        setApprovedOrders(response.data.data);
-        console.log(response.data.data);
+        setApprovedOrders(orders.data.data);
+        console.log(orders.data.data);
       } catch (error) {
         console.log("error fetching data: ", error);
       }
@@ -42,6 +73,27 @@ const Dashboard = () => {
 
     fetch_approved_orders();
   }, []);
+
+  useEffect(() => {
+    const fetch_user = async () => {
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:8000/get/user/${approvedOrders[0].customer}`
+        );
+        setUser([response.data.data]);
+        console.log(response.data);
+      } catch (error) {
+        console.log("error fetching data: ", error);
+      }
+    };
+
+    fetch_user();
+  }, [approvedOrders]);
+
+  const router = useRouter();
+  const handleRequestPO = (orderId: string) => {
+    router.push(`/inventory/entry/${orderId}`);
+  };
 
   return (
     <div className="flex h-screen bg-gray-100 font-archivo">
@@ -111,46 +163,116 @@ const Dashboard = () => {
                       Date
                     </TableHead>
                     <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
-                      Customer Id
+                      Customer Name
                     </TableHead>
                     <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
-                      Estimated Cost
+                      Estd. Cost
                     </TableHead>
                     <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
                       View Details
                     </TableHead>
                     <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
-                      Create Order
+                      Action
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {approvedOrders.map((order, index) => (
-                      <TableRow
-                        key={order._id ?? index}
-                        className="bg-white border-b font-medium text-[17px] hover:bg-gray-200 text-black"
-                      >
-                        <TableCell className="w-4 p-4 text-[17px]"></TableCell>
-                        <TableCell className="px-6 font-medium text-[17px] whitespace-nowrap text-black py-[20px]">
-                          {order._id || order._id === '0' ? order._id : "N/A"}
-                        </TableCell>
-                        <TableCell className="px-6 py-[20px]">{order.date}</TableCell>
-                        <TableCell className="px-6 py-[20px]">{order.customer}</TableCell>
-                        <TableCell className="px-6 py-[20px]">
-                          Rs.{order.estimatedAmount}
-                        </TableCell>
-                        <TableCell className="px-6 py-[20px]">
-                          <button className="bg-orange-400 p-[10px] rounded-[10px] text-white font-semibold tracking-wide cursor-pointer">
-                            Order Details
-                          </button>
-                        </TableCell>
-                        <TableCell className="px-6 py-[20px]">
-                          <button className="bg-orange-400 p-[10px] rounded-[10px] text-white font-semibold tracking-wide cursor-pointer">
-                            Request Order
-                          </button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                  {approvedOrders.map((order, index) => (
+                    <TableRow
+                      key={order._id ?? index}
+                      className="bg-white border-b font-medium text-[17px] hover:bg-gray-200 text-black"
+                    >
+                      <TableCell className="w-4 p-4 text-[17px]"></TableCell>
+                      <TableCell className="px-6 font-medium text-[17px] whitespace-nowrap text-black py-[20px]">
+                        {order._id || order._id === '0' ? order._id : "N/A"}
+                      </TableCell>
+                      <TableCell className="px-6 py-[20px]">{order.date}</TableCell>
+                      <TableCell className="px-6 py-[20px]">{user.length > 0 && (
+                        <p>{user[0].fullName}</p>
+                      )}</TableCell>
+                      <TableCell className="px-6 py-[20px]">
+                        Rs.{order.estimatedAmount}
+                      </TableCell>
+                      <TableCell className="px-6 py-[20px]">
+                        <Sheet>
+                          <SheetTrigger><Button className="px-[15px] font-semibold" type="button">Order Details</Button></SheetTrigger>
+                          <SheetContent className="w-[800px]">
+                            <SheetHeader>
+                              <SheetTitle className="font-bold text-[20px] text-center mb-[10px]">Order Details</SheetTitle>
+                              <SheetDescription className="font-bold text-[15px]">
+                                <Table>
+                                  <TableRow>
+                                    <TableHead>Order Id</TableHead>
+                                    <TableHead>{order._id}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead>Customer Name</TableHead>
+                                    <TableHead>
+                                      {user.length > 0 && (
+                                        <p>{user[0].fullName}</p>
+                                      )}
+                                    </TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>{order.date}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead>Paper Size</TableHead>
+                                    <TableHead>{order.paperSize}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead>Pages</TableHead>
+                                    <TableHead>{order.pages}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead>Quantity</TableHead>
+                                    <TableHead>{order.quantity}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead>Binding</TableHead>
+                                    <TableHead>{order.binding}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead>Cover Treatment</TableHead>
+                                    <TableHead>{order.coverTreatment}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead>Inner Paper</TableHead>
+                                    <TableHead>{order.innerPaper}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead>Outer Paper</TableHead>
+                                    <TableHead>{order.outerPaper}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead>Ink Type</TableHead>
+                                    <TableHead>{order.inkType}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead>Delivery Option</TableHead>
+                                    <TableHead>{order.deliveryOption}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>{order.status}</TableHead>
+                                  </TableRow>
+                                </Table>
+                              </SheetDescription>
+                            </SheetHeader>
+                          </SheetContent>
+                        </Sheet>
+                      </TableCell>
+                      <TableCell className="px-6 py-[20px]">
+                        <Button
+                          className="px-[15px] font-semibold"
+                          type="button"
+                          onClick={() => handleRequestPO(order._id)}>
+                          Request PO
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </ScrollArea>

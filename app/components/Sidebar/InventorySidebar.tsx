@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   Printer,
-  Package,
-  ClipboardList,
-  Settings,
+  ScrollText,
+  ArchiveRestore,
+  ArchiveX,
+  ListRestart,
+  Warehouse,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LogoOnly from "../../../public/images/LogoOnly.png";
@@ -15,63 +17,79 @@ const InventorySidebar: React.FC = () => {
   const router = useRouter();
 
   return (
-    <div className="flex h-screen bg-gray-100 font-archivo font-semibold">
-      <aside className="w-64 bg-white shadow-md">
-        <div className="p-4 mt-10">
+    <aside className="w-56 bg-white shadow-md  font-archivo">
+      <div className="p-3 flex flex-col mt-2">
+        <div className="flex items-center mb-4">
           <Image
             src={LogoOnly}
             alt="WordScape Logo"
-            width={140}
-            height={100}
-            className="mx-[20%] items-center"
+            width={40}
+            height={40}
+            className="mr-2"
           />
-          <div className="flex items-center mb-5">
-            <h2 className="text-3xl mt-6 font-light mx-[15%]">WordScape</h2>
-          </div>
-
-          <nav className="">
-            <Button
-              variant="ghost"
-              className="w-full justify-start mb-4 mt-5 text-lg"
-              onClick={() => router.push("/inventory")}
-            >
-              <LayoutDashboard className="mr-2 h-6 w-6" />
-              Overview
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start mb-4 text-lg"
-              onClick={() => router.push("/inventory/vendors")}
-            >
-              <Printer className="mr-2 h-6 w-6" />
-              Vendors
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start mb-4 text-lg"
-              onClick={() => router.push("/inventory/entry")}
-            >
-              <Package className="mr-2 h-6 w-6" />
-              Purchase Entry
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start mb-4 text-lg"
-            >
-              <ClipboardList className="mr-2 h-6 w-6" />
-              Reorders
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full mb-4 justify-start text-lg"
-            >
-              <Settings className="mr-2 h-6 w-6" />
-              Stock Level
-            </Button>
-          </nav>
+          <h2 className="text-xl font-light">WordScape</h2>
         </div>
-      </aside>
-    </div>
+
+        <nav className="flex-grow overflow-y-auto">
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/inventory")}
+          >
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            Overview
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/inventory/stocks")}
+          >
+            <Warehouse className="mr-2 h-4 w-4" />
+            Stock Level
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/inventory/vendors")}
+          >
+            <Printer className="mr-2 h-4 w-4" />
+            Vendors
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/inventory/entry")}
+          >
+            <ScrollText className="mr-2 h-4 w-4" />
+            Entry Form
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/inventory/entries")}
+          >
+            <ArchiveRestore className="mr-2 h-4 w-4" />
+            PO with Entries
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/inventory/no-entries")}
+          >
+            <ArchiveX className="mr-2 h-4 w-4" />
+            PO w/o Entries
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/inventory/reorder")}
+          >
+            <ListRestart className="mr-2 h-4 w-4" />
+            Reorders
+          </Button>
+        </nav>
+      </div>
+    </aside>
   );
 };
 
