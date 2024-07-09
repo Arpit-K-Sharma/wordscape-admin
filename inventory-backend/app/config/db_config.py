@@ -4,4 +4,5 @@ client = motor.motor_asyncio.AsyncIOMotorClient('mongodb+srv://siron:password%40
 
 database = client.erp
 orders_collection = database.order
+user_collection = database.user
 

@@ -72,4 +72,3 @@ class ApprovedOrdersDTO(BaseModel):
             customer=ApprovedOrdersDTO.convert_dbref_to_str(document.get("customer")),  
             estimatedAmount=document.get("estimatedAmount")
         )
-        
