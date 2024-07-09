@@ -23,7 +23,7 @@ import VendorForm from "./VendorForm";
 import UpdateVendorDialog from "./UpdateVendorDialog";
 import { FiEdit2, FiTrash2, FiX } from "react-icons/fi";
 import InventorySidebar from "../Sidebar/InventorySidebar";
-import { vendorService } from "../Services/vendorsService";
+import { vendorService } from "../../services/vendorsService";
 
 interface Vendor {
   _id: string;
@@ -49,8 +49,6 @@ function Vendors() {
       setVendors([]);
     }
   };
-
-  
 
   useEffect(() => {
     fetchVendors();

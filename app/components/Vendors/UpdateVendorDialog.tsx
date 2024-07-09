@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FiEdit2, FiX } from "react-icons/fi";
-import { vendorService } from "../Services/vendorsService";
+import { vendorService } from "../../services/vendorsService";
 
 interface Vendor {
   _id: string;
@@ -34,8 +34,9 @@ function UpdateVendorDialog({
   const onSubmit = async (data: Omit<Vendor, "_id">) => {
     try {
       await vendorService.updateVendor(vendor._id, data);
-      onVendorUpdated();
+      onVendorUpdated?.();
       closeModal();
+      vendorService.getVendors();
     } catch (error) {
       console.error("Error updating vendor:", error);
     }

@@ -29,7 +29,7 @@ import {
   Vendor,
   Item,
   PurchaseOrder,
-} from "../Services/purchaseEntryFormService";
+} from "../../services/purchaseEntryFormService";
 
 const itemSchema = z.object({
   itemId: z.string(),

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Eye, Upload, RefreshCw } from "lucide-react";
-import { purchaseEntryService } from "../Services/purchaseEntryListService";
+import { purchaseEntryService } from "../../services/purchaseEntryListService";
 
 interface PurchaseEntryItem {
   itemId: string;
