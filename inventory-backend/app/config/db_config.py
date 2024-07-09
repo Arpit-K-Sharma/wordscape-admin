@@ -1,8 +1,9 @@
 import motor.motor_asyncio
 
-client = motor.motor_asyncio.AsyncIOMotorClient('mongodb+srv://siron:password%40123@cluster0.5h1sajb.mongodb.net/')
+client = motor.motor_asyncio.AsyncIOMotorClient('mongodb+srv://spandanbhattarai79:spandan123@spandan.ey3fvll.mongodb.net/?retryWrites=true&w=majority&appName=spandan')
 
-database = client.erp
-orders_collection = database.order
-user_collection = database.user
+database = client.Wordscape
+database_erp = client.ERP
+orders_collection = database_erp.order
+user_collection = database_erp.user
 
