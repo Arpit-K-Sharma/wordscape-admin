@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Eye, Upload, RefreshCw } from "lucide-react";
+import { purchaseEntryService } from "../Services/purchaseEntryListService";
 
 interface PurchaseEntryItem {
   itemId: string;
@@ -41,7 +42,7 @@ interface PurchaseEntryVendor {
 
 interface PurchaseEntry {
   _id: string;
-  orderId: string;  
+  orderId: string;
   isCompleted: boolean;
   purchaseEntry: PurchaseEntryVendor[];
 }
@@ -73,29 +74,19 @@ const PurchaseEntryList: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [purchaseEntriesResponse, inventoryResponse, vendorsResponse] =
-          await Promise.all([
-            axios.get("http://127.0.0.1:8000/purchase_orders_without_entries"),
-            axios.get("http://127.0.0.1:8000/inventory"),
-            axios.get("http://127.0.0.1:8000/vendors"),
-          ]);
+        const [purchaseEntries, inventoryItems, vendors] = await Promise.all([
+          purchaseEntryService.getPurchaseOrdersWithoutEntries(),
+          purchaseEntryService.getInventoryItems(),
+          purchaseEntryService.getVendors(),
+        ]);
 
-        if (purchaseEntriesResponse.data.status === "success") {
-          setPurchaseEntries(purchaseEntriesResponse.data.data);
-        }
-
-        if (inventoryResponse.data.status === "success") {
-          setInventoryItems(inventoryResponse.data.data);
-        }
-
-        if (vendorsResponse.data.status === "success") {
-          setVendors(vendorsResponse.data.data);
-        }
+        setPurchaseEntries(purchaseEntries);
+        setInventoryItems(inventoryItems);
+        setVendors(vendors);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-
     fetchData();
   }, []);
 

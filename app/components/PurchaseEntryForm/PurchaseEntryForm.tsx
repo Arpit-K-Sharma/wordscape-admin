@@ -24,6 +24,12 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import InventorySidebar from "../Sidebar/InventorySidebar";
+import {
+  purchaseEntryService,
+  Vendor,
+  Item,
+  PurchaseOrder,
+} from "../Services/purchaseEntryFormService";
 
 const itemSchema = z.object({
   itemId: z.string(),
@@ -69,13 +75,7 @@ export function PurchaseEntrySlip() {
         {
           vendorId: "",
           isCompleted: false,
-          items: [
-            {
-              itemId: "",
-              quantityFromVendor: 0,
-              quantityFromStock: 0,
-            },
-          ],
+          items: [{ itemId: "", quantityFromVendor: 0, quantityFromStock: 0 }],
         },
       ],
     },
@@ -91,27 +91,20 @@ export function PurchaseEntrySlip() {
   });
 
   useEffect(() => {
-    const fetchVendors = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/vendors");
-        setVendors(response.data.data);
+        const [vendorsData, itemsData] = await Promise.all([
+          purchaseEntryService.getVendors(),
+          purchaseEntryService.getItems(),
+        ]);
+        setVendors(vendorsData);
+        setItems(itemsData);
       } catch (error) {
-        console.error("Error fetching vendors:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    const fetchItems = async () => {
-      try {
-        const response = await axios.get("http://localhost:8000/inventory");
-        console.log(response);
-        setItems(response.data.data);
-      } catch (error) {
-        console.error("Error fetching items:", error);
-      }
-    };
-
-    fetchVendors();
-    fetchItems();
+    fetchData();
   }, []);
 
   const addItem = (index: number) => {
@@ -147,11 +140,8 @@ export function PurchaseEntrySlip() {
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      const response = await axios.post(
-        "http://localhost:8000/purchase_order",
-        data
-      );
-      console.log("Purchase order created:", response.data);
+      const response = await purchaseEntryService.createPurchaseEntry(data);
+      console.log("Purchase order created:", response);
       alert("Purchase Order Placed");
     } catch (error) {
       console.error("Error creating purchase order:", error);
