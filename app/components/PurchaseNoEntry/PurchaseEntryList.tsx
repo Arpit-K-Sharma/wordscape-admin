@@ -41,7 +41,7 @@ interface PurchaseEntryVendor {
 
 interface PurchaseEntry {
   _id: string;
-  orderId: string;
+  orderId: string;  
   isCompleted: boolean;
   purchaseEntry: PurchaseEntryVendor[];
 }

@@ -71,7 +71,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[200px]">
-              {/* <ul className="space-y-4">
+              <ul className="space-y-4">
                 <li className="flex items-center">
                   <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
                   <span>New job #1234 received: 5000 brochures</span>
@@ -92,7 +92,7 @@ const Dashboard = () => {
                   <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
                   <span>New supply order placed: Cyan ink cartridges</span>
                 </li>
-              </ul> */}
+              </ul>
             </ScrollArea>
           </CardContent>
         </Card>
