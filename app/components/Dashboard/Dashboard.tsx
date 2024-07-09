@@ -26,6 +26,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { dashboardService } from "@/app/services/dashboardService";
 
 
 interface ApprovedOrders {
@@ -57,17 +58,14 @@ interface User {
 
 const Dashboard = () => {
   const [approvedOrders, setApprovedOrders] = useState<ApprovedOrders[]>([]);
-  const [user, setUser] = useState<User[]>([])
+  const [user, setUser] = useState<User | null>(null);
   useEffect(() => {
     const fetch_approved_orders = async () => {
       try {
-        const orders = await axios.get(
-          "http://127.0.0.1:8000/get/approved_orders"
-        );
-        setApprovedOrders(orders.data.data);
-        console.log(orders.data.data);
+        const orders = await dashboardService.fetch_approved_orders()
+        setApprovedOrders(orders);
       } catch (error) {
-        console.log("error fetching data: ", error);
+        console.error("Error fetching data:", error);
       }
     };
 
@@ -77,11 +75,8 @@ const Dashboard = () => {
   useEffect(() => {
     const fetch_user = async () => {
       try {
-        const response = await axios.get(
-          `http://127.0.0.1:8000/get/user/${approvedOrders[0].customer}`
-        );
-        setUser([response.data.data]);
-        console.log(response.data);
+        const user = await dashboardService.fetch_user(approvedOrders[0].customer)
+        setUser(user);
       } catch (error) {
         console.log("error fetching data: ", error);
       }
@@ -187,9 +182,9 @@ const Dashboard = () => {
                         {order._id || order._id === '0' ? order._id : "N/A"}
                       </TableCell>
                       <TableCell className="px-6 py-[20px]">{order.date}</TableCell>
-                      <TableCell className="px-6 py-[20px]">{user.length > 0 && (
-                        <p>{user[0].fullName}</p>
-                      )}</TableCell>
+                      <TableCell className="px-6 py-[20px]">
+                        {user?.fullName}
+                      </TableCell>
                       <TableCell className="px-6 py-[20px]">
                         Rs.{order.estimatedAmount}
                       </TableCell>
@@ -208,9 +203,7 @@ const Dashboard = () => {
                                   <TableRow>
                                     <TableHead>Customer Name</TableHead>
                                     <TableHead>
-                                      {user.length > 0 && (
-                                        <p>{user[0].fullName}</p>
-                                      )}
+                                      <p>{user?.fullName}</p>
                                     </TableHead>
                                   </TableRow>
                                   <TableRow>
