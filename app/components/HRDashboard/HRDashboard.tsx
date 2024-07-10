@@ -69,89 +69,107 @@ const HROverview: React.FC = () => {
 
       <main className="flex-1 p-8">
         <h1 className="text-3xl font-bold mb-6">HR Overview</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Employees
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {hrOverviewData.totalEmployees}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                +{hrOverviewData.newEmployeesThisMonth} new this month
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Pending Leave Requests
-              </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {hrOverviewData.pendingLeaveRequests}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {hrOverviewData.urgentApprovals} urgent approvals needed
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Employees
+                  </CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {hrOverviewData.totalEmployees}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    +{hrOverviewData.newEmployeesThisMonth} new this month
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Pending Leave Requests
+                  </CardTitle>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {hrOverviewData.pendingLeaveRequests}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {hrOverviewData.urgentApprovals} urgent approvals needed
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Employees */}
+            <Card className="h-[calc(100%-130px)]">
+              <CardHeader>
+                <CardTitle>Recent Employees</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[calc(100%-64px)]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Employee ID</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Department</TableHead>
+                        <TableHead>Join Date</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {recentEmployees.map((employee) => (
+                        <TableRow key={employee.id}>
+                          <TableCell>{employee.id}</TableCell>
+                          <TableCell>{employee.name}</TableCell>
+                          <TableCell>{employee.department}</TableCell>
+                          <TableCell>{employee.joinDate}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="h-[calc(132%-130px)]">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-medium">
                 Upcoming Holidays
               </CardTitle>
               <GraduationCap className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              {/* <div className="text-2xl font-bold">
-                {hrOverviewData.upcomingTrainings}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Next training in {hrOverviewData.daysToNextTraining} days
-              </p> */}
+              <p className="mt-3 mb-">
+                <b>Holiday Date:</b> XX/XX/XXXX
+              </p>
+              <p className="mt-3 mb-">
+                <b>Holiday Date:</b> XX/XX/XXXX
+              </p>
+              <p className="mt-3 mb-">
+                <b>Holiday Date:</b> XX/XX/XXXX
+              </p>
+              <p className="mt-3 mb-">
+                <b>Holiday Date:</b> XX/XX/XXXX
+              </p>
+              <p className="mt-3 mb-">
+                <b>Holiday Date:</b> XX/XX/XXXX
+              </p>
+              <p className="mt-3 mb-">
+                <b>Holiday Date:</b> XX/XX/XXXX
+              </p>
+              <p className="mt-3 mb-">
+                <b>Holiday Date:</b> XX/XX/XXXX
+              </p>
             </CardContent>
           </Card>
         </div>
-
-        {/* Recent Employees */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Recent Employees</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[300px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Department</TableHead>
-                    {/* <TableHead>Position</TableHead> */}
-                    <TableHead>Join Date</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentEmployees.map((employee) => (
-                    <TableRow key={employee.id}>
-                      <TableCell>{employee.id}</TableCell>
-                      <TableCell>{employee.name}</TableCell>
-                      <TableCell>{employee.department}</TableCell>
-                      {/* <TableCell>{employee.position}</TableCell> */}
-                      <TableCell>{employee.joinDate}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
-          </CardContent>
-        </Card>
       </main>
     </div>
   );

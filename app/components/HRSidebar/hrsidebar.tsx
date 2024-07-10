@@ -10,6 +10,7 @@ import {
   BarChart,
   Settings,
   UserRound,
+  Boxes,
   ArrowLeft,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -35,7 +36,7 @@ const HRSidebar: React.FC = () => {
         <nav className="flex-grow overflow-y-auto">
           <Button
             variant="ghost"
-            className="w-full justify-start mb-5 text-sm"
+            className="w-full mt-3 justify-start mb-5 text-sm"
             onClick={() => router.push("/inventory")}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -74,21 +75,14 @@ const HRSidebar: React.FC = () => {
             <Calendar className="mr-2 h-4 w-4" />
             Leave Management
           </Button>
-          {/* <Button
-            variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/hr/training")}
-          >
-            <GraduationCap className="mr-2 h-4 w-4" />
-            Training
-          </Button> */}
+
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
             onClick={() => router.push("/hr/performance")}
           >
-            <BarChart className="mr-2 h-4 w-4" />
-            Performance
+            <Boxes className="mr-2 h-4 w-4" />
+            Departments
           </Button>
           <Button
             variant="ghost"
