@@ -79,7 +79,11 @@ const InventorySidebar: React.FC = () => {
             <ArchiveX className="mr-2 h-4 w-4" />
             PO w/o Entries
           </Button>
-          <Button variant="ghost" className="w-full justify-start mb-2 text-sm">
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/inventory/reorder")}
+          >
             <ListRestart className="mr-2 h-4 w-4" />
             Reorders
           </Button>

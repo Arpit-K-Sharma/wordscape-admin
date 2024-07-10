@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import InventorySidebar from "../Sidebar/InventorySidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,6 +70,22 @@ const PurchaseEntryList: React.FC = () => {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isDetailsDialogOpen) {
+        setIsDetailsDialogOpen(false);
+      }
+    },
+    [isDetailsDialogOpen]
+  );
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -207,7 +223,10 @@ const PurchaseEntryList: React.FC = () => {
 
         <Dialog
           open={isDetailsDialogOpen}
-          onOpenChange={setIsDetailsDialogOpen}
+          onOpenChange={(open) => {
+            setIsDetailsDialogOpen(open);
+            if (!open) setSelectedEntry(null);
+          }}
         >
           <DialogContent className="max-w-4xl font-archivo">
             <DialogHeader>

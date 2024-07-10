@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,12 +25,6 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import InventorySidebar from "../Sidebar/InventorySidebar";
-import {
-  purchaseEntryService,
-  Vendor,
-  Item,
-  PurchaseOrder,
-} from "../../services/purchaseEntryFormService";
 
 const itemSchema = z.object({
   itemId: z.string(),
@@ -62,20 +57,35 @@ interface Item {
   itemName: string;
 }
 
-export function PurchaseEntrySlip() {
+interface ApprovedOrders {
+  _id: string;
+}
+
+interface PurchaseEntrySlipProps {
+  orderId: string;
+}
+
+export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  const [approvedOrders, setApprovedOrders] = useState<ApprovedOrders[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      orderId: "",
+      orderId: orderId,
       isCompleted: false,
       purchaseEntry: [
         {
           vendorId: "",
           isCompleted: false,
-          items: [{ itemId: "", quantityFromVendor: 0, quantityFromStock: 0 }],
+          items: [
+            {
+              itemId: "",
+              quantityFromVendor: 0,
+              quantityFromStock: 0,
+            },
+          ],
         },
       ],
     },
@@ -91,21 +101,45 @@ export function PurchaseEntrySlip() {
   });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchVendors = async () => {
       try {
-        const [vendorsData, itemsData] = await Promise.all([
-          purchaseEntryService.getVendors(),
-          purchaseEntryService.getItems(),
-        ]);
-        setVendors(vendorsData);
-        setItems(itemsData);
+        const response = await axios.get("http://localhost:8000/vendors");
+        setVendors(response.data.data);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching vendors:", error);
       }
     };
 
-    fetchData();
-  }, []);
+    const fetchItems = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/inventory");
+        console.log(response);
+        setItems(response.data.data);
+      } catch (error) {
+        console.error("Error fetching items:", error);
+      }
+    };
+
+    const fetch_approved_orders = async () => {
+      try {
+        const orders = await axios.get(
+          "http://127.0.0.1:8000/get/approved_orders"
+        );
+        setApprovedOrders(orders.data.data);
+        console.log(orders.data.data);
+      } catch (error) {
+        console.log("error fetching data: ", error);
+      }
+    };
+
+    fetch_approved_orders();
+    fetchVendors();
+    fetchItems();
+
+    if (orderId) {
+      form.setValue("orderId", orderId);
+    }
+  }, [orderId, form]);
 
   const addItem = (index: number) => {
     form.setValue(`purchaseEntry.${index}.items`, [
@@ -140,8 +174,11 @@ export function PurchaseEntrySlip() {
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      const response = await purchaseEntryService.createPurchaseEntry(data);
-      console.log("Purchase order created:", response);
+      const response = await axios.post(
+        "http://localhost:8000/purchase_order",
+        data
+      );
+      console.log("Purchase order created:", response.data);
       alert("Purchase Order Placed");
     } catch (error) {
       console.error("Error creating purchase order:", error);
@@ -169,9 +206,15 @@ export function PurchaseEntrySlip() {
                   name="orderId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Order ID</FormLabel>
+                      <FormLabel htmlFor="orderId">Order ID</FormLabel>
                       <FormControl>
-                        <Input {...field} className="w-full" />
+                        <Input
+                          {...field}
+                          type="text"
+                          id="orderId"
+                          disabled
+                          className="text-[15px] font-semibold"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
