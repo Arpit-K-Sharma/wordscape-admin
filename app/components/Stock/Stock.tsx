@@ -1,6 +1,7 @@
 // StocksPage.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { stockService } from "@/app/services/stockService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import InventorySidebar from "../Sidebar/InventorySidebar";
 import { Button } from "@/components/ui/button";
@@ -37,10 +38,8 @@ const StocksPage: React.FC = () => {
 
   const fetchInventory = async () => {
     try {
-      const response = await axios.get<ApiResponse>(
-        "http://127.0.0.1:8000/inventory"
-      );
-      setInventoryData(response.data.data);
+      const response = await stockService.fetchInventory()
+      setInventoryData(response);
       setIsLoading(false);
     } catch (err) {
       setError("Failed to fetch inventory data");
@@ -55,14 +54,9 @@ const StocksPage: React.FC = () => {
   const onSubmit = async (data: { itemName: string; availability: string; type: string }) => {
     try {
       setIsSubmitting(true);
-      const url = "http://localhost:8000/inventory";
-      const response = await axios.post<InventoryItem>(url, {
-        itemName: data.itemName,
-        availability: data.availability,
-        type: data.type,
-      });
-      console.log("Inventory item created", response.data);
-      setInventoryData([...inventoryData, response.data]);
+      const newItem = await stockService.createInventoryItem(data);
+      console.log("Inventory item created", newItem);
+      setInventoryData([...inventoryData, newItem]);
       await fetchInventory();
       setIsAddDialogOpen(false);
       toast.success("Item added to inventory successfully!");

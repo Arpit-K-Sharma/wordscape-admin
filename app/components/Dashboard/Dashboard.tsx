@@ -26,7 +26,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { dashboardService } from "@/app/services/dashboardService";
+import { Cover, dashboardService } from "@/app/services/dashboardService";
 
 
 interface ApprovedOrders {
@@ -56,13 +56,25 @@ interface User {
   fullName: string;
 }
 
+interface CoverTreatment {
+  coverTreatmentType: string;
+}
+
+interface Paper {
+  paperType: string;
+}
+
 const Dashboard = () => {
   const [approvedOrders, setApprovedOrders] = useState<ApprovedOrders[]>([]);
   const [user, setUser] = useState<User | null>(null);
+  const [coverTreatment, setCoverTreatment] = useState<CoverTreatment | null>(null);
+  const [innerPaper, setInnerPaper] = useState<Paper | null>(null);
+  const [outerPaper, setOuterPaper] = useState<Paper | null>(null);
+
   useEffect(() => {
     const fetch_approved_orders = async () => {
       try {
-        const orders = await dashboardService.fetch_approved_orders()
+        const orders = await dashboardService.fetch_approved_orders();
         setApprovedOrders(orders);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -75,14 +87,46 @@ const Dashboard = () => {
   useEffect(() => {
     const fetch_user = async () => {
       try {
-        const user = await dashboardService.fetch_user(approvedOrders[0].customer)
+        const user = await dashboardService.fetch_user(approvedOrders[0]?.customer);
         setUser(user);
       } catch (error) {
         console.log("error fetching data: ", error);
       }
     };
 
+    const fetch_cover_treatment = async () => {
+      try {
+        const coverTreatment = await dashboardService.fetch_cover_treatment(approvedOrders[0]?.coverTreatment);
+        console.log(approvedOrders[0]?.coverTreatment)
+        setCoverTreatment(coverTreatment);
+      } catch (error) {
+        console.log("error fetching data: ", error);
+      }
+    };
+
+    const fetch_inner_paper = async () => {
+      try {
+        const innerPaper = await dashboardService.fetch_paper(approvedOrders[0]?.innerPaper);
+        console.log(approvedOrders[0]?.innerPaper)
+        setInnerPaper(innerPaper);
+      } catch (error) {
+        console.log("error fetching data: ", error);
+      }
+    };
+
+    const fetch_outer_paper = async () => {
+      try {
+        const outerPaper = await dashboardService.fetch_paper(approvedOrders[0]?.outerPaper);
+        setOuterPaper(outerPaper);
+      } catch (error) {
+        console.log("error fetching data: ", error);
+      }
+    };
+
     fetch_user();
+    fetch_cover_treatment();
+    fetch_inner_paper();
+    fetch_outer_paper();
   }, [approvedOrders]);
 
   const router = useRouter();
@@ -131,7 +175,7 @@ const Dashboard = () => {
               <ClipboardList className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">8</div>
+              <div className="text-2xl font-bold">{approvedOrders.length}</div>
               <p className="text-xs text-muted-foreground">
                 2 pending approval
               </p>
@@ -194,60 +238,60 @@ const Dashboard = () => {
                           <SheetContent className="w-[800px]">
                             <SheetHeader>
                               <SheetTitle className="font-bold text-[20px] text-center mb-[10px]">Order Details</SheetTitle>
-                              <SheetDescription className="font-bold text-[15px]">
+                              <SheetDescription className="font-bold text-[15px] shadow-lg border-black p-[10px] rounded-md">
                                 <Table>
                                   <TableRow>
-                                    <TableHead>Order Id</TableHead>
+                                    <TableHead className="p-[10px] text-gray-600">Order Id</TableHead>
                                     <TableHead>{order._id}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead>Customer Name</TableHead>
+                                    <TableHead className="p-[10px] text-gray-600">Customer Name</TableHead>
                                     <TableHead>
-                                      <p>{user?.fullName}</p>
+                                    <p>{user?.fullName}</p>
                                     </TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead>Date</TableHead>
+                                    <TableHead className="p-[10px] text-gray-600">Date</TableHead>
                                     <TableHead>{order.date}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead>Paper Size</TableHead>
+                                    <TableHead className="p-[10px] text-gray-600">Paper Size</TableHead>
                                     <TableHead>{order.paperSize}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead>Pages</TableHead>
+                                    <TableHead className="p-[10px] text-gray-600">Pages</TableHead>
                                     <TableHead>{order.pages}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead>Quantity</TableHead>
+                                    <TableHead className="p-[10px] text-gray-600">Quantity</TableHead>
                                     <TableHead>{order.quantity}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead>Binding</TableHead>
+                                    <TableHead className="p-[10px] text-gray-600">Binding</TableHead>
                                     <TableHead>{order.binding}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead>Cover Treatment</TableHead>
-                                    <TableHead>{order.coverTreatment}</TableHead>
+                                    <TableHead className="p-[10px] text-gray-600">Cover Treatment</TableHead>
+                                    <TableHead>{coverTreatment?.coverTreatmentType}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead>Inner Paper</TableHead>
-                                    <TableHead>{order.innerPaper}</TableHead>
+                                    <TableHead className="p-[10px] text-gray-600">Inner Paper</TableHead>
+                                    <TableHead>{innerPaper?.paperType}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead>Outer Paper</TableHead>
-                                    <TableHead>{order.outerPaper}</TableHead>
+                                    <TableHead className="p-[10px] text-gray-600">Outer Paper</TableHead>
+                                    <TableHead>{outerPaper?.paperType}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead>Ink Type</TableHead>
+                                    <TableHead className="p-[10px] text-gray-600">Ink Type</TableHead>
                                     <TableHead>{order.inkType}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead>Delivery Option</TableHead>
+                                    <TableHead className="p-[10px] text-gray-600">Delivery Option</TableHead>
                                     <TableHead>{order.deliveryOption}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead>Status</TableHead>
+                                    <TableHead className="p-[10px] text-gray-600">Status</TableHead>
                                     <TableHead>{order.status}</TableHead>
                                   </TableRow>
                                 </Table>
