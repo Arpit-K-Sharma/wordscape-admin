@@ -3,22 +3,23 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
-  Printer,
-  ScrollText,
-  ArchiveRestore,
-  ArchiveX,
-  ListRestart,
-  Warehouse,
+  Users,
+  FileText,
+  Calendar,
+  GraduationCap,
+  BarChart,
+  Settings,
   UserRound,
+  ArrowLeft,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LogoOnly from "../../../public/images/LogoOnly.png";
 
-const InventorySidebar: React.FC = () => {
+const HRSidebar: React.FC = () => {
   const router = useRouter();
 
   return (
-    <aside className="w-56 bg-white shadow-md  font-archivo">
+    <aside className="w-56 bg-white shadow-md font-archivo">
       <div className="p-3 flex flex-col mt-2">
         <div className="flex items-center mb-4">
           <Image
@@ -28,14 +29,23 @@ const InventorySidebar: React.FC = () => {
             height={40}
             className="mr-2"
           />
-          <h2 className="text-xl font-light">WordScape</h2>
+          <h2 className="text-xl font-light">WordScape HR</h2>
         </div>
 
         <nav className="flex-grow overflow-y-auto">
           <Button
             variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
+            className="w-full justify-start mb-5 text-sm"
             onClick={() => router.push("/inventory")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Return to Inventory
+          </Button>
+
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/hr")}
           >
             <LayoutDashboard className="mr-2 h-4 w-4" />
             Overview
@@ -43,58 +53,50 @@ const InventorySidebar: React.FC = () => {
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/inventory/stocks")}
+            onClick={() => router.push("/hr/employees")}
           >
-            <Warehouse className="mr-2 h-4 w-4" />
-            Stock Level
+            <Users className="mr-2 h-4 w-4" />
+            Employees
           </Button>
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/inventory/vendors")}
+            onClick={() => router.push("/hr/payroll")}
           >
-            <Printer className="mr-2 h-4 w-4" />
-            Vendors
+            <FileText className="mr-2 h-4 w-4" />
+            Payroll
           </Button>
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/inventory/entry")}
+            onClick={() => router.push("/hr/leave-management")}
           >
-            <ScrollText className="mr-2 h-4 w-4" />
-            Entry Form
+            <Calendar className="mr-2 h-4 w-4" />
+            Leave Management
+          </Button>
+          {/* <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/hr/training")}
+          >
+            <GraduationCap className="mr-2 h-4 w-4" />
+            Training
+          </Button> */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/hr/performance")}
+          >
+            <BarChart className="mr-2 h-4 w-4" />
+            Performance
           </Button>
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/inventory/entries")}
+            onClick={() => router.push("/hr/settings")}
           >
-            <ArchiveRestore className="mr-2 h-4 w-4" />
-            PO with Entries
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/inventory/no-entries")}
-          >
-            <ArchiveX className="mr-2 h-4 w-4" />
-            PO w/o Entries
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/inventory/reorder")}
-          >
-            <ListRestart className="mr-2 h-4 w-4" />
-            Reorders
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/hr/overview")}
-          >
-            <UserRound className="mr-2 h-4 w-4" />
-            Human Resources
+            <Settings className="mr-2 h-4 w-4" />
+            HR Settings
           </Button>
         </nav>
       </div>
@@ -102,4 +104,4 @@ const InventorySidebar: React.FC = () => {
   );
 };
 
-export default InventorySidebar;
+export default HRSidebar;
