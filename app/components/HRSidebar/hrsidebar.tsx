@@ -12,6 +12,7 @@ import {
   UserRound,
   Boxes,
   ArrowLeft,
+  CalendarPlus,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LogoOnly from "../../../public/images/LogoOnly.png";
@@ -79,10 +80,18 @@ const HRSidebar: React.FC = () => {
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/hr/performance")}
+            onClick={() => router.push("/hr/departments")}
           >
             <Boxes className="mr-2 h-4 w-4" />
             Departments
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/hr/holidays")}
+          >
+            <CalendarPlus className="mr-2 h-4 w-4" />
+            Holidays
           </Button>
           <Button
             variant="ghost"

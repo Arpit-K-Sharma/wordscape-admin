@@ -28,7 +28,7 @@ const InventorySidebar: React.FC = () => {
             height={40}
             className="mr-2"
           />
-          <h2 className="text-xl font-light">WordScape</h2>
+          <h2 className="text-xl font-light">WordScape INV</h2>
         </div>
 
         <nav className="flex-grow overflow-y-auto">
