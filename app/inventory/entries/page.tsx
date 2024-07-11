@@ -1,5 +1,5 @@
 "use client";
-import PurchaseWithEntry from "@/app/components/PurchaseItemEntry/purchase";
+import PurchaseWithEntry from "@/app/components/PurchaseItemEntry/PurchaseWithEntry";
 import React from "react";
 
 const page = () => {

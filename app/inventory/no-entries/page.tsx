@@ -1,5 +1,5 @@
 "use client";
-import PurchaseEntryList from "@/app/components/PurchaseNoEntry/PurchaseEntryList";
+import PurchaseEntryList from "@/app/components/PurchaseNoEntry/PurchaseWithoutEntry";
 import React from "react";
 
 const entries = () => {
