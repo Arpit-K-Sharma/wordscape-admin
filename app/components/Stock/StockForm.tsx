@@ -14,6 +14,14 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+
 const stockSchema = z.object({
     itemName: z.string().min(1, "Item name is required"),
     availability: z.string().min(1, "Availability is required"),
@@ -35,6 +43,13 @@ function StockForm({ onSubmit, defaultValues, buttonText, isSubmitting }: StockF
         defaultValues,
     });
 
+
+    const [isTextFieldVisible, setIsTextFieldVisible] = useState(false);
+
+    const toggleFieldType = () => {
+        setIsTextFieldVisible((prevState) => !prevState);
+    };
+
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -43,11 +58,24 @@ function StockForm({ onSubmit, defaultValues, buttonText, isSubmitting }: StockF
                     name="itemName"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Item Name</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Insert the item name" {...field} />
-                            </FormControl>
-                            <FormMessage />
+                            <FormLabel>Category Name</FormLabel>
+                            <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                            >
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a category" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {/* {vendors.map((vendor) => (
+                                    <SelectItem key={vendor._id} value={vendor._id}>
+                                        {vendor.vendorName}
+                                    </SelectItem>
+                                ))} */}
+                                </SelectContent>
+                            </Select>
                         </FormItem>
                     )}
                 />
@@ -72,7 +100,7 @@ function StockForm({ onSubmit, defaultValues, buttonText, isSubmitting }: StockF
                     name="type"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Type</FormLabel>
+                            <FormLabel>Item Type</FormLabel>
                             <FormControl>
                                 <Input placeholder="Insert the type of the item" {...field} />
                             </FormControl>
