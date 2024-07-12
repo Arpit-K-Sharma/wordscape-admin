@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,7 +16,139 @@ import {
 } from "lucide-react";
 import InventorySidebar from "../Sidebar/InventorySidebar";
 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { dashboardService } from "@/app/services/dashboardService";
+
+interface ApprovedOrders {
+  _id: string;
+  date: string;
+  customer: string;
+  estimatedAmount: string;
+  deadline: string;
+  paperSize: string;
+  pages: string;
+  quantity: string;
+  binding: string;
+  coverTreatment: string;
+  innerPaper: string;
+  innerPaperThickness: string;
+  outerPaper: string;
+  outerPaperThickness: string;
+  innerLamination: string;
+  outerLamination: string;
+  inkType: string;
+  deliveryOption: string;
+  status: string;
+}
+
+interface User {
+  fullName: string;
+}
+
+interface CoverTreatment {
+  coverTreatmentType: string;
+}
+
+interface Paper {
+  paperType: string;
+}
+
 const Dashboard = () => {
+  const [approvedOrders, setApprovedOrders] = useState<ApprovedOrders[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [coverTreatment, setCoverTreatment] = useState<CoverTreatment | null>(
+    null
+  );
+  const [innerPaper, setInnerPaper] = useState<Paper | null>(null);
+  const [outerPaper, setOuterPaper] = useState<Paper | null>(null);
+
+  useEffect(() => {
+    const fetch_approved_orders = async () => {
+      try {
+        const orders = await dashboardService.fetch_approved_orders();
+        setApprovedOrders(orders);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetch_approved_orders();
+  }, []);
+
+  useEffect(() => {
+    const fetch_user = async () => {
+      try {
+        const user = await dashboardService.fetch_user(
+          approvedOrders[0]?.customer
+        );
+        setUser(user);
+      } catch (error) {
+        console.log("error fetching data: ", error);
+      }
+    };
+
+    const fetch_cover_treatment = async () => {
+      try {
+        const coverTreatment = await dashboardService.fetch_cover_treatment(
+          approvedOrders[0]?.coverTreatment
+        );
+        console.log(approvedOrders[0]?.coverTreatment);
+        setCoverTreatment(coverTreatment);
+      } catch (error) {
+        console.log("error fetching data: ", error);
+      }
+    };
+
+    const fetch_inner_paper = async () => {
+      try {
+        const innerPaper = await dashboardService.fetch_paper(
+          approvedOrders[0]?.innerPaper
+        );
+        console.log(approvedOrders[0]?.innerPaper);
+        setInnerPaper(innerPaper);
+      } catch (error) {
+        console.log("error fetching data: ", error);
+      }
+    };
+
+    const fetch_outer_paper = async () => {
+      try {
+        const outerPaper = await dashboardService.fetch_paper(
+          approvedOrders[0]?.outerPaper
+        );
+        setOuterPaper(outerPaper);
+      } catch (error) {
+        console.log("error fetching data: ", error);
+      }
+    };
+
+    fetch_user();
+    fetch_cover_treatment();
+    fetch_inner_paper();
+    fetch_outer_paper();
+  }, [approvedOrders]);
+
+  const router = useRouter();
+  const handleRequestPO = (orderId: string) => {
+    router.push(`/inventory/entry/${orderId}`);
+  };
+
   return (
     <div className="flex h-screen bg-gray-100 font-archivo">
       <InventorySidebar />
@@ -37,7 +171,7 @@ const Dashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Laminations in Stock
+                Lamination in Stock
               </CardTitle>
               <Printer className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -56,7 +190,7 @@ const Dashboard = () => {
               <ClipboardList className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">8</div>
+              <div className="text-2xl font-bold">{approvedOrders.length}</div>
               <p className="text-xs text-muted-foreground">
                 2 pending approval
               </p>
@@ -71,28 +205,173 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[200px]">
-              {/* <ul className="space-y-4">
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                  <span>New job #1234 received: 5000 brochures</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  <span>Job #1230 completed: 10000 business cards</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-                  <span>Low stock alert: A3 Glossy Paper</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                  <span>Maintenance required: Binding machine</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
-                  <span>New supply order placed: Cyan ink cartridges</span>
-                </li>
-              </ul> */}
+              <Table className="w-full text-sm text-left rtl:text-right text-white">
+                <TableHeader className="text-xs text-black uppercase bg-gray-100 shadow-md">
+                  <TableRow>
+                    <TableHead className="py-[30px] flex items-center"></TableHead>
+                    <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
+                      Order Id
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
+                      Date
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
+                      Customer Name
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
+                      Estd. Cost
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
+                      View Details
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
+                      Action
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {approvedOrders.map((order, index) => (
+                    <TableRow
+                      key={order._id ?? index}
+                      className="bg-white border-b font-medium text-[17px] hover:bg-gray-200 text-black"
+                    >
+                      <TableCell className="w-4 p-4 text-[17px]"></TableCell>
+                      <TableCell className="px-6 font-medium text-[17px] whitespace-nowrap text-black py-[20px]">
+                        {order._id || order._id === "0" ? order._id : "N/A"}
+                      </TableCell>
+                      <TableCell className="px-6 py-[20px]">
+                        {order.date}
+                      </TableCell>
+                      <TableCell className="px-6 py-[20px]">
+                        {user?.fullName}
+                      </TableCell>
+                      <TableCell className="px-6 py-[20px]">
+                        Rs.{order.estimatedAmount}
+                      </TableCell>
+                      <TableCell className="px-6 py-[20px]">
+                        <Sheet>
+                          <SheetTrigger>
+                            <Button
+                              className="px-[15px] font-semibold"
+                              type="button"
+                            >
+                              Order Details
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent className="w-[800px]">
+                            <SheetHeader>
+                              <SheetTitle className="font-bold text-[20px] text-center mb-[10px]">
+                                Order Details
+                              </SheetTitle>
+                              <SheetDescription className="font-bold text-[15px] shadow-lg border-black p-[10px] rounded-md">
+                                <Table>
+                                  <TableRow>
+                                    <TableHead className="p-[10px] text-gray-600">
+                                      Order Id
+                                    </TableHead>
+                                    <TableHead>{order._id}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead className="p-[10px] text-gray-600">
+                                      Customer Name
+                                    </TableHead>
+                                    <TableHead>
+                                      <p>{user?.fullName}</p>
+                                    </TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead className="p-[10px] text-gray-600">
+                                      Date
+                                    </TableHead>
+                                    <TableHead>{order.date}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead className="p-[10px] text-gray-600">
+                                      Paper Size
+                                    </TableHead>
+                                    <TableHead>{order.paperSize}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead className="p-[10px] text-gray-600">
+                                      Pages
+                                    </TableHead>
+                                    <TableHead>{order.pages}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead className="p-[10px] text-gray-600">
+                                      Quantity
+                                    </TableHead>
+                                    <TableHead>{order.quantity}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead className="p-[10px] text-gray-600">
+                                      Binding
+                                    </TableHead>
+                                    <TableHead>{order.binding}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead className="p-[10px] text-gray-600">
+                                      Cover Treatment
+                                    </TableHead>
+                                    <TableHead>
+                                      {coverTreatment?.coverTreatmentType}
+                                    </TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead className="p-[10px] text-gray-600">
+                                      Inner Paper
+                                    </TableHead>
+                                    <TableHead>
+                                      {innerPaper?.paperType}
+                                    </TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead className="p-[10px] text-gray-600">
+                                      Outer Paper
+                                    </TableHead>
+                                    <TableHead>
+                                      {outerPaper?.paperType}
+                                    </TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead className="p-[10px] text-gray-600">
+                                      Ink Type
+                                    </TableHead>
+                                    <TableHead>{order.inkType}</TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead className="p-[10px] text-gray-600">
+                                      Delivery Option
+                                    </TableHead>
+                                    <TableHead>
+                                      {order.deliveryOption}
+                                    </TableHead>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableHead className="p-[10px] text-gray-600">
+                                      Status
+                                    </TableHead>
+                                    <TableHead>{order.status}</TableHead>
+                                  </TableRow>
+                                </Table>
+                              </SheetDescription>
+                            </SheetHeader>
+                          </SheetContent>
+                        </Sheet>
+                      </TableCell>
+                      <TableCell className="px-6 py-[20px]">
+                        <Button
+                          className="px-[15px] font-semibold"
+                          type="button"
+                          onClick={() => handleRequestPO(order._id)}
+                        >
+                          Request PO
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </ScrollArea>
           </CardContent>
         </Card>

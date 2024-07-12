@@ -3,11 +3,16 @@ import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import InventorySidebar from "../Sidebar/InventorySidebar";
 
-interface InventoryItem {
+interface Item {
   _id: string;
   itemName: string;
   availability: number;
+}
+
+interface InventoryItem {
+  _id: string;
   type: string;
+  item: Item[];
 }
 
 interface ApiResponse {
@@ -56,34 +61,33 @@ const StocksPage: React.FC = () => {
             ) : error ? (
               <p className="text-center text-lg text-red-500">{error}</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-archivo">
-                {inventoryData.map((item) => (
-                  <Card
-                    key={item._id}
-                    className="bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow duration-300 overflow-hidden"
-                  >
-                    <CardContent className="p-4">
-                      <div className="bg-gray-100 py-2 px-4 rounded-t-lg">
-                        <h3 className="font-bold text-lg text-center truncate text-black">
-                          {item.itemName}
-                        </h3>
-                      </div>
-                      <div className="space-y-3 mt-4">
-                        <p className="text-base flex justify-between items-center">
-                          <span className="text-zinc-600">Availability:</span>
-                          <span className="font-semibold text-lg text-black">
-                            {item.availability}
-                          </span>
-                        </p>
-                        <p className="text-base flex justify-between items-center">
-                          <span className="text-zinc-600">Type:</span>
-                          <span className="font-semibold text-black">
-                            {item.type}
-                          </span>
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
+              <div className="space-y-8">
+                {inventoryData.map((inventoryType) => (
+                  <div key={inventoryType._id}>
+                    <h2 className="text-2xl font-bold mb-4 text-black">
+                      {inventoryType.type}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-archivo">
+                      {inventoryType.item.map((item) => (
+                        <Card
+                          key={item._id}
+                          className="bg-white shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200"
+                        >
+                          <CardContent className="p-4">
+                            <h3 className="font-semibold text-lg text-gray-800 mb-2 truncate">
+                              {item.itemName}
+                            </h3>
+                            <div className="flex justify-between items-center mt-2">
+                              <span className="text-sm text-gray-500">Available</span>
+                              <span className="text-lg font-medium text-blue-600">
+                                {item.availability}
+                              </span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
