@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
@@ -17,6 +18,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import HRSidebar from "@/app/components/HRSidebar/hrsidebar";
@@ -27,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FiTrash2, FiX } from "react-icons/fi";
 
 interface Holiday {
   holiday_id: string;
@@ -48,6 +52,8 @@ const HolidaysPage: React.FC = () => {
     undefined
   );
   const [newHolidayDescription, setNewHolidayDescription] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [holidayToDelete, setHolidayToDelete] = useState<Holiday | null>(null);
 
   // Get the current year
   const currentYear = new Date().getFullYear();
@@ -59,82 +65,71 @@ const HolidaysPage: React.FC = () => {
   ).filter((year) => year <= currentYear);
 
   useEffect(() => {
-    // Fetch holiday data from the database
-    // This is a mock function, replace with actual API call
-    const fetchHolidayData = async () => {
-      // Mock data
-      const mockData: HolidayData[] = [
-        {
-          year: 2024,
-          holidays: [
-            {
-              holiday_id: "3001",
-              name: "Christmas",
-              date: "2024-12-25",
-              description: "Christmas Day",
-            },
-            {
-              holiday_id: "3002",
-              name: "New Year Eve",
-              date: "2024-12-31",
-              description: "New Years Eve",
-            },
-          ],
-        },
-      ];
-      setHolidayData(mockData);
-      setDisplayedHolidays(
-        mockData.find((data) => data.year === currentYear)?.holidays || []
-      );
-    };
-
     fetchHolidayData();
   }, []);
 
-  const addHoliday = () => {
-    if (newHolidayName && newHolidayDate && newHolidayDescription) {
-      const newHoliday: Holiday = {
-        holiday_id: Math.random().toString(36).substr(2, 9),
-        name: newHolidayName,
-        date: newHolidayDate.toISOString().split("T")[0],
-        description: newHolidayDescription,
-      };
-
-      const selectedYear = new Date(newHoliday.date).getFullYear();
-
-      const updatedHolidayData = holidayData.map((yearData) => {
-        if (yearData.year === selectedYear) {
-          return {
-            ...yearData,
-            holidays: [...yearData.holidays, newHoliday],
-          };
-        }
-        return yearData;
-      });
-
-      setHolidayData(updatedHolidayData);
-      setDisplayedHolidays(
-        updatedHolidayData.find((data) => data.year === selectedYear)
-          ?.holidays || []
+  const fetchHolidayData = async () => {
+    try {
+      const response = await axios.get<HolidayData[]>(
+        "http://127.0.0.1:8000/holidays"
       );
-      setNewHolidayName("");
-      setNewHolidayDate(undefined);
-      setNewHolidayDescription("");
+      setHolidayData(response.data);
+      setDisplayedHolidays(
+        response.data.find((data) => data.year === currentYear)?.holidays || []
+      );
+    } catch (error) {
+      console.error("Error fetching holiday data:", error);
     }
   };
 
-  const deleteHoliday = (id: string) => {
-    const updatedHolidayData = holidayData.map((yearData) => ({
-      ...yearData,
-      holidays: yearData.holidays.filter(
-        (holiday) => holiday.holiday_id !== id
-      ),
-    }));
+  const addHoliday = async () => {
+    if (newHolidayName && newHolidayDate && newHolidayDescription) {
+      const newHoliday = {
+        name: newHolidayName,
+        date: newHolidayDate.toISOString(),
+        description: newHolidayDescription,
+      };
 
-    setHolidayData(updatedHolidayData);
-    setDisplayedHolidays(
-      displayedHolidays.filter((holiday) => holiday.holiday_id !== id)
-    );
+      try {
+        await axios.post("http://127.0.0.1:8000/holidays", newHoliday);
+
+        // Refresh the holiday data after successful addition
+        await fetchHolidayData();
+
+        setNewHolidayName("");
+        setNewHolidayDate(undefined);
+        setNewHolidayDescription("");
+      } catch (error) {
+        console.error("Error adding holiday:", error);
+      }
+    }
+  };
+
+  const openDeleteDialog = (holiday: Holiday) => {
+    setHolidayToDelete(holiday);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const closeDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+    setHolidayToDelete(null);
+  };
+
+  const handleDeleteHoliday = async () => {
+    if (holidayToDelete) {
+      try {
+        await axios.delete(
+          `http://127.0.0.1:8000/holidays/${holidayToDelete.holiday_id}`
+        );
+
+        // Refresh the holiday data after successful deletion
+        await fetchHolidayData();
+
+        closeDeleteDialog();
+      } catch (error) {
+        console.error("Error deleting holiday:", error);
+      }
+    }
   };
 
   return (
@@ -230,7 +225,7 @@ const HolidaysPage: React.FC = () => {
                   <TableCell>
                     <Button
                       variant="destructive"
-                      onClick={() => deleteHoliday(holiday.holiday_id)}
+                      onClick={() => openDeleteDialog(holiday)}
                     >
                       Delete
                     </Button>
@@ -242,6 +237,28 @@ const HolidaysPage: React.FC = () => {
         ) : (
           <p>No holidays found for the selected year.</p>
         )}
+
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Holiday</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this holiday? This action cannot
+                be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="destructive" onClick={handleDeleteHoliday}>
+                <FiTrash2 className="mr-2" />
+                Delete
+              </Button>
+              <Button variant="secondary" onClick={closeDeleteDialog}>
+                <FiX className="mr-2" />
+                Cancel
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
