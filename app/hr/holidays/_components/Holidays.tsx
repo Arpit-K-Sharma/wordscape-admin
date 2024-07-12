@@ -54,11 +54,9 @@ const HolidaysPage: React.FC = () => {
   const [newHolidayDescription, setNewHolidayDescription] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [holidayToDelete, setHolidayToDelete] = useState<Holiday | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  // Get the current year
   const currentYear = new Date().getFullYear();
-
-  // Create an array of years from (currentYear - 5) to currentYear
   const yearRange = Array.from(
     { length: 6 },
     (_, i) => currentYear - 5 + i
@@ -92,13 +90,11 @@ const HolidaysPage: React.FC = () => {
 
       try {
         await axios.post("http://127.0.0.1:8000/holidays", newHoliday);
-
-        // Refresh the holiday data after successful addition
         await fetchHolidayData();
-
         setNewHolidayName("");
         setNewHolidayDate(undefined);
         setNewHolidayDescription("");
+        setIsAddDialogOpen(false);
       } catch (error) {
         console.error("Error adding holiday:", error);
       }
@@ -121,10 +117,7 @@ const HolidaysPage: React.FC = () => {
         await axios.delete(
           `http://127.0.0.1:8000/holidays/${holidayToDelete.holiday_id}`
         );
-
-        // Refresh the holiday data after successful deletion
         await fetchHolidayData();
-
         closeDeleteDialog();
       } catch (error) {
         console.error("Error deleting holiday:", error);
@@ -159,9 +152,11 @@ const HolidaysPage: React.FC = () => {
           </SelectContent>
         </Select>
 
-        <Dialog>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="mb-4">Add Holiday</Button>
+            <Button className="mb-4" onClick={() => setIsAddDialogOpen(true)}>
+              Add Holiday
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
