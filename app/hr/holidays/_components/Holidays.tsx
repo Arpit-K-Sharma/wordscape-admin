@@ -1,6 +1,7 @@
+// src/pages/HolidaysPage.tsx
+
 "use client";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
@@ -30,19 +31,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FiTrash2, FiX } from "react-icons/fi";
-
-interface Holiday {
-  holiday_id: string;
-  name: string;
-  date: string;
-  description: string;
-}
-
-interface HolidayData {
-  year: number;
-  holidays: Holiday[];
-}
+import { FiTrash2, FiX, FiEdit } from "react-icons/fi";
+import {
+  holidayService,
+  Holiday,
+  HolidayData,
+} from "@/app/services/hrServices/holidayServices";
 
 const HolidaysPage: React.FC = () => {
   const [holidayData, setHolidayData] = useState<HolidayData[]>([]);
@@ -55,6 +49,8 @@ const HolidaysPage: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [holidayToDelete, setHolidayToDelete] = useState<Holiday | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [holidayToUpdate, setHolidayToUpdate] = useState<Holiday | null>(null);
 
   const currentYear = new Date().getFullYear();
   const yearRange = Array.from(
@@ -68,12 +64,10 @@ const HolidaysPage: React.FC = () => {
 
   const fetchHolidayData = async () => {
     try {
-      const response = await axios.get<HolidayData[]>(
-        "http://127.0.0.1:8000/holidays"
-      );
-      setHolidayData(response.data);
+      const data = await holidayService.getHolidays();
+      setHolidayData(data);
       setDisplayedHolidays(
-        response.data.find((data) => data.year === currentYear)?.holidays || []
+        data.find((d) => d.year === currentYear)?.holidays || []
       );
     } catch (error) {
       console.error("Error fetching holiday data:", error);
@@ -89,7 +83,7 @@ const HolidaysPage: React.FC = () => {
       };
 
       try {
-        await axios.post("http://127.0.0.1:8000/holidays", newHoliday);
+        await holidayService.addHoliday(newHoliday);
         await fetchHolidayData();
         setNewHolidayName("");
         setNewHolidayDate(undefined);
@@ -114,13 +108,53 @@ const HolidaysPage: React.FC = () => {
   const handleDeleteHoliday = async () => {
     if (holidayToDelete) {
       try {
-        await axios.delete(
-          `http://127.0.0.1:8000/holidays/${holidayToDelete.holiday_id}`
-        );
+        await holidayService.deleteHoliday(holidayToDelete.holiday_id);
         await fetchHolidayData();
         closeDeleteDialog();
       } catch (error) {
         console.error("Error deleting holiday:", error);
+      }
+    }
+  };
+
+  const openUpdateDialog = (holiday: Holiday) => {
+    setHolidayToUpdate(holiday);
+    setNewHolidayName(holiday.name);
+    setNewHolidayDate(new Date(holiday.date));
+    setNewHolidayDescription(holiday.description);
+    setIsUpdateDialogOpen(true);
+  };
+
+  const closeUpdateDialog = () => {
+    setIsUpdateDialogOpen(false);
+    setHolidayToUpdate(null);
+    setNewHolidayName("");
+    setNewHolidayDate(undefined);
+    setNewHolidayDescription("");
+  };
+
+  const handleUpdateHoliday = async () => {
+    if (
+      holidayToUpdate &&
+      newHolidayName &&
+      newHolidayDate &&
+      newHolidayDescription
+    ) {
+      const updatedHoliday = {
+        name: newHolidayName,
+        date: newHolidayDate.toISOString(),
+        description: newHolidayDescription,
+      };
+
+      try {
+        await holidayService.updateHoliday(
+          holidayToUpdate.holiday_id,
+          updatedHoliday
+        );
+        await fetchHolidayData();
+        closeUpdateDialog();
+      } catch (error) {
+        console.error("Error updating holiday:", error);
       }
     }
   };
@@ -219,9 +253,18 @@ const HolidaysPage: React.FC = () => {
                   <TableCell>{holiday.description}</TableCell>
                   <TableCell>
                     <Button
+                      variant="outline"
+                      onClick={() => openUpdateDialog(holiday)}
+                      className="mr-2"
+                    >
+                      <FiEdit className="mr-2" />
+                      Update
+                    </Button>
+                    <Button
                       variant="destructive"
                       onClick={() => openDeleteDialog(holiday)}
                     >
+                      <FiTrash2 className="mr-2" />
                       Delete
                     </Button>
                   </TableCell>
@@ -249,6 +292,55 @@ const HolidaysPage: React.FC = () => {
               </Button>
               <Button variant="secondary" onClick={closeDeleteDialog}>
                 <FiX className="mr-2" />
+                Cancel
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Update Holiday</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="update-name" className="text-right">
+                  Name
+                </Label>
+                <Input
+                  id="update-name"
+                  value={newHolidayName}
+                  onChange={(e) => setNewHolidayName(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="update-date" className="text-right">
+                  Date
+                </Label>
+                <Calendar
+                  mode="single"
+                  selected={newHolidayDate}
+                  onSelect={setNewHolidayDate}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="update-description" className="text-right">
+                  Description
+                </Label>
+                <Input
+                  id="update-description"
+                  value={newHolidayDescription}
+                  onChange={(e) => setNewHolidayDescription(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleUpdateHoliday}>Update Holiday</Button>
+              <Button variant="secondary" onClick={closeUpdateDialog}>
                 Cancel
               </Button>
             </DialogFooter>

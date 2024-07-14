@@ -33,7 +33,10 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Cover, dashboardService } from "@/app/services/dashboardService";
+import {
+  Cover,
+  dashboardService,
+} from "@/app/services/inventoryServices/dashboardService";
 
 interface ApprovedOrders {
   _id: string;

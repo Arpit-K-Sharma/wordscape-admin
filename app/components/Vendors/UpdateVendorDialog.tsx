@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FiEdit2, FiX } from "react-icons/fi";
-import { vendorService } from "../../services/vendorsService";
+import { vendorService } from "../../services/inventoryServices/vendorsService";
 
 interface Vendor {
   _id: string;
