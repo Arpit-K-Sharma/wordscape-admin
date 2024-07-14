@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
-import Holidays from "./_components/Holidays";
+import HolidaysPage from "./_components/Holidays";
 
 const page = () => {
-  return <Holidays />;
+  return <HolidaysPage />;
 };
 
 export default page;

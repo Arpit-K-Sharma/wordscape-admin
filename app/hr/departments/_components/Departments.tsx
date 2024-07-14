@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Table,
   TableBody,
@@ -24,12 +23,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FiEdit2, FiTrash2, FiX } from "react-icons/fi";
 import HRSidebar from "@/app/components/HRSidebar/hrsidebar";
-
-interface Department {
-  _id: string;
-  department_name: string;
-  description: string;
-}
+import {
+  departmentService,
+  Department,
+} from "@/app/services/hrServices/departmentService";
 
 function Departments() {
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -49,10 +46,8 @@ function Departments() {
 
   const fetchDepartments = async () => {
     try {
-      const response = await axios.get<Department[]>(
-        "http://127.0.0.1:8000/department"
-      );
-      setDepartments(response.data);
+      const data = await departmentService.getDepartments();
+      setDepartments(data);
     } catch (error) {
       console.error("Error fetching departments:", error);
     }
@@ -81,7 +76,7 @@ function Departments() {
 
   const handleAddDepartment = async () => {
     try {
-      await axios.post("http://127.0.0.1:8000/department", newDepartment);
+      await departmentService.addDepartment(newDepartment);
       await fetchDepartments();
       closeAddDialog();
       setNewDepartment({ department_name: "", description: "" });
@@ -93,10 +88,10 @@ function Departments() {
   const handleUpdateDepartment = async () => {
     if (selectedDepartment) {
       try {
-        await axios.put(
-          `http://127.0.0.1:8000/department/${selectedDepartment._id}`,
-          selectedDepartment
-        );
+        await departmentService.updateDepartment(selectedDepartment._id, {
+          department_name: selectedDepartment.department_name,
+          description: selectedDepartment.description,
+        });
         await fetchDepartments();
         closeUpdateDialog();
       } catch (error) {
@@ -108,9 +103,7 @@ function Departments() {
   const handleDeleteDepartment = async () => {
     if (selectedDepartment) {
       try {
-        await axios.delete(
-          `http://127.0.0.1:8000/department/${selectedDepartment._id}`
-        );
+        await departmentService.deleteDepartment(selectedDepartment._id);
         await fetchDepartments();
         closeDeleteDialog();
       } catch (error) {
