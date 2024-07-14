@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Table,
   TableBody,
@@ -25,33 +26,37 @@ import { FiEdit2, FiTrash2, FiX } from "react-icons/fi";
 import HRSidebar from "@/app/components/HRSidebar/hrsidebar";
 
 interface Department {
-  department_id: string;
+  _id: string;
   department_name: string;
   description: string;
 }
 
-const initialDepartments: Department[] = [
-  {
-    department_id: "123",
-    department_name: "Pre-Press",
-    description: "Responsible for paper-cutting, plate processing etc",
-  },
-];
-
 function Departments() {
-  const [departments, setDepartments] =
-    useState<Department[]>(initialDepartments);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [selectedDepartment, setSelectedDepartment] =
     useState<Department | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [newDepartment, setNewDepartment] = useState<
-    Omit<Department, "department_id">
-  >({
+  const [newDepartment, setNewDepartment] = useState<Omit<Department, "_id">>({
     department_name: "",
     description: "",
   });
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await axios.get<Department[]>(
+        "http://127.0.0.1:8000/department"
+      );
+      setDepartments(response.data);
+    } catch (error) {
+      console.error("Error fetching departments:", error);
+    }
+  };
 
   const openAddDialog = () => setIsAddDialogOpen(true);
   const closeAddDialog = () => setIsAddDialogOpen(false);
@@ -74,38 +79,43 @@ function Departments() {
     setSelectedDepartment(null);
   };
 
-  const handleAddDepartment = () => {
-    const newId =
-      Math.max(...departments.map((d) => parseInt(d.department_id))) + 1;
-    setDepartments([
-      ...departments,
-      { ...newDepartment, department_id: newId.toString() },
-    ]);
-    closeAddDialog();
-    setNewDepartment({ department_name: "", description: "" });
-  };
-
-  const handleUpdateDepartment = () => {
-    if (selectedDepartment) {
-      setDepartments(
-        departments.map((d) =>
-          d.department_id === selectedDepartment.department_id
-            ? selectedDepartment
-            : d
-        )
-      );
-      closeUpdateDialog();
+  const handleAddDepartment = async () => {
+    try {
+      await axios.post("http://127.0.0.1:8000/department", newDepartment);
+      await fetchDepartments();
+      closeAddDialog();
+      setNewDepartment({ department_name: "", description: "" });
+    } catch (error) {
+      console.error("Error adding department:", error);
     }
   };
 
-  const handleDeleteDepartment = () => {
+  const handleUpdateDepartment = async () => {
     if (selectedDepartment) {
-      setDepartments(
-        departments.filter(
-          (d) => d.department_id !== selectedDepartment.department_id
-        )
-      );
-      closeDeleteDialog();
+      try {
+        await axios.put(
+          `http://127.0.0.1:8000/department/${selectedDepartment._id}`,
+          selectedDepartment
+        );
+        await fetchDepartments();
+        closeUpdateDialog();
+      } catch (error) {
+        console.error("Error updating department:", error);
+      }
+    }
+  };
+
+  const handleDeleteDepartment = async () => {
+    if (selectedDepartment) {
+      try {
+        await axios.delete(
+          `http://127.0.0.1:8000/department/${selectedDepartment._id}`
+        );
+        await fetchDepartments();
+        closeDeleteDialog();
+      } catch (error) {
+        console.error("Error deleting department:", error);
+      }
     }
   };
 
@@ -125,7 +135,6 @@ function Departments() {
             <TableCaption>A list of departments.</TableCaption>
             <TableHeader>
               <TableRow>
-                {/* <TableHead>ID</TableHead> */}
                 <TableHead>Name</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Actions</TableHead>
@@ -133,8 +142,7 @@ function Departments() {
             </TableHeader>
             <TableBody>
               {departments.map((department) => (
-                <TableRow key={department.department_id}>
-                  {/* <TableCell>{department.department_id}</TableCell> */}
+                <TableRow key={department._id}>
                   <TableCell>{department.department_name}</TableCell>
                   <TableCell>{department.description}</TableCell>
                   <TableCell>
