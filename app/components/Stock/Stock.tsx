@@ -1,10 +1,10 @@
-// StocksPage.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { stockService } from "@/app/services/stockService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import InventorySidebar from "../Sidebar/InventorySidebar";
 import { Button } from "@/components/ui/button";
+import { FiEdit2, FiTrash2, FiPlus, FiX } from "react-icons/fi";
+import { GrAddCircle } from "react-icons/gr";
 import {
   Dialog,
   DialogContent,
@@ -14,32 +14,41 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import StockForm from "./StockForm";
+import UpdateItemForm from "./UpdateItemForm";
+import AddTypeForm from "./AddTypeForm";
 import toast, { Toaster } from "react-hot-toast";
+import { stockService } from "@/app/services/stockService";
+
+interface Item {
+  _id: string;
+  itemName: string;
+  availability: number;
+}
 
 interface InventoryItem {
   _id: string;
-  itemName: string;
-  availability: string;
   type: string;
-}
-
-interface ApiResponse {
-  status: string;
-  status_code: number;
-  data: InventoryItem[];
+  item: Item[];
 }
 
 const StocksPage: React.FC = () => {
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [openDialogId, setOpenDialogId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [formType, setFormType] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const openDialog = () => setIsDialogOpen(true);
+  const closeDialog = () => setIsDialogOpen(false);
 
   const fetchInventory = async () => {
     try {
       const response = await stockService.fetchInventory()
-      setInventoryData(response);
+      setInventoryData(response.data)
+      console.log(response.data)
       setIsLoading(false);
     } catch (err) {
       setError("Failed to fetch inventory data");
@@ -51,15 +60,24 @@ const StocksPage: React.FC = () => {
     fetchInventory();
   }, []);
 
-  const onSubmit = async (data: { itemName: string; availability: string; type: string }) => {
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const handleOpenForm = (type: 'add' | 'update' | 'addType', inventoryId: string) => {
+    setFormType(type);
+    setOpenDialogId(inventoryId);
+  };
+
+  const onSubmit = async (data: { type: string; itemName: string; availability: string }) => {
     try {
       setIsSubmitting(true);
       const newItem = await stockService.createInventoryItem(data);
       console.log("Inventory item created", newItem);
       setInventoryData([...inventoryData, newItem]);
       await fetchInventory();
-      setIsAddDialogOpen(false);
       toast.success("Item added to inventory successfully!");
+      closeDialog();
     } catch (error) {
       console.error("Error occurred while creating a vendor:", error);
     } finally {
@@ -79,30 +97,15 @@ const StocksPage: React.FC = () => {
                   Inventory Stock Levels
                 </div>
                 <div>
-                  <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                    <DialogTrigger>
-                      <Button
-                        onClick={() => setIsAddDialogOpen(true)}
-                        disabled={isSubmitting}
-                        className="font-semibold text-[15px]"
-                      >
-                        Add Item
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Add New Item to Inventory</DialogTitle>
-                        <StockForm
-                          onSubmit={onSubmit}
-                          buttonText="Add Inventory Item"
-                          isSubmitting={isSubmitting}
-                        />
-                      </DialogHeader>
-                    </DialogContent>
-                  </Dialog>
+                  <Button
+                    onClick={() => handleOpenForm('addType', "668ea0962e6418b0d15b393c")}
+                    disabled={isSubmitting}
+                    className="font-semibold text-[15px]"
+                  >
+                    Add Type
+                  </Button>
                 </div>
               </div>
-
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6 pb-8">
@@ -113,61 +116,121 @@ const StocksPage: React.FC = () => {
             ) : error ? (
               <p className="text-center text-lg text-red-500">{error}</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-archivo">
-                {inventoryData.map((item) => (
-                  <Card
-                    key={item._id}
-                    className="bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow duration-300 overflow-hidden"
-                  >
-                    <CardContent className="p-4">
-                      <div className="bg-gray-100 py-2 px-4 rounded-t-lg">
-                        <h3 className="font-bold text-lg text-center truncate text-black">
-                          {item.itemName}
-                        </h3>
+              <div className="space-y-8">
+                <div className="">
+                  {inventoryData.map((inventoryType) => (
+                    <div key={inventoryType._id}>
+                      <div className="flex flex-row justify-between">
+                        <div>
+                          <h2 className="text-2xl font-bold mb-4 text-black">
+                            {inventoryType.type}
+                          </h2>
+                        </div>
+                        <div>
+                          <Button
+                            className="bg-transparent hover:bg-transparent transition-colors shadow-none"
+                          >
+                            <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
+                          </Button>
+                          <Button
+                            onClick={() => handleOpenForm('add', inventoryType._id)}
+                            disabled={isSubmitting}
+                            className="font-semibold text-[15px]"
+                          >
+                            <GrAddCircle className="font-semibold text-[15px] w-[20px] h-[20px] p-0 flex items-center justify-center" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="space-y-3 mt-4">
-                        <p className="text-base flex justify-between items-center">
-                          <span className="text-zinc-600">Availability:</span>
-                          <span className="font-semibold text-lg text-black">
-                            {item.availability}
-                          </span>
-                        </p>
-                        <p className="text-base flex justify-between items-center">
-                          <span className="text-zinc-600">Type:</span>
-                          <span className="font-semibold text-black">
-                            {item.type}
-                          </span>
-                        </p>
+
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-archivo">
+                        {inventoryType.item.map((item) => (
+                          <Card
+                            key={item._id}
+                            className="bg-white shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200"
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex flex-row justify-between">
+                                <div>
+                                  <h3 className="font-semibold text-lg text-gray-800 mb-2 truncate">
+                                    {/* {inventoryType._id} */}
+                                    {item.itemName}
+                                  </h3>
+                                </div>
+                                <div>
+                                  <Button
+                                    className="bg-transparent hover:bg-transparent transition-colors shadow-none"
+                                  >
+                                    <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
+                                  </Button>
+                                  <Dialog open={openDialogId === inventoryType._id} onOpenChange={(open) => setOpenDialogId(open ? inventoryType._id : null)}>
+                                    <DialogTrigger>
+                                      {isClient ? (
+                                        <Button
+                                          onClick={() => handleOpenForm('update', inventoryType._id)}
+                                          disabled={isSubmitting}
+                                          className="font-semibold text-[15px] bg-transparent text-black hover:text-blue-600 hover:bg-transparent"
+                                        >
+                                          <FiEdit2 className="mr-1" /> Update
+                                        </Button>
+                                      ) : (
+                                        <></>
+                                      )}
+
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Add to Inventory </DialogTitle>
+                                        {formType === "add" ? (
+                                          <StockForm
+                                            onSubmit={onSubmit}
+                                            buttonText="Add New Item"
+                                            isSubmitting={isSubmitting}
+                                            inventoryId={inventoryType._id}
+                                            onClose={closeDialog}
+                                          />
+                                        ) : formType === "update" ? (
+                                          <UpdateItemForm
+                                            onSubmit={onSubmit}
+                                            buttonText="Update Item"
+                                            isSubmitting={isSubmitting}
+                                            inventoryId={inventoryType.type}
+                                            itemId={item._id}
+                                          />
+                                        ) : formType === "addType" ? (
+                                          <AddTypeForm
+                                            onSubmit={onSubmit}
+                                            buttonText="Add New Type"
+                                            isSubmitting={isSubmitting}
+                                          />
+                                        ) : null}
+
+                                      </DialogHeader>
+                                    </DialogContent>
+                                  </Dialog>
+                                </div>
+                              </div>
+
+
+
+                              <div className="flex justify-between items-center mt-2">
+                                <span className="text-sm text-gray-500">Available</span>
+                                <span className="text-lg font-medium text-blue-600">
+                                  {item.availability}
+                                </span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
-        {/* <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger>
-            <Button
-              onClick={() => setIsAddDialogOpen(true)}
-              disabled={isSubmitting}
-            >
-              Add Item
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Item to Inventory</DialogTitle>
-              <StockForm
-                onSubmit={onSubmit}
-                buttonText="Add Inventory Item"
-                isSubmitting={isSubmitting}
-              />
-            </DialogHeader>
-          </DialogContent>
-        </Dialog> */}
       </div>
-      <Toaster />
     </div>
   );
 };

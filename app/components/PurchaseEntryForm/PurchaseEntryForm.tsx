@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useParams } from "next/navigation";
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,8 +25,10 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import InventorySidebar from "../Sidebar/InventorySidebar";
+import toast, { Toaster } from "react-hot-toast";
 
 const itemSchema = z.object({
+  inventoryId: z.string(),
   itemId: z.string(),
   quantityFromVendor: z.number(),
   quantityFromStock: z.number(),
@@ -42,6 +44,7 @@ const formSchema = z.object({
   orderId: z.string(),
   isCompleted: z.boolean().default(false),
   purchaseEntry: z.array(purchaseEntrySchema),
+  remarks: z.string().optional(),
 });
 
 interface Vendor {
@@ -52,23 +55,23 @@ interface Vendor {
   vendorPhone: string;
 }
 
-interface Item {
-  _id: string;
-  itemName: string;
-}
-
 interface ApprovedOrders {
   _id: string;
 }
 
 interface PurchaseEntrySlipProps {
   orderId: string;
+  isReorder?: boolean;
 }
 
-export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
+export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps) {
   const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
+  const [inventory, setInventory] = useState([]);
   const [approvedOrders, setApprovedOrders] = useState<ApprovedOrders[]>([]);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -81,6 +84,7 @@ export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
           isCompleted: false,
           items: [
             {
+              inventoryId: "",
               itemId: "",
               quantityFromVendor: 0,
               quantityFromStock: 0,
@@ -113,8 +117,7 @@ export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
     const fetchItems = async () => {
       try {
         const response = await axios.get("http://localhost:8000/inventory");
-        console.log(response);
-        setItems(response.data.data);
+        setInventory(response.data.data);
       } catch (error) {
         console.error("Error fetching items:", error);
       }
@@ -124,25 +127,29 @@ export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
       try {
         const orders = await axios.get("http://127.0.0.1:8000/get/approved_orders");
         setApprovedOrders(orders.data.data);
-        console.log(orders.data.data);
       } catch (error) {
         console.log("error fetching data: ", error);
       }
     };
 
-    fetch_approved_orders();
     fetchVendors();
     fetchItems();
+    fetch_approved_orders();
 
     if (orderId) {
       form.setValue("orderId", orderId);
     }
-  }, [orderId, form]);
+
+    if (isReorder) {
+      fetchReorderData();
+    }
+  }, [orderId, form, isReorder]);
 
   const addItem = (index: number) => {
     form.setValue(`purchaseEntry.${index}.items`, [
       ...form.getValues(`purchaseEntry.${index}.items`),
       {
+        inventoryId: "",
         itemId: "",
         quantityFromVendor: 0,
         quantityFromStock: 0,
@@ -162,6 +169,7 @@ export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
       isCompleted: false,
       items: [
         {
+          inventoryId: "",
           itemId: "",
           quantityFromVendor: 0,
           quantityFromStock: 0,
@@ -170,16 +178,88 @@ export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
     });
   };
 
+  const fetchReorderData = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/purchase_orders/${orderId}`);
+      const orderData = response.data.data;
+
+      form.reset({
+        orderId: orderId,
+        isCompleted: false,
+        purchaseEntry: [{
+          vendorId: orderData.purchaseEntry[0].vendorId,
+          isCompleted: false,
+          items: orderData.purchaseEntry[0].items.map((item: any) => ({
+            inventoryId: item.inventoryId,
+            itemId: item.itemId,
+            quantityFromVendor: item.quantityFromVendor,
+            quantityFromStock: 0
+          }))
+        }]
+      });
+    } catch (error) {
+      console.error("Error fetching reorder data:", error);
+    }
+  };
+
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      const response = await axios.post(
-        "http://localhost:8000/purchase_order",
-        data
-      );
-      console.log("Purchase order created:", response.data);
-      alert("Purchase Order Placed");
+      setIsSubmitting(true);
+      if (isReorder) {
+        const reorderData = {
+          vendorId: data.purchaseEntry[0].vendorId,
+          isCompleted: false,
+          tag: "reorder",
+          remarks: data.remarks || "Reorder",
+          items: data.purchaseEntry[0].items.map(item => ({
+            inventoryId: item.inventoryId,
+            itemId: item.itemId,
+            quantityFromVendor: item.quantityFromVendor,
+            quantityFromStock: item.quantityFromStock
+          }))
+        };
+
+        await toast.promise(
+          axios.post(`http://localhost:8000/reOrder/${orderId}`, reorderData),
+          {
+            loading: 'Creating reorder...',
+            success: (response) => {
+              console.log("Reorder created:", response.data);
+              return "Reorder Placed Successfully";
+            },
+            error: "Error creating reorder",
+          },
+          {
+            duration: 3000,
+          }
+        );
+      } else {
+        await toast.promise(
+          axios.post("http://localhost:8000/purchase_order", data),
+          {
+            loading: 'Creating purchase order...',
+            success: (response) => {
+              console.log("Purchase order created:", response.data);
+              return "Purchase Order Placed Successfully";
+            },
+            error: "Error creating purchase order",
+          },
+          {
+            duration: 3000,
+          }
+        );
+      }
+
+      // Wait for an additional moment to ensure the success message is seen
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Navigate after the success message has been displayed
+      router.push('/');
+
     } catch (error) {
-      console.error("Error creating purchase order:", error);
+      console.error("Error creating order:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -190,15 +270,12 @@ export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
         <Card className="w-full max-w-2xl justify-center items-center mx-auto">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
-              Purchase Order Slip
+              {isReorder ? "Reorder Slip" : "Purchase Order Slip"}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                   control={form.control}
                   name="orderId"
@@ -224,6 +301,14 @@ export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
                     key={entry.id}
                     className="space-y-4 p-4 border rounded-lg"
                   >
+                    <div className="flex justify-end h-[0px] ">
+                      <Label
+                        className=" w-[110px] hover:text-[red] mt-[8px]"
+                        onClick={() => removePurchaseEntry(index)}
+                      >
+                        - Remove Vendor
+                      </Label>
+                    </div>
                     <FormField
                       control={form.control}
                       name={`purchaseEntry.${index}.vendorId`}
@@ -248,14 +333,6 @@ export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
                             </SelectContent>
                           </Select>
                           <FormMessage />
-                          <div className="flex justify-end h-[0px] ">
-                            <Label
-                              className=" w-[110px] hover:text-[red] mt-[8px]"
-                              onClick={() => removePurchaseEntry(index)}
-                            >
-                              - Remove Vendor
-                            </Label>
-                          </div>
                         </FormItem>
                       )}
                     />
@@ -271,8 +348,16 @@ export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
                               <FormItem>
                                 <FormLabel>Item</FormLabel>
                                 <Select
-                                  onValueChange={field.onChange}
-                                  defaultValue={field.value}
+                                  onValueChange={(value) => {
+                                    const selectedInventory = inventory.find(inv =>
+                                      inv.item.some(item => item._id === value)
+                                    );
+                                    if (selectedInventory) {
+                                      field.onChange(value);
+                                      form.setValue(`purchaseEntry.${index}.items.${itemIndex}.inventoryId`, selectedInventory._id);
+                                    }
+                                  }}
+                                  value={field.value}
                                 >
                                   <FormControl>
                                     <SelectTrigger>
@@ -280,21 +365,19 @@ export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {items.map((item) => (
-                                      <SelectItem
-                                        key={item._id}
-                                        value={item._id}
-                                      >
-                                        {item.itemName}
-                                      </SelectItem>
-                                    ))}
+                                    {inventory.flatMap(inv =>
+                                      inv.item.map(item => (
+                                        <SelectItem key={item._id} value={item._id}>
+                                          {item.itemName}
+                                        </SelectItem>
+                                      ))
+                                    )}
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-
                           <FormField
                             control={form.control}
                             name={`purchaseEntry.${index}.items.${itemIndex}.quantityFromVendor`}
@@ -338,6 +421,25 @@ export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
                               </FormItem>
                             )}
                           />
+                          {isReorder && (
+                            <FormField
+                              control={form.control}
+                              name="remarks"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Remarks</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="text"
+                                      placeholder="Enter remarks for reorder"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
                           <div className="flex justify-between">
                             <Button
                               type="button"
@@ -361,13 +463,15 @@ export function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
                   + Add Vendor
                 </Button>
 
-                <Button type="submit" className="w-full">
-                  Submit Purchase Order
+                <Button type="submit" className="w-full"
+                  isSubmitting={isSubmitting}>
+                  {isReorder ? "Submit Reorder" : "Submit Purchase Order"}
                 </Button>
               </form>
             </Form>
           </CardContent>
         </Card>
+
       </div>
     </div>
   );

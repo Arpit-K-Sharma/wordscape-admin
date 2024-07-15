@@ -58,14 +58,6 @@ const InventorySidebar: React.FC = () => {
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/inventory/entry")}
-          >
-            <ScrollText className="mr-2 h-4 w-4" />
-            Entry Form
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
             onClick={() => router.push("/inventory/entries")}
           >
             <ArchiveRestore className="mr-2 h-4 w-4" />
@@ -79,11 +71,7 @@ const InventorySidebar: React.FC = () => {
             <ArchiveX className="mr-2 h-4 w-4" />
             PO w/o Entries
           </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/inventory/reorder")}
-          >
+          <Button variant="ghost" className="w-full justify-start mb-2 text-sm" onClick={() => router.push("/inventory/reorder")}>
             <ListRestart className="mr-2 h-4 w-4" />
             Reorders
           </Button>

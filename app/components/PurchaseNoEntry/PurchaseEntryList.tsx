@@ -1,57 +1,49 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import InventorySidebar from "../Sidebar/InventorySidebar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Eye, Upload, RefreshCw } from "lucide-react";
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useForm, useFieldArray } from "react-hook-form";
+import toast, { Toaster } from 'react-hot-toast';
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import InventorySidebar from "../Sidebar/InventorySidebar";
 
-interface PurchaseEntryItem {
-  itemId: string;
-  quantityFromVendor: number;
-  quantityFromStock: number;
-  itemCode: string | null;
-  rate: number | null;
-  amount: number | null;
-}
+const itemSchema = z.object({
+  itemId: z.string(),
+  quantityFromVendor: z.number(),
+  quantityFromStock: z.number(),
+});
 
-interface PurchaseEntryVendor {
-  _id: string;
-  vendorId: string;
-  isCompleted: boolean;
-  items: PurchaseEntryItem[];
-  tag: string | null;
-  remarks: string | null;
-  image: string | null;
-  discount: number | null;
-  vat: number | null;
-  grandTotal: number | null;
-  invoiceNo: string | null;
-  invoiceDate: string | null;
-}
+const purchaseEntrySchema = z.object({
+  vendorId: z.string(),
+  isCompleted: z.boolean().default(false),
+  items: z.array(itemSchema),
+});
 
-interface PurchaseEntry {
-  _id: string;
-  orderId: string;
-  isCompleted: boolean;
-  purchaseEntry: PurchaseEntryVendor[];
-}
-
-interface InventoryItem {
-  _id: string;
-  itemName: string;
-  availability: number;
-  type: string;
-}
+const formSchema = z.object({
+  orderId: z.string(),
+  isCompleted: z.boolean().default(false),
+  purchaseEntry: z.array(purchaseEntrySchema),
+});
 
 interface Vendor {
   _id: string;
@@ -61,315 +53,330 @@ interface Vendor {
   vendorPhone: string;
 }
 
-const PurchaseEntryList: React.FC = () => {
-  const [purchaseEntries, setPurchaseEntries] = useState<PurchaseEntry[]>([]);
-  const [selectedEntry, setSelectedEntry] = useState<PurchaseEntry | null>(
-    null
-  );
-  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+interface Item {
+  _id: string;
+  itemName: string;
+}
+
+interface ApprovedOrders {
+  _id: string;
+}
+
+interface PurchaseEntrySlipProps {
+  orderId: string;
+}
+
+  export default function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [approvedOrders, setApprovedOrders] = useState<ApprovedOrders[]>([]);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      orderId: orderId,
+      isCompleted: false,
+      purchaseEntry: [
+        {
+          vendorId: "",
+          isCompleted: false,
+          items: [
+            {
+              itemId: "",
+              quantityFromVendor: 0,
+              quantityFromStock: 0,
+            },
+          ],
+        },
+      ],
+    },
+  });
+
+  const {
+    fields: purchaseEntryFields,
+    append: appendPurchaseEntry,
+    remove: removePurchaseEntry,
+  } = useFieldArray({
+    control: form.control,
+    name: "purchaseEntry",
+  });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchVendors = async () => {
       try {
-        const [purchaseEntriesResponse, inventoryResponse, vendorsResponse] =
-          await Promise.all([
-            axios.get("http://127.0.0.1:8000/purchase_orders_without_entries"),
-            axios.get("http://127.0.0.1:8000/inventory"),
-            axios.get("http://127.0.0.1:8000/vendors"),
-          ]);
-
-        if (purchaseEntriesResponse.data.status === "success") {
-          setPurchaseEntries(purchaseEntriesResponse.data.data);
-        }
-
-        if (inventoryResponse.data.status === "success") {
-          setInventoryItems(inventoryResponse.data.data);
-        }
-
-        if (vendorsResponse.data.status === "success") {
-          setVendors(vendorsResponse.data.data);
-        }
+        const response = await axios.get("http://localhost:8000/vendors");
+        setVendors(response.data.data);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching vendors:", error);
       }
     };
 
-    fetchData();
-  }, []);
+    const fetchItems = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/inventory");
+        console.log(response);
+        setItems(response.data.data);
+      } catch (error) {
+        console.error("Error fetching items:", error);
+      }
+    };
 
-  const handleDetailsClick = (entry: PurchaseEntry) => {
-    setSelectedEntry(entry);
-    setIsDetailsDialogOpen(true);
+    const fetch_approved_orders = async () => {
+      try {
+        const orders = await axios.get(
+          "http://127.0.0.1:8000/get/approved_orders"
+        );
+        setApprovedOrders(orders.data.data);
+        console.log(orders.data.data);
+      } catch (error) {
+        console.log("error fetching data: ", error);
+      }
+    };
+
+    fetch_approved_orders();
+    fetchVendors();
+    fetchItems();
+
+    if (orderId) {
+      form.setValue("orderId", orderId);
+    }
+  }, [orderId, form]);
+
+  const addItem = (index: number) => {
+    form.setValue(`purchaseEntry.${index}.items`, [
+      ...form.getValues(`purchaseEntry.${index}.items`),
+      {
+        itemId: "",
+        quantityFromVendor: 0,
+        quantityFromStock: 0,
+      },
+    ]);
   };
 
-  const getItemDetails = (itemId: string) => {
-    return inventoryItems.find((item) => item._id === itemId);
+  const removeItem = (entryIndex: number, itemIndex: number) => {
+    const items = form.getValues(`purchaseEntry.${entryIndex}.items`);
+    items.splice(itemIndex, 1);
+    form.setValue(`purchaseEntry.${entryIndex}.items`, items);
   };
 
-  const getVendorDetails = (vendorId: string) => {
-    return vendors.find((vendor) => vendor._id === vendorId);
+  const addVendor = () => {
+    appendPurchaseEntry({
+      vendorId: "",
+      isCompleted: false,
+      items: [
+        {
+          itemId: "",
+          quantityFromVendor: 0,
+          quantityFromStock: 0,
+        },
+      ],
+    });
   };
 
-  const handleFileUpload = (
-    entryId: string,
-    vendorId: string,
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    console.log(
-      "File uploaded for:",
-      entryId,
-      vendorId,
-      event.target.files?.[0]
-    );
-    // Handle file upload logic here
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/purchase_order",
+        data
+      );
+      console.log("Purchase order created:", response.data);
+      setIsAddDialogOpen(false);
+      toast.success("Purchase Order Placed successfully!");
+      // alert("Purchase Order Placed");
+    } catch (error) {
+      console.error("Error creating purchase order:", error);
+    }
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 font-archivo">
+    <div className="flex font-archivo bg-[#f7f7f9]">
       <InventorySidebar />
-      <div className="flex-1 p-8 overflow-auto">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">
-          Purchase Orders
-          <span className="text-2xl font-normal text-gray-600 ml-2">
-            (Items yet to be received from Vendor)
-          </span>
-        </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {purchaseEntries.map((entry) => (
-            <Card
-              key={entry._id}
-              className="shadow-lg hover:shadow-xl transition-shadow duration-300"
-            >
-              <CardHeader>
-                <CardTitle className="flex justify-between items-center">
-                  <span className="text-xl font-semibold text-blue-600">
-                    {entry.orderId}
-                  </span>
-                  <span className="text-sm font-medium text-gray-500">
-                    {entry.isCompleted ? "Completed" : "Pending"}
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDetailsClick(entry)}
-                      className="flex items-center"
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      View Details
-                    </Button>
-                    {entry.purchaseEntry.some(
-                      (purchase) => purchase.tag === "reorder"
-                    ) && (
-                      <span className="text-sm font-medium text-orange-500 flex items-center">
-                        <RefreshCw className="mr-1 h-4 w-4" />
-                        Reorder
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    <p>
-                      Grand Total: Rs.{" "}
-                      {entry.purchaseEntry
-                        .reduce(
-                          (total, purchase) =>
-                            total + (purchase.grandTotal || 0),
-                          0
-                        )
-                        .toFixed(2)}
-                    </p>
-                    <p>
-                      Invoice No:{" "}
-                      {entry.purchaseEntry
-                        .map((purchase) => purchase.invoiceNo)
-                        .filter(Boolean)
-                        .join(", ") || "N/A"}
-                    </p>
-                    <p>
-                      Invoice Date:{" "}
-                      {entry.purchaseEntry
-                        .map((purchase) => purchase.invoiceDate)
-                        .filter(Boolean)
-                        .join(", ") || "N/A"}
-                    </p>
-                    {entry.purchaseEntry.some((purchase) => purchase.tag) && (
-                      <p>
-                        Tags:{" "}
-                        {entry.purchaseEntry
-                          .map((purchase) => purchase.tag)
-                          .filter(Boolean)
-                          .join(", ")}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <Dialog
-          open={isDetailsDialogOpen}
-          onOpenChange={setIsDetailsDialogOpen}
-        >
-          <DialogContent className="max-w-4xl font-archivo">
-            <DialogHeader>
-              <DialogTitle className="text-3xl font-bold text-gray-800 mb-4">
-                Purchase Order Details
-              </DialogTitle>
-            </DialogHeader>
-            <ScrollArea className="h-[60vh]">
-              {selectedEntry?.purchaseEntry.map((purchase) => {
-                const vendorDetails = getVendorDetails(purchase.vendorId);
-                return (
-                  <div
-                    key={purchase._id}
-                    className="mb-8 pb-8 border border-gray-200 rounded-lg p-4 last:mb-0"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-2xl font-black text-zinc-900 underline-offset-1">
-                        {vendorDetails?.vendorName || "Unknown Vendor"}
-                      </h3>
-                      <div>
-                        <Label
-                          htmlFor={`file-${selectedEntry._id}-${purchase.vendorId}`}
-                          className="cursor-pointer"
-                        >
-                          {/* <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md p-2 hover:border-blue-500 transition-colors duration-300">
-                            <Upload className="h-4 w-4 text-gray-400 mr-2" />
-                            <span className="text-sm text-gray-600">
-                              Upload Files
-                            </span>
-                          </div> */}
-                        </Label>
+      <div className="flex-1 p-5">
+        <Card className="w-full max-w-2xl justify-center items-center mx-auto">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">
+              Purchase Order Slip
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
+                <FormField
+                  control={form.control}
+                  name="orderId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel htmlFor="orderId">Order ID</FormLabel>
+                      <FormControl>
                         <Input
-                          id={`file-${selectedEntry._id}-${purchase.vendorId}`}
-                          type="file"
-                          className="hidden"
-                          onChange={(e) =>
-                            handleFileUpload(
-                              selectedEntry._id,
-                              purchase.vendorId,
-                              e
-                            )
-                          }
-                          multiple
+                          {...field}
+                          type="text"
+                          id="orderId"
+                          disabled
+                          className="text-[15px] font-semibold"
                         />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <p>
-                          <span className="font-medium">Address:</span>{" "}
-                          {vendorDetails?.vendorAddress}
-                        </p>
-                        <p>
-                          <span className="font-medium">VAT:</span>{" "}
-                          {vendorDetails?.vendorVAT}
-                        </p>
-                        <p>
-                          <span className="font-medium">Phone:</span>{" "}
-                          {vendorDetails?.vendorPhone}
-                        </p>
-                      </div>
-                      <div>
-                        <p>
-                          <span className="font-medium">Invoice No:</span>{" "}
-                          {purchase.invoiceNo || "N/A"}
-                        </p>
-                        <p>
-                          <span className="font-medium">Invoice Date:</span>{" "}
-                          {purchase.invoiceDate || "N/A"}
-                        </p>
-                        <p>
-                          <span className="font-medium">Grand Total:</span> Rs.{" "}
-                          {purchase.grandTotal?.toFixed(2) || "N/A"}
-                        </p>
-                        {purchase.tag && (
-                          <p>
-                            <span className="font-medium">Tag:</span>{" "}
-                            {purchase.tag}
-                          </p>
-                        )}
-                        {purchase.remarks && (
-                          <p>
-                            <span className="font-medium">Remarks:</span>{" "}
-                            {purchase.remarks}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <h4 className="text-lg font-bold mb-2 text-zinc-800">
-                      Items
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {purchase.items.map((item) => {
-                        const itemDetails = getItemDetails(item.itemId);
-                        return (
-                          <div
-                            key={item.itemId}
-                            className="bg-white p-4 rounded-md shadow-sm border border-gray-200"
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {purchaseEntryFields && purchaseEntryFields.length > 0 && (
+                purchaseEntryFields.map((entry, index) => (
+                  <div
+                    key={entry.id}
+                    className="space-y-4 p-4 border rounded-lg"
+                  >
+                    <FormField
+                      control={form.control}
+                      name={`purchaseEntry.${index}.vendorId`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Vendor</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
                           >
-                            <h5 className="font-semibold mb-2 flex justify-between items-center">
-                              <span>
-                                {itemDetails?.itemName || "Unknown Item"}
-                              </span>
-                              {purchase.tag === "reorder" && (
-                                <span className="text-xs font-medium text-orange-500 flex items-center">
-                                  <RefreshCw className="mr-1 h-3 w-3" />
-                                  Reordered
-                                </span>
-                              )}
-                            </h5>
-                            <div className="text-sm">
-                              <p>
-                                <span className="font-medium">Type:</span>{" "}
-                                {itemDetails?.type || "N/A"}
-                              </p>
-                              <p>
-                                <span className="font-medium">
-                                  Quantity (Vendor):
-                                </span>{" "}
-                                {item.quantityFromVendor}
-                              </p>
-                              <p>
-                                <span className="font-medium">
-                                  Quantity (Stock):
-                                </span>{" "}
-                                {item.quantityFromStock}
-                              </p>
-                              <p>
-                                <span className="font-medium">Item Code:</span>{" "}
-                                {item.itemCode || "N/A"}
-                              </p>
-                              <p>
-                                <span className="font-medium">Rate:</span> Rs.{" "}
-                                {item.rate?.toFixed(2) || "N/A"}
-                              </p>
-                              <p>
-                                <span className="font-medium">Amount:</span> Rs.{" "}
-                                {item.amount?.toFixed(2) || "N/A"}
-                              </p>
-                            </div>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a vendor" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {vendors.map((vendor) => (
+                                <SelectItem key={vendor._id} value={vendor._id}>
+                                  {vendor.vendorName}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                          <div className="flex justify-end h-[0px] ">
+                            <Label
+                              className=" w-[110px] hover:text-[red] mt-[8px]"
+                              onClick={() => removePurchaseEntry(index)}
+                            >
+                              - Remove Vendor
+                            </Label>
                           </div>
-                        );
-                      })}
-                    </div>
+                        </FormItem>
+                      )}
+                    />
+
+                    {form
+                      .watch(`purchaseEntry.${index}.items`)
+                      .map((item, itemIndex) => (
+                        <div key={itemIndex} className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name={`purchaseEntry.${index}.items.${itemIndex}.itemId`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Item</FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select an item" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {items.map((item) => (
+                                      <SelectItem
+                                        key={item._id}
+                                        value={item._id}
+                                      >
+                                        {item.itemName}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`purchaseEntry.${index}.items.${itemIndex}.quantityFromVendor`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Quantity from Vendor</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                      field.onChange(Number(e.target.value))
+                                    }
+                                    className="w-full"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`purchaseEntry.${index}.items.${itemIndex}.quantityFromStock`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Quantity from Stock</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    value={field.value || ""}
+                                    onChange={(e) =>
+                                      field.onChange(Number(e.target.value))
+                                    }
+                                    className="w-full"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <div className="flex justify-between">
+                            <Button
+                              type="button"
+                              onClick={() => addItem(index)}
+                            >
+                              + Add Item
+                            </Button>
+                            <Label
+                              className="hover:text-[red]"
+                              onClick={() => removeItem(index, itemIndex)}
+                            >
+                              - Remove Item
+                            </Label>
+                          </div>
+                        </div>
+                      ))}
                   </div>
-                );
-              })}
-            </ScrollArea>
-          </DialogContent>
-        </Dialog>
+                )))}
+
+                <Button type="button" onClick={addVendor}>
+                  + Add Vendor
+                </Button>
+
+                <Button type="submit" className="w-full">
+                  Submit Purchase Order
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
+      <Toaster />
     </div>
   );
-};
-
-export default PurchaseEntryList;
+}
