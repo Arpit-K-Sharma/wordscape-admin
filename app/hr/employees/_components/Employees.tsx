@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -23,6 +24,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "react-hot-toast";
 
 interface Employee {
   _id: string;
@@ -38,25 +41,48 @@ interface Employee {
   role: string;
 }
 
+interface Department {
+  _id: string;
+  department_name: string;
+  description: string;
+}
+
+const newStaffSchema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  address: z.string().min(1, "Address is required"),
+  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
+  status: z.boolean(),
+  position: z.string().min(1, "Position is required"),
+  dailyWage: z.number().min(0, "Daily wage must be a positive number"),
+  dept_ids: z
+    .array(z.string())
+    .min(1, "At least one department must be selected"),
+});
+
 const EmployeesPage: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
     null
   );
   const [isAddStaffDialogOpen, setIsAddStaffDialogOpen] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [newStaff, setNewStaff] = useState({
     fullName: "",
     email: "",
     password: "",
     address: "",
     phoneNumber: "",
+    status: true,
     position: "",
     dailyWage: 0,
-    dept_ids: [],
+    dept_ids: [] as string[],
   });
 
   useEffect(() => {
     fetchEmployees();
+    fetchDepartments();
   }, []);
 
   const fetchEmployees = async () => {
@@ -65,6 +91,17 @@ const EmployeesPage: React.FC = () => {
       setEmployees(response.data);
     } catch (error) {
       console.error("Error fetching employees:", error);
+      toast.error("Failed to fetch employees");
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:8000/department");
+      setDepartments(response.data);
+    } catch (error) {
+      console.error("Error fetching departments:", error);
+      toast.error("Failed to fetch departments");
     }
   };
 
@@ -74,11 +111,38 @@ const EmployeesPage: React.FC = () => {
 
   const handleAddStaff = async () => {
     try {
-      await axios.post("http://127.0.0.1:8000/staff", newStaff);
+      const validatedData = newStaffSchema.parse(newStaff);
+      const staffData = {
+        ...validatedData,
+        role: "ROLE_USER", // Default role
+      };
+
+      await axios.post("http://127.0.0.1:8000/staff", staffData);
       setIsAddStaffDialogOpen(false);
       fetchEmployees();
+      toast.success("Staff added successfully");
     } catch (error) {
-      console.error("Error adding staff:", error);
+      if (error instanceof z.ZodError) {
+        error.errors.forEach((err) => {
+          toast.error(err.message);
+        });
+      } else {
+        console.error("Error adding staff:", error);
+        toast.error("Failed to add staff");
+      }
+    }
+  };
+
+  const handleDeleteStaff = async (staffId: string) => {
+    if (window.confirm("Are you sure you want to delete this staff member?")) {
+      try {
+        await axios.delete(`http://127.0.0.1:8000/staff/${staffId}`);
+        fetchEmployees();
+        toast.success("Staff deleted successfully");
+      } catch (error) {
+        console.error("Error deleting staff:", error);
+        toast.error("Failed to delete staff");
+      }
     }
   };
 
@@ -199,6 +263,13 @@ const EmployeesPage: React.FC = () => {
                       </DialogHeader>
                     </DialogContent>
                   </Dialog>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDeleteStaff(employee._id)}
+                  >
+                    Delete Staff
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -310,6 +381,58 @@ const EmployeesPage: React.FC = () => {
                 }
                 className="col-span-3"
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="status" className="text-right">
+                Status
+              </Label>
+              <select
+                id="status"
+                value={newStaff.status.toString()}
+                onChange={(e) =>
+                  setNewStaff({
+                    ...newStaff,
+                    status: e.target.value === "true",
+                  })
+                }
+                className="col-span-3"
+              >
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="departments" className="text-right">
+                Departments
+              </Label>
+              <div className="col-span-3 space-y-2">
+                {departments.map((dept) => (
+                  <div key={dept._id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`dept-${dept._id}`}
+                      checked={newStaff.dept_ids.includes(dept._id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setNewStaff({
+                            ...newStaff,
+                            dept_ids: [...newStaff.dept_ids, dept._id],
+                          });
+                        } else {
+                          setNewStaff({
+                            ...newStaff,
+                            dept_ids: newStaff.dept_ids.filter(
+                              (id) => id !== dept._id
+                            ),
+                          });
+                        }
+                      }}
+                    />
+                    <Label htmlFor={`dept-${dept._id}`}>
+                      {dept.department_name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <DialogFooter>
