@@ -26,6 +26,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import InventorySidebar from "../Sidebar/InventorySidebar";
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 const itemSchema = z.object({
   itemId: z.string(),
@@ -71,6 +73,7 @@ interface PurchaseEntrySlipProps {
   const [items, setItems] = useState<Item[]>([]);
   const [approvedOrders, setApprovedOrders] = useState<ApprovedOrders[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [loader, setLoader] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -189,10 +192,24 @@ interface PurchaseEntrySlipProps {
     }
   };
 
+  const downloadPDF = () => {
+    const capture = document.querySelector('.print.flex-1.p-5');
+    setLoader(true);
+    html2canvas(capture).then((canvas) => {
+      const imgData = canvas.toDataURL('img/png');
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const componentWidth = doc.internal.pageSize.getWidth();
+      const componentHeight = doc.internal.pageSize.getHeight();
+      doc.addImage(imgData, 'PNG', 0, 0, componentWidth, componentHeight);
+      setLoader(false);
+      doc.save('receipt.pdf');
+    })
+  }
+
   return (
-    <div className="flex font-archivo bg-[#f7f7f9]">
+    <div className="flex font-archivo bg-[#f7f7f9] h-screen">
       <InventorySidebar />
-      <div className="flex-1 p-5">
+      <div className="print flex-1 p-5">
         <Card className="w-full max-w-2xl justify-center items-center mx-auto">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
@@ -376,6 +393,18 @@ interface PurchaseEntrySlipProps {
           </CardContent>
         </Card>
       </div>
+      <Button
+            className="receipt-modal-download-button"
+            onClick={downloadPDF}
+            disabled={!(loader === false)}
+          >
+            {loader ? (
+              <span>Downloading</span>
+            ) : (
+              <span>Download</span>
+            )}
+
+          </Button>
       <Toaster />
     </div>
   );

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
@@ -32,10 +32,11 @@ interface UpdateFormProps {
     defaultValues?: Partial<UpdateFormValues>;
     buttonText: string;
     isSubmitting: boolean;
-    category: string;
+    inventoryId: string;
+    itemId: string;
 }
 
-function UpdateItemForm({ defaultValues, buttonText, isSubmitting, category }: UpdateFormProps) {
+function UpdateItemForm({ defaultValues, buttonText, isSubmitting, inventoryId, itemId }: UpdateFormProps) {
     const form = useForm<UpdateFormValues>({
         resolver: zodResolver(stockSchema),
         defaultValues: {
@@ -56,15 +57,15 @@ function UpdateItemForm({ defaultValues, buttonText, isSubmitting, category }: U
 
     const onSubmit = async (data: UpdateFormValues) => {
         try {
-          const url = "http://localhost:8000/inventory";
-          const response = await axios.post<UpdateFormProps>(url, data);
-          console.log("Item created", response.data);
-          setItem([...item, response.data]);
-          setIsAddDialogOpen(false);
+            const url = `http:/update-item/${inventoryId}/${itemId}`;
+            const response = await axios.post<UpdateFormProps>(url, data);
+            console.log("Item created", response.data);
+            setItem([...item, response.data]);
+            setIsAddDialogOpen(false);
         } catch (error) {
-          console.error("Error occurred while creating a new item:", error);
+            console.error("Error occurred while creating a new item:", error);
         }
-      };
+    };
 
     return (
         <div>

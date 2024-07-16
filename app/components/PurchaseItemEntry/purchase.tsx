@@ -116,89 +116,94 @@ const PurchaseWithEntry: React.FC = () => {
           </span>
         </h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {purchaseOrders.map((order) => (
-            <Card
-              key={order._id}
-              className="shadow-lg hover:shadow-xl transition-shadow duration-300"
-            >
-              <CardHeader>
-                <CardTitle className="flex justify-between items-center">
-                  <span className="text-xl font-semibold text-blue-600">
-                    {order.orderId}
-                  </span>
-                  <span className="text-sm font-medium text-gray-500">
-                    {order.isCompleted ? "Completed" : "Pending"}
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDetailsClick(order)}
-                      className="flex items-center"
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      View Details
-                    </Button>
-                    {order.purchaseEntry.some(
-                      (purchase) => purchase.tag === "reorder"
-                    ) && (
-                        <span className="text-sm font-medium text-orange-500 flex items-center">
+          {Array.isArray(purchaseOrders) && purchaseOrders.length > 0 ? (
+            <div>
+              {purchaseOrders.map((order) => (
+                <Card
+                  key={order._id}
+                  className="shadow-lg hover:shadow-xl transition-shadow duration-300"
+                >
+                  <CardHeader>
+                    <CardTitle className="flex justify-between items-center">
+                      <span className="text-xl font-semibold text-blue-600">
+                        {order.orderId}
+                      </span>
+                      <span className="text-sm font-medium text-gray-500">
+                        {order.isCompleted ? "Completed" : "Pending"}
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDetailsClick(order)}
+                          className="flex items-center"
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </Button>
+                        {order.purchaseEntry.some(
+                          (purchase) => purchase.tag === "reorder"
+                        ) && (
+                            <span className="text-sm font-medium text-orange-500 flex items-center">
+                              <RefreshCw className="mr-1 h-4 w-4" />
+                              Reorder
+                            </span>
+                          )}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        <p>
+                          Grand Total: Rs.{" "}
+                          {order.purchaseEntry
+                            .reduce(
+                              (total, purchase) =>
+                                total + (purchase.grandTotal || 0),
+                              0
+                            )
+                            .toFixed(2)}
+                        </p>
+                        <p>
+                          Invoice No:{" "}
+                          {order.purchaseEntry
+                            .map((purchase) => purchase.invoiceNo)
+                            .filter(Boolean)
+                            .join(", ") || "N/A"}
+                        </p>
+                        <p>
+                          Invoice Date:{" "}
+                          {order.purchaseEntry
+                            .map((purchase) => purchase.invoiceDate)
+                            .filter(Boolean)
+                            .join(", ") || "N/A"}
+                        </p>
+                        {order.purchaseEntry.some((purchase) => purchase.tag) && (
+                          <p>
+                            Tags:{" "}
+                            {order.purchaseEntry
+                              .map((purchase) => purchase.tag)
+                              .filter(Boolean)
+                              .join(", ")}
+                          </p>
+                        )}
+                        <span
+                          className="text-sm font-medium mt-[5px] cursor-pointer text-orange-500 flex justify-end"
+                          onClick={() => handleReorderClick(order.orderId)}
+                        >
                           <RefreshCw className="mr-1 h-4 w-4" />
                           Reorder
                         </span>
-                      )}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    <p>
-                      Grand Total: Rs.{" "}
-                      {order.purchaseEntry
-                        .reduce(
-                          (total, purchase) =>
-                            total + (purchase.grandTotal || 0),
-                          0
-                        )
-                        .toFixed(2)}
-                    </p>
-                    <p>
-                      Invoice No:{" "}
-                      {order.purchaseEntry
-                        .map((purchase) => purchase.invoiceNo)
-                        .filter(Boolean)
-                        .join(", ") || "N/A"}
-                    </p>
-                    <p>
-                      Invoice Date:{" "}
-                      {order.purchaseEntry
-                        .map((purchase) => purchase.invoiceDate)
-                        .filter(Boolean)
-                        .join(", ") || "N/A"}
-                    </p>
-                    {order.purchaseEntry.some((purchase) => purchase.tag) && (
-                      <p>
-                        Tags:{" "}
-                        {order.purchaseEntry
-                          .map((purchase) => purchase.tag)
-                          .filter(Boolean)
-                          .join(", ")}
-                      </p>
-
-                    )}
-                    <span
-                      className="text-sm font-medium mt-[5px] cursor-pointer text-orange-500 flex justify-end"
-                      onClick={() => handleReorderClick(order.orderId)}
-                    >
-                      <RefreshCw className="mr-1 h-4 w-4" />
-                      Reorder
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <p>No purchase orders available.</p>
+          )}
         </div>
 
         <Dialog

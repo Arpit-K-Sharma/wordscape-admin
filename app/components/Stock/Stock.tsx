@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter
 } from "@/components/ui/dialog";
 import StockForm from "./StockForm";
 import UpdateItemForm from "./UpdateItemForm";
@@ -43,6 +44,10 @@ const StocksPage: React.FC = () => {
 
   const openDialog = () => setIsDialogOpen(true);
   const closeDialog = () => setIsDialogOpen(false);
+  const [selectedType, setSelectedType] = useState<InventoryItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const fetchInventory = async () => {
     try {
@@ -84,6 +89,60 @@ const StocksPage: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  const openDeleteDialog = (type: InventoryItem) => {
+    setSelectedType(type);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const closeDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+    setSelectedType(null);
+  };
+
+  const openDeleteItemDialog = (item: InventoryItem) => {
+    setSelectedItem(item);
+    setIsDeleteDialogOpen(true);
+  };
+  
+
+  const handleTypeDelete = async () => {
+    if (!selectedType) return;
+    try {
+      const url = `http://127.0.0.1:8000/inventory/${selectedType._id}`;
+      const response = await axios.delete<{ status: string }>(url);
+      if (response.data.status === "success") {
+        console.log("Item Type deleted", response.data);
+        setInventoryData(inventoryData.filter((v) => v._id !== selectedType._id));
+        closeDeleteDialog();
+        fetchInventory();
+      } else {
+        console.error("Unexpected response format:", response.data);
+      }
+    } catch (error) {
+      console.error("Error occurred while deleting the item Type:", error);
+    }
+  };
+
+  const handleItemDelete = async () => {
+    if (!selectedItem) return;
+    try {
+      const url = `http://127.0.0.1:8000/inventory/${selectedItem._id}/${selectedItem._id}`;
+      const response = await axios.delete<{ status: string }>(url);
+      if (response.data.status === "success") {
+        console.log("Item Type deleted", response.data);
+        setInventoryData(inventoryData.filter((v) => v._id !== selectedItem._id));
+        closeDeleteDialog();
+        fetchInventory();
+      } else {
+        console.error("Unexpected response format:", response.data);
+      }
+    } catch (error) {
+      console.error("Error occurred while deleting the item Type:", error);
+    }
+  };
+  
+
 
   return (
     <div className="flex h-screen bg-white font-archivo">
@@ -129,6 +188,7 @@ const StocksPage: React.FC = () => {
                         <div>
                           <Button
                             className="bg-transparent hover:bg-transparent transition-colors shadow-none"
+                            onClick={() => openDeleteDialog(inventoryType)}
                           >
                             <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
                           </Button>
@@ -160,9 +220,34 @@ const StocksPage: React.FC = () => {
                                 <div>
                                   <Button
                                     className="bg-transparent hover:bg-transparent transition-colors shadow-none"
+                                    onClick={() => openDeleteItemDialog(inventoryType)}
                                   >
                                     <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
                                   </Button>
+                                  <Dialog
+                                    open={isDeleteDialogOpen}
+                                    onOpenChange={setIsDeleteDialogOpen}
+                                  >
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Delete</DialogTitle>
+                                        <DialogDescription>
+                                          Are you sure you want to delete this? This action
+                                          cannot be undone.
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <DialogFooter>
+                                        <Button variant="destructive" onClick={handleTypeDelete}>
+                                          <FiTrash2 className="mr-2" />
+                                          Delete
+                                        </Button>
+                                        <Button variant="secondary" onClick={closeDeleteDialog}>
+                                          <FiX className="mr-2" />
+                                          Cancel
+                                        </Button>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
                                   <Dialog open={openDialogId === inventoryType._id} onOpenChange={(open) => setOpenDialogId(open ? inventoryType._id : null)}>
                                     <DialogTrigger>
                                       {isClient ? (
@@ -187,6 +272,7 @@ const StocksPage: React.FC = () => {
                                             buttonText="Add New Item"
                                             isSubmitting={isSubmitting}
                                             inventoryId={inventoryType._id}
+
                                             onClose={closeDialog}
                                           />
                                         ) : formType === "update" ? (
