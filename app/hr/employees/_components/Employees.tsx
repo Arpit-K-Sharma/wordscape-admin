@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { ToggleLeft, ToggleRight, ListCollapse, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -147,6 +148,32 @@ const EmployeesPage: React.FC = () => {
     }
   };
 
+  const handleStatusChange = async (
+    staffId: string,
+    currentStatus: boolean
+  ) => {
+    try {
+      if (currentStatus) {
+        // Deactivate the employee
+        await axios.post(`http://127.0.0.1:8000/staff/deactivate/${staffId}`, {
+          status: false,
+        });
+      } else {
+        // Reactivate the employee
+        await axios.post(`http://127.0.0.1:8000/staff/reactivate/${staffId}`, {
+          status: true,
+        });
+      }
+      fetchEmployees(); // Refresh the employee list
+      // toast.success(
+      //   `Employee ${currentStatus ? "deactivated" : "reactivated"} successfully`
+      // );
+    } catch (error) {
+      console.error("Error updating employee status:", error);
+      toast.error("Failed to update employee status");
+    }
+  };
+
   return (
     <div className="flex h-screen">
       <HRSidebar />
@@ -162,8 +189,7 @@ const EmployeesPage: React.FC = () => {
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Position</TableHead>
-              <TableHead>Date Joined</TableHead>
-              <TableHead>Daily Wage</TableHead>
+
               <TableHead>Departments</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
@@ -176,101 +202,126 @@ const EmployeesPage: React.FC = () => {
                 <TableCell>{employee.email}</TableCell>
                 <TableCell>{employee.phoneNumber}</TableCell>
                 <TableCell>{employee.position}</TableCell>
-                <TableCell>
-                  {new Date(employee.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell>Rs. {employee.dailyWage.toFixed(2)}</TableCell>
+
                 <TableCell>{employee.departmentNames.join(", ")}</TableCell>
                 <TableCell>{employee.status ? "Active" : "Inactive"}</TableCell>
                 <TableCell>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="mr-2"
-                        onClick={() => handleViewDetails(employee)}
-                      >
-                        View Details
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[800px]">
-                      <DialogHeader>
-                        <DialogTitle>Employee Details</DialogTitle>
-                        <DialogDescription>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Card>
-                              <CardHeader>
-                                <CardTitle>Personal Information</CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                <p>
-                                  <strong>Name:</strong>{" "}
-                                  {selectedEmployee?.fullName}
-                                </p>
-                                <p>
-                                  <strong>Email:</strong>{" "}
-                                  {selectedEmployee?.email}
-                                </p>
-                                <p>
-                                  <strong>Phone:</strong>{" "}
-                                  {selectedEmployee?.phoneNumber}
-                                </p>
-                                <p>
-                                  <strong>Address:</strong>{" "}
-                                  {selectedEmployee?.address}
-                                </p>
-                                <p>
-                                  <strong>Role:</strong>{" "}
-                                  {selectedEmployee?.role === "ROLE_USER"
-                                    ? "Employee"
-                                    : selectedEmployee?.role}
-                                </p>
-                              </CardContent>
-                            </Card>
-                            <Card>
-                              <CardHeader>
-                                <CardTitle>Employment Details</CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                <p>
-                                  <strong>Position:</strong>{" "}
-                                  {selectedEmployee?.position}
-                                </p>
-                                <p>
-                                  <strong>Daily Wage:</strong> Rs.{" "}
-                                  {selectedEmployee?.dailyWage.toFixed(2)}
-                                </p>
-                                <p>
-                                  <strong>Departments:</strong>{" "}
-                                  {selectedEmployee?.departmentNames.join(", ")}
-                                </p>
-                                <p>
-                                  <strong>Date Joined:</strong>{" "}
-                                  {new Date(
-                                    selectedEmployee?.created_at || ""
-                                  ).toLocaleDateString()}
-                                </p>
-                                <p>
-                                  <strong>Status:</strong>{" "}
-                                  {selectedEmployee?.status
-                                    ? "Active"
-                                    : "Inactive"}
-                                </p>
-                              </CardContent>
-                            </Card>
-                          </div>
-                        </DialogDescription>
-                      </DialogHeader>
-                    </DialogContent>
-                  </Dialog>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteStaff(employee._id)}
-                  >
-                    Delete Staff
-                  </Button>
+                  <div className="flex space-x-2">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center justify-center w-32"
+                          onClick={() => handleViewDetails(employee)}
+                        >
+                          <ListCollapse className="mr-2 h-4 w-4" />
+                          View Details
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[800px]">
+                        <DialogHeader>
+                          <DialogTitle>Employee Details</DialogTitle>
+                          <DialogDescription>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <Card>
+                                <CardHeader>
+                                  <CardTitle>Personal Information</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <p>
+                                    <strong>Name:</strong>{" "}
+                                    {selectedEmployee?.fullName}
+                                  </p>
+                                  <p>
+                                    <strong>Email:</strong>{" "}
+                                    {selectedEmployee?.email}
+                                  </p>
+                                  <p>
+                                    <strong>Phone:</strong>{" "}
+                                    {selectedEmployee?.phoneNumber}
+                                  </p>
+                                  <p>
+                                    <strong>Address:</strong>{" "}
+                                    {selectedEmployee?.address}
+                                  </p>
+                                  <p>
+                                    <strong>Role:</strong>{" "}
+                                    {selectedEmployee?.role === "ROLE_USER"
+                                      ? "Employee"
+                                      : selectedEmployee?.role}
+                                  </p>
+                                </CardContent>
+                              </Card>
+                              <Card>
+                                <CardHeader>
+                                  <CardTitle>Employment Details</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <p>
+                                    <strong>Position:</strong>{" "}
+                                    {selectedEmployee?.position}
+                                  </p>
+                                  <p>
+                                    <strong>Daily Wage:</strong> Rs.{" "}
+                                    {selectedEmployee?.dailyWage.toFixed(2)}
+                                  </p>
+                                  <p>
+                                    <strong>Departments:</strong>{" "}
+                                    {selectedEmployee?.departmentNames.join(
+                                      ", "
+                                    )}
+                                  </p>
+                                  <p>
+                                    <strong>Date Joined:</strong>{" "}
+                                    {new Date(
+                                      selectedEmployee?.created_at || ""
+                                    ).toLocaleDateString()}
+                                  </p>
+                                  <p>
+                                    <strong>Status:</strong>{" "}
+                                    {selectedEmployee?.status
+                                      ? "Active"
+                                      : "Inactive"}
+                                  </p>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </DialogDescription>
+                        </DialogHeader>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="flex items-center justify-center w-32"
+                      onClick={() => handleDeleteStaff(employee._id)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" /> Delete Staff
+                    </Button>
+
+                    <Button
+                      variant={employee.status ? "outline" : "default"}
+                      size="sm"
+                      className="flex items-center justify-center w-32"
+                      onClick={() =>
+                        handleStatusChange(employee._id, employee.status)
+                      }
+                    >
+                      {employee.status ? (
+                        <>
+                          <ToggleLeft className="mr-2 h-4 w-4" />
+                          Deactivate
+                        </>
+                      ) : (
+                        <>
+                          <ToggleRight className="mr-2 h-4 w-4" />
+                          Reactivate
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
