@@ -124,10 +124,14 @@ const HROverview: React.FC = () => {
                       ))}
                     </TableBody>
                   </Table>
-                  <Button onClick={() => router.push("/hr/employees")}>
-                    View All Employees
-                  </Button>
                 </ScrollArea>
+                <Button
+                  variant="secondary"
+                  onClick={() => router.push("/hr/employees")}
+                  className="mt-3 bg-slate-600 text-white hover:bg-slate-800"
+                >
+                  View All Employees
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -147,7 +151,7 @@ const HROverview: React.FC = () => {
                 </p>
               ))}
               <Button
-                className="mt-4"
+                className="mt-4 bg-slate-600 text-white hover:bg-slate-800"
                 onClick={() => router.push("/hr/holidays")}
               >
                 View All Holidays
