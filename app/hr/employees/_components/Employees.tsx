@@ -220,6 +220,7 @@ const EmployeesPage: React.FC = () => {
                 departments.find((dept) => dept.department_name === name)?._id
             )
             .filter(Boolean),
+          created_at: editingEmployee.created_at,
         }
       );
 
