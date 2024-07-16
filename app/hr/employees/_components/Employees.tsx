@@ -85,6 +85,8 @@ const EmployeesPage: React.FC = () => {
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [isAddStaffDialogOpen, setIsAddStaffDialogOpen] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [staffToDelete, setStaffToDelete] = useState<string | null>(null);
   const [newStaff, setNewStaff] = useState({
     fullName: "",
     email: "",
@@ -151,10 +153,15 @@ const EmployeesPage: React.FC = () => {
     }
   };
 
-  const handleDeleteStaff = async (staffId: string) => {
-    if (window.confirm("Are you sure you want to delete this staff member?")) {
+  const handleDeleteStaff = (staffId: string) => {
+    setStaffToDelete(staffId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteStaff = async () => {
+    if (staffToDelete) {
       try {
-        await axios.delete(`http://127.0.0.1:8000/staff/${staffId}`);
+        await axios.delete(`http://127.0.0.1:8000/staff/${staffToDelete}`);
         fetchEmployees();
         toast.success("Staff deleted successfully");
       } catch (error) {
@@ -162,6 +169,8 @@ const EmployeesPage: React.FC = () => {
         toast.error("Failed to delete staff");
       }
     }
+    setIsDeleteDialogOpen(false);
+    setStaffToDelete(null);
   };
 
   const handleStatusChange = async (
@@ -581,6 +590,34 @@ const EmployeesPage: React.FC = () => {
                         <DialogFooter>
                           <Button onClick={handleUpdateStaff}>
                             Update Employee
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                    <Dialog
+                      open={isDeleteDialogOpen}
+                      onOpenChange={setIsDeleteDialogOpen}
+                    >
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Confirm Deletion</DialogTitle>
+                          <DialogDescription>
+                            Are you sure you want to delete this staff member?
+                            This action cannot be undone.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsDeleteDialogOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={confirmDeleteStaff}
+                          >
+                            Delete
                           </Button>
                         </DialogFooter>
                       </DialogContent>
