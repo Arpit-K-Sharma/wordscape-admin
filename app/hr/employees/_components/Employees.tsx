@@ -240,7 +240,7 @@ const EmployeesPage: React.FC = () => {
 
               <TableHead>Departments</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
