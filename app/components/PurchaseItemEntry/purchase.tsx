@@ -145,14 +145,6 @@ const PurchaseWithEntry: React.FC = () => {
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
                         </Button>
-                        {order.purchaseEntry.some(
-                          (purchase) => purchase.tag === "reorder"
-                        ) && (
-                            <span className="text-sm font-medium text-orange-500 flex items-center">
-                              <RefreshCw className="mr-1 h-4 w-4" />
-                              Reorder
-                            </span>
-                          )}
                       </div>
                       <div className="text-sm text-gray-600">
                         <p>

@@ -41,12 +41,13 @@ const StocksPage: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
   const [formType, setFormType] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
 
   const openDialog = () => setIsDialogOpen(true);
   const closeDialog = () => setIsDialogOpen(false);
   const [selectedType, setSelectedType] = useState<InventoryItem | null>(null);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [isItemDeleteDialogOpen, setIsItemDeleteDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const fetchInventory = async () => {
@@ -102,9 +103,13 @@ const StocksPage: React.FC = () => {
 
   const openDeleteItemDialog = (item: InventoryItem) => {
     setSelectedItem(item);
-    setIsDeleteDialogOpen(true);
+    setIsItemDeleteDialogOpen(true);
   };
-  
+
+  const closeDeleteItemDialog = () => {
+    setIsItemDeleteDialogOpen(false);
+    setSelectedItem(null);
+  };
 
   const handleTypeDelete = async () => {
     if (!selectedType) return;
@@ -124,15 +129,17 @@ const StocksPage: React.FC = () => {
     }
   };
 
-  const handleItemDelete = async () => {
+  const handleItemDelete = async (itemId: string) => {
     if (!selectedItem) return;
+    console.log(selectedItem)
     try {
-      const url = `http://127.0.0.1:8000/inventory/${selectedItem._id}/${selectedItem._id}`;
+      const url = `http://127.0.0.1:8000/inventory/${selectedItem._id}/${itemId}`;
       const response = await axios.delete<{ status: string }>(url);
       if (response.data.status === "success") {
         console.log("Item Type deleted", response.data);
-        setInventoryData(inventoryData.filter((v) => v._id !== selectedItem._id));
-        closeDeleteDialog();
+        setInventoryData(inventoryData.filter((item) => item._id !== itemId));
+        closeDeleteItemDialog();
+        await fetchInventory();
         fetchInventory();
       } else {
         console.error("Unexpected response format:", response.data);
@@ -141,7 +148,8 @@ const StocksPage: React.FC = () => {
       console.error("Error occurred while deleting the item Type:", error);
     }
   };
-  
+
+
 
 
   return (
@@ -157,7 +165,7 @@ const StocksPage: React.FC = () => {
                 </div>
                 <div>
                   <Button
-                    onClick={() => handleOpenForm('addType', "668ea0962e6418b0d15b393c")}
+                    onClick={() => handleOpenForm('addType', "6696b51c2372a1a25eda992f")}
                     disabled={isSubmitting}
                     className="font-semibold text-[15px]"
                   >
@@ -219,8 +227,11 @@ const StocksPage: React.FC = () => {
                                 </div>
                                 <div>
                                   <Button
+                                  key={item._id}
                                     className="bg-transparent hover:bg-transparent transition-colors shadow-none"
-                                    onClick={() => openDeleteItemDialog(inventoryType)}
+                                    onClick={() =>{
+                                      console.log('item._id:', item._id);
+                                      openDeleteItemDialog(inventoryType)}}
                                   >
                                     <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
                                   </Button>
@@ -230,7 +241,7 @@ const StocksPage: React.FC = () => {
                                   >
                                     <DialogContent>
                                       <DialogHeader>
-                                        <DialogTitle>Delete</DialogTitle>
+                                        <DialogTitle>Delete Category Form Inventory</DialogTitle>
                                         <DialogDescription>
                                           Are you sure you want to delete this? This action
                                           cannot be undone.
@@ -238,6 +249,30 @@ const StocksPage: React.FC = () => {
                                       </DialogHeader>
                                       <DialogFooter>
                                         <Button variant="destructive" onClick={handleTypeDelete}>
+                                          <FiTrash2 className="mr-2" />
+                                          Delete
+                                        </Button>
+                                        <Button variant="secondary" onClick={closeDeleteDialog}>
+                                          <FiX className="mr-2" />
+                                          Cancel
+                                        </Button>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
+                                  <Dialog
+                                    open={isItemDeleteDialogOpen}
+                                    onOpenChange={setIsItemDeleteDialogOpen}
+                                  >
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Delete Item From Category</DialogTitle>
+                                        <DialogDescription>
+                                          Are you sure you want to delete this? This action
+                                          cannot be undone.
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <DialogFooter>
+                                        <Button variant="destructive" onClick={() => handleItemDelete(item._id)}>
                                           <FiTrash2 className="mr-2" />
                                           Delete
                                         </Button>
@@ -265,7 +300,7 @@ const StocksPage: React.FC = () => {
                                     </DialogTrigger>
                                     <DialogContent>
                                       <DialogHeader>
-                                        <DialogTitle>Add to Inventory </DialogTitle>
+                                        <DialogTitle>Add to Inventory</DialogTitle>
                                         {formType === "add" ? (
                                           <StockForm
                                             onSubmit={onSubmit}
@@ -280,8 +315,9 @@ const StocksPage: React.FC = () => {
                                             onSubmit={onSubmit}
                                             buttonText="Update Item"
                                             isSubmitting={isSubmitting}
-                                            inventoryId={inventoryType.type}
+                                            inventoryId={inventoryType._id}
                                             itemId={item._id}
+                                            onClose={() => setIsUpdateFormOpen(false)}
                                           />
                                         ) : formType === "addType" ? (
                                           <AddTypeForm
@@ -296,9 +332,6 @@ const StocksPage: React.FC = () => {
                                   </Dialog>
                                 </div>
                               </div>
-
-
-
                               <div className="flex justify-between items-center mt-2">
                                 <span className="text-sm text-gray-500">Available</span>
                                 <span className="text-lg font-medium text-blue-600">
@@ -317,7 +350,7 @@ const StocksPage: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </div >
   );
 };
 

@@ -442,12 +442,15 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                             />
                           )}
                           <div className="flex justify-between">
-                            <Button
-                              type="button"
-                              onClick={() => addItem(index)}
-                            >
-                              + Add Item
-                            </Button>
+                            {!isReorder && (
+                              <Button
+                                type="button"
+                                onClick={() => addItem(index)}
+                              >
+                                + Add Item
+                              </Button>
+                            )}
+
                             <Label
                               className="hover:text-[red]"
                               onClick={() => removeItem(index, itemIndex)}
@@ -459,10 +462,12 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                       ))}
                   </div>
                 ))}
+                {!isReorder && (
+                  <Button type="button" onClick={addVendor}>
+                    + Add Vendor
+                  </Button>
+                )}
 
-                <Button type="button" onClick={addVendor}>
-                  + Add Vendor
-                </Button>
 
                 <Button type="submit" className="w-full"
                   isSubmitting={isSubmitting}>

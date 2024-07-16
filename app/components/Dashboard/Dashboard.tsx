@@ -77,6 +77,7 @@ const Dashboard = () => {
   );
   const [innerPaper, setInnerPaper] = useState<Paper | null>(null);
   const [outerPaper, setOuterPaper] = useState<Paper | null>(null);
+  const [poRequested, setPoRequested] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const fetch_approved_orders = async () => {
@@ -144,8 +145,28 @@ const Dashboard = () => {
     fetch_outer_paper();
   }, [approvedOrders]);
 
+  // const router = useRouter();
+  // const handleRequestPO = (orderId: string) => {
+  //   router.push(`/inventory/entry/${orderId}`);
+  // };
+
   const router = useRouter();
+
+  // Load state from localStorage on component mount
+  useEffect(() => {
+    const storedPoRequested = localStorage.getItem('poRequested');
+    if (storedPoRequested) {
+      setPoRequested(JSON.parse(storedPoRequested));
+    }
+  }, []);
+
   const handleRequestPO = (orderId: string) => {
+    const newState = { ...poRequested, [orderId]: true };
+    setPoRequested(newState);
+    
+    // Store the updated state in localStorage
+    localStorage.setItem('poRequested', JSON.stringify(newState));
+
     router.push(`/inventory/entry/${orderId}`);
   };
 
@@ -364,8 +385,9 @@ const Dashboard = () => {
                           className="px-[15px] font-semibold"
                           type="button"
                           onClick={() => handleRequestPO(order._id)}
+                          disabled={poRequested[order._id]}
                         >
-                          Request PO
+                          {poRequested[order._id] ? 'PO Created' : 'Request PO'}
                         </Button>
                       </TableCell>
                     </TableRow>

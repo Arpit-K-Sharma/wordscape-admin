@@ -1,23 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import axios from 'axios';
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import { FiEdit2, FiTrash2, FiPlus, FiX } from "react-icons/fi";
-import { GrAddCircle } from "react-icons/gr";
 import { Button } from "@/components/ui/button";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import toast from 'react-hot-toast';
 
 const itemSchema = z.object({
-    itemName: z.string().min(1, "Item name is required"),
     availability: z.string().min(1, "Availability is required"),
 });
 
@@ -28,42 +19,41 @@ const stockSchema = z.object({
 type UpdateFormValues = z.infer<typeof stockSchema>;
 
 interface UpdateFormProps {
-    // onSubmit: (data: UpdateFormValues) => void;
     defaultValues?: Partial<UpdateFormValues>;
     buttonText: string;
     isSubmitting: boolean;
     inventoryId: string;
     itemId: string;
+    onClose: () => void;  // Add this prop to handle form closing
 }
 
-function UpdateItemForm({ defaultValues, buttonText, isSubmitting, inventoryId, itemId }: UpdateFormProps) {
+function UpdateItemForm({ defaultValues, buttonText, isSubmitting, inventoryId, itemId, onClose }: UpdateFormProps) {
     const form = useForm<UpdateFormValues>({
         resolver: zodResolver(stockSchema),
         defaultValues: {
             item: [
-                { itemName: "", availability: "" },
+                { availability: "" },
             ],
         },
     });
 
     const { control, handleSubmit } = form;
-    const { fields, append, remove } = useFieldArray({
-        control,
-        name: "item",
-    });
-
-    const [item, setItem] = useState<UpdateFormProps[]>([]);
-    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
     const onSubmit = async (data: UpdateFormValues) => {
         try {
-            const url = `http:/update-item/${inventoryId}/${itemId}`;
-            const response = await axios.post<UpdateFormProps>(url, data);
-            console.log("Item created", response.data);
-            setItem([...item, response.data]);
-            setIsAddDialogOpen(false);
+            const url = `http://127.0.0.1:8000/update-item/${inventoryId}/${itemId}`;
+            const availability = parseInt(data.item[0].availability, 10);
+            const response = await axios.put(url, availability, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log("Item updated", response.data);
+            toast.success('Availability updated successfully!');
+            onClose();  // Close the form after successful update
         } catch (error) {
-            console.error("Error occurred while creating a new item:", error);
+            console.error("Error occurred while updating the item:", error);
+            toast.error('Failed to update availability. Please try again.');
         }
     };
 
@@ -71,35 +61,28 @@ function UpdateItemForm({ defaultValues, buttonText, isSubmitting, inventoryId, 
         <div>
             <Form {...form}>
                 <form
-                    onSubmit={handleSubmit((data) => {
-                        onSubmit(data);
-                        form.reset(); // Optionally reset form after submission
-                    })}
+                    onSubmit={handleSubmit(onSubmit)}
                     className="space-y-4"
                 >
-                    {fields.map((item, index) => (
-                        <div
-                            key={item.id}
-                            className="bg-white rounded-md shadow-lg p-4 space-y-4"
-                        >
-                            <FormField
-                                control={control}
-                                name={`item.${index}.availability`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Availability</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="Insert the availability of the item"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                    ))}
+                    <div className="bg-white rounded-md shadow-lg p-4 space-y-4">
+                        <FormField
+                            control={control}
+                            name="item.0.availability"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Availability</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type='number'
+                                            placeholder="Insert the availability of the item"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                     <Button type="submit" className="w-full" disabled={isSubmitting}>
                         {buttonText}
                     </Button>

@@ -4,7 +4,7 @@ import { useForm, useFieldArray, Control } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FiTrash2 } from "react-icons/fi";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";  
 import {
     Form,
     FormControl,
@@ -76,6 +76,7 @@ function TypeForm({
                     success: (response) => {
                         console.log("Item created", response.data);
                         setItem([...item, response.data]);
+                        setIsAddDialogOpen(false);
                         return "Item created successfully";
                     },
                     error: (error) => {
@@ -92,7 +93,7 @@ function TypeForm({
         }
     };
 
-    const { control, handleSubmit } = form;
+    const { control, handleSubmit} = form;
 
     const { fields, append, remove } = useFieldArray({
         control,

@@ -10,9 +10,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+
 import { Input } from "@/components/ui/input"
 import { SearchIcon } from "lucide-react"
 import InventorySidebar from "../Sidebar/InventorySidebar";
+import { Button } from "@/components/ui/button";
 
 interface Item {
   inventoryId: string
@@ -73,6 +83,7 @@ export function ReorderTable() {
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(true)
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -120,6 +131,15 @@ export function ReorderTable() {
     return <div>Loading...</div>
   }
 
+  const truncate = (str, maxLength) => {
+    if (str.length <= maxLength) return str;
+    return str.substring(0, maxLength) + '...';
+  };
+
+  const openRemarks = () => {
+    setDialogOpen(true);
+  };
+
   return (
     <div className="flex h-screen bg-gray-100 font-archivo">
       <InventorySidebar />
@@ -145,6 +165,7 @@ export function ReorderTable() {
                 <TableHead className="font-semibold text-gray-700 px-6 py-4">Items</TableHead>
                 <TableHead className="font-semibold text-gray-700 px-6 py-4">Status</TableHead>
                 <TableHead className="font-semibold text-gray-700 px-6 py-4">Total reorder</TableHead>
+                <TableHead className="font-semibold text-gray-700 px-6 py-4">Remarks</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -154,7 +175,7 @@ export function ReorderTable() {
                     reorder.purchaseEntry.map((entry, entryIndex) => (
                       <TableRow key={`${reorder.orderId}-${entryIndex}`} className="hover:bg-gray-50">
                         <TableCell className="px-6 py-4">{getVendorName(entry.vendorId)}</TableCell>
-                        <TableCell className="px-6 py-4">{reorder.orderId}</TableCell>
+                        <TableCell className="px-6 py-4">{truncate(reorder.orderId, 10)}</TableCell>
                         <TableCell className="px-6 py-4">
                           <ul className="list-disc list-inside">
                             {entry.items.map((item, itemIndex) => (
@@ -169,7 +190,24 @@ export function ReorderTable() {
                             {entry.isCompleted ? "Completed" : "Pending"}
                           </span>
                         </TableCell>
-                        <TableCell className="px-6 py-4">{entry.grandTotal ?? "N/A"}</TableCell>
+                        <TableCell className="px-6 py-4">{entry.grandTotal ?? "N/A"}
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          <Button onClick={() => openRemarks()}>
+                            View Remarks
+                          </Button>
+                          <Dialog open={dialogOpen}
+                            onOpenChange={setDialogOpen}>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Remarks Details</DialogTitle>
+                                <DialogDescription>
+                                  {entry.remarks}
+                                </DialogDescription>
+                              </DialogHeader>
+                            </DialogContent>
+                          </Dialog>
+                        </TableCell>
                       </TableRow>
                     ))
                   )
@@ -189,6 +227,7 @@ export function ReorderTable() {
               )}
             </TableBody>
           </Table>
+
         </div>
       </div>
     </div>
