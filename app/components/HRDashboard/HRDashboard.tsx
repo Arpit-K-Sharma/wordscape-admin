@@ -1,9 +1,12 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, Calendar, GraduationCap } from "lucide-react";
 import HRSidebar from "../HRSidebar/hrsidebar";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 import {
   Table,
@@ -14,55 +17,44 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-// Static data
+// Static data for HR overview
 const hrOverviewData = {
-  totalEmployees: 157,
-  newEmployeesThisMonth: 3,
   pendingLeaveRequests: 8,
   urgentApprovals: 2,
-  upcomingTrainings: 3,
-  daysToNextTraining: 5,
 };
 
-const recentEmployees = [
-  {
-    id: "EMP001",
-    name: "John Doe",
-    department: "Printing",
-    position: "Press Operator",
-    joinDate: "2024-06-15",
-  },
-  {
-    id: "EMP002",
-    name: "Jane Smith",
-    department: "Postprinting",
-    position: "Graphic Designer",
-    joinDate: "2024-06-10",
-  },
-  {
-    id: "EMP003",
-    name: "Mike Johnson",
-    department: "Prepress",
-    position: "Bindery Technician",
-    joinDate: "2024-06-05",
-  },
-  {
-    id: "EMP004",
-    name: "Emily Brown",
-    department: "Printing",
-    position: "Account Manager",
-    joinDate: "2024-06-01",
-  },
-  {
-    id: "EMP005",
-    name: "Postpress",
-    department: "IT",
-    position: "Systems Administrator",
-    joinDate: "2024-05-28",
-  },
-];
-
 const HROverview: React.FC = () => {
+  const [staffData, setStaffData] = useState([]);
+  const [holidaysData, setHolidaysData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [staffResponse, holidaysResponse] = await Promise.all([
+          axios.get("http://127.0.0.1:8000/staff"),
+          axios.get("http://127.0.0.1:8000/holidays"),
+        ]);
+
+        setStaffData(staffResponse.data);
+        setHolidaysData(holidaysResponse.data);
+      } catch (err) {
+        setError("An error occurred while fetching data");
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // if (loading) return <div>Loading...</div>;
+  // if (error) return <div>{error}</div>;
+
+  const currentYear = new Date().getFullYear();
+  const currentYearHolidays =
+    holidaysData.find((data) => data.year === currentYear)?.holidays || [];
+
   return (
     <div className="flex h-screen bg-gray-100 font-archivo">
       <HRSidebar />
@@ -80,12 +72,7 @@ const HROverview: React.FC = () => {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {hrOverviewData.totalEmployees}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    +{hrOverviewData.newEmployeesThisMonth} new this month
-                  </p>
+                  <div className="text-2xl font-bold">{staffData.length}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -108,7 +95,7 @@ const HROverview: React.FC = () => {
 
             {/* Recent Employees */}
             <Card className="h-[calc(100%-130px)]">
-              <CardHeader>
+              <CardHeader className="flex justify-between items-center">
                 <CardTitle>Recent Employees</CardTitle>
               </CardHeader>
               <CardContent>
@@ -116,23 +103,30 @@ const HROverview: React.FC = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Employee ID</TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Department</TableHead>
+                        <TableHead>Position</TableHead>
                         <TableHead>Join Date</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {recentEmployees.map((employee) => (
-                        <TableRow key={employee.id}>
-                          <TableCell>{employee.id}</TableCell>
-                          <TableCell>{employee.name}</TableCell>
-                          <TableCell>{employee.department}</TableCell>
-                          <TableCell>{employee.joinDate}</TableCell>
+                      {staffData.slice(0, 5).map((employee) => (
+                        <TableRow key={employee._id}>
+                          <TableCell>{employee.fullName}</TableCell>
+                          <TableCell>
+                            {employee.departmentNames.join(", ")}
+                          </TableCell>
+                          <TableCell>{employee.position}</TableCell>
+                          <TableCell>
+                            {new Date(employee.created_at).toLocaleDateString()}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
+                  <Button onClick={() => router.push("/hr/employees")}>
+                    View All Employees
+                  </Button>
                 </ScrollArea>
               </CardContent>
             </Card>
@@ -146,27 +140,18 @@ const HROverview: React.FC = () => {
               <GraduationCap className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <p className="mt-3 mb-">
-                <b>Holiday Date:</b> XX/XX/XXXX
-              </p>
-              <p className="mt-3 mb-">
-                <b>Holiday Date:</b> XX/XX/XXXX
-              </p>
-              <p className="mt-3 mb-">
-                <b>Holiday Date:</b> XX/XX/XXXX
-              </p>
-              <p className="mt-3 mb-">
-                <b>Holiday Date:</b> XX/XX/XXXX
-              </p>
-              <p className="mt-3 mb-">
-                <b>Holiday Date:</b> XX/XX/XXXX
-              </p>
-              <p className="mt-3 mb-">
-                <b>Holiday Date:</b> XX/XX/XXXX
-              </p>
-              <p className="mt-3 mb-">
-                <b>Holiday Date:</b> XX/XX/XXXX
-              </p>
+              {currentYearHolidays.slice(0, 5).map((holiday) => (
+                <p key={holiday.holiday_id} className="mt-3 mb-">
+                  <b>{holiday.name}:</b>{" "}
+                  {new Date(holiday.date).toLocaleDateString()}
+                </p>
+              ))}
+              <Button
+                className="mt-4"
+                onClick={() => router.push("/hr/holidays")}
+              >
+                View All Holidays
+              </Button>
             </CardContent>
           </Card>
         </div>
