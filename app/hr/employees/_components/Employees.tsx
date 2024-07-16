@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { employeeService } from "@/app/services/hrServices/employeeService";
 import {
   ToggleLeft,
   ToggleRight,
@@ -106,8 +107,8 @@ const EmployeesPage: React.FC = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8000/staff");
-      setEmployees(response.data);
+      const data = await employeeService.getAllEmployees();
+      setEmployees(data);
     } catch (error) {
       console.error("Error fetching employees:", error);
       toast.error("Failed to fetch employees");
@@ -137,7 +138,7 @@ const EmployeesPage: React.FC = () => {
         status: true,
       };
 
-      await axios.post("http://127.0.0.1:8000/staff", staffData);
+      await employeeService.addEmployee(staffData);
       setIsAddStaffDialogOpen(false);
       fetchEmployees();
       toast.success("Staff added successfully");
@@ -161,7 +162,8 @@ const EmployeesPage: React.FC = () => {
   const confirmDeleteStaff = async () => {
     if (staffToDelete) {
       try {
-        await axios.delete(`http://127.0.0.1:8000/staff/${staffToDelete}`);
+        await employeeService.deleteEmployee(staffToDelete);
+
         fetchEmployees();
         toast.success("Staff deleted successfully");
       } catch (error) {
@@ -178,21 +180,9 @@ const EmployeesPage: React.FC = () => {
     currentStatus: boolean
   ) => {
     try {
-      if (currentStatus) {
-        // Deactivate the employee
-        await axios.post(`http://127.0.0.1:8000/staff/deactivate/${staffId}`, {
-          status: false,
-        });
-      } else {
-        // Reactivate the employee
-        await axios.post(`http://127.0.0.1:8000/staff/reactivate/${staffId}`, {
-          status: true,
-        });
-      }
-      fetchEmployees(); // Refresh the employee list
-      // toast.success(
-      //   `Employee ${currentStatus ? "deactivated" : "reactivated"} successfully`
-      // );
+      await employeeService.changeEmployeeStatus(staffId, !currentStatus);
+      fetchEmployees();
+      fetchEmployees();
     } catch (error) {
       console.error("Error updating employee status:", error);
       toast.error("Failed to update employee status");
@@ -203,32 +193,27 @@ const EmployeesPage: React.FC = () => {
     if (!editingEmployee) return;
 
     try {
-      const response = await axios.put(
-        `http://127.0.0.1:8000/staff/${editingEmployee._id}`,
-        {
-          fullName: editingEmployee.fullName,
-          password: editingEmployee.password,
-          email: editingEmployee.email,
-          address: editingEmployee.address,
-          phoneNumber: editingEmployee.phoneNumber,
-          status: editingEmployee.status,
-          position: editingEmployee.position,
-          dailyWage: editingEmployee.dailyWage,
-          dept_ids: editingEmployee.departmentNames
-            .map(
-              (name) =>
-                departments.find((dept) => dept.department_name === name)?._id
-            )
-            .filter(Boolean),
-          created_at: editingEmployee.created_at,
-        }
-      );
+      await employeeService.updateEmployee(editingEmployee._id, {
+        fullName: editingEmployee.fullName,
+        password: editingEmployee.password,
+        email: editingEmployee.email,
+        address: editingEmployee.address,
+        phoneNumber: editingEmployee.phoneNumber,
+        status: editingEmployee.status,
+        position: editingEmployee.position,
+        dailyWage: editingEmployee.dailyWage,
+        dept_ids: editingEmployee.departmentNames
+          .map(
+            (name) =>
+              departments.find((dept) => dept.department_name === name)?._id
+          )
+          .filter(Boolean),
+        created_at: editingEmployee.created_at,
+      });
 
-      if (response.status === 200) {
-        toast.success("Employee updated successfully");
-        setIsUpdateDialogOpen(false);
-        fetchEmployees();
-      }
+      toast.success("Employee updated successfully");
+      setIsUpdateDialogOpen(false);
+      fetchEmployees();
     } catch (error) {
       console.error("Error updating employee:", error);
       toast.error("Failed to update employee");
