@@ -28,6 +28,7 @@ import {
   Department,
   Staff,
 } from "@/app/services/hrServices/departmentService";
+import { X } from "lucide-react";
 
 function Departments() {
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -311,7 +312,7 @@ function Departments() {
                   Delete
                 </Button>
                 <Button variant="secondary" onClick={closeDeleteDialog}>
-                  <FiX className="mr-2" />
+                  <FiX className="mr-2 text-red-700" />
                   Cancel
                 </Button>
               </DialogFooter>

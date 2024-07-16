@@ -55,7 +55,7 @@ const newStaffSchema = z.object({
   phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
   status: z.boolean(),
   position: z.string().min(1, "Position is required"),
-  dailyWage: z.number().min(0, "Daily wage must be a positive number"),
+  dailyWage: z.number().positive("Daily wage must be a positive number"),
   dept_ids: z
     .array(z.string())
     .min(1, "At least one department must be selected"),
@@ -76,7 +76,7 @@ const EmployeesPage: React.FC = () => {
     phoneNumber: "",
     status: true,
     position: "",
-    dailyWage: 0,
+    dailyWage: "",
     dept_ids: [] as string[],
   });
 
@@ -115,6 +115,7 @@ const EmployeesPage: React.FC = () => {
       const staffData = {
         ...validatedData,
         role: "ROLE_USER", // Default role
+        status: true,
       };
 
       await axios.post("http://127.0.0.1:8000/staff", staffData);
@@ -157,7 +158,6 @@ const EmployeesPage: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
@@ -172,7 +172,6 @@ const EmployeesPage: React.FC = () => {
           <TableBody>
             {employees.map((employee) => (
               <TableRow key={employee._id}>
-                <TableCell>{employee._id}</TableCell>
                 <TableCell>{employee.fullName}</TableCell>
                 <TableCell>{employee.email}</TableCell>
                 <TableCell>{employee.phoneNumber}</TableCell>
@@ -223,7 +222,9 @@ const EmployeesPage: React.FC = () => {
                                 </p>
                                 <p>
                                   <strong>Role:</strong>{" "}
-                                  {selectedEmployee?.role}
+                                  {selectedEmployee?.role === "ROLE_USER"
+                                    ? "Employee"
+                                    : selectedEmployee?.role}
                                 </p>
                               </CardContent>
                             </Card>
@@ -345,10 +346,12 @@ const EmployeesPage: React.FC = () => {
               </Label>
               <Input
                 id="phoneNumber"
+                type="tel"
                 value={newStaff.phoneNumber}
-                onChange={(e) =>
-                  setNewStaff({ ...newStaff, phoneNumber: e.target.value })
-                }
+                onChange={(e) => {
+                  const input = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  setNewStaff({ ...newStaff, phoneNumber: input });
+                }}
                 className="col-span-3"
               />
             </div>
@@ -382,7 +385,7 @@ const EmployeesPage: React.FC = () => {
                 className="col-span-3"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
+            {/* <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="status" className="text-right">
                 Status
               </Label>
@@ -400,7 +403,7 @@ const EmployeesPage: React.FC = () => {
                 <option value="true">Active</option>
                 <option value="false">Inactive</option>
               </select>
-            </div>
+            </div> */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="departments" className="text-right">
                 Departments
