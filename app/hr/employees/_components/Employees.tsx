@@ -3,7 +3,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { ToggleLeft, ToggleRight, ListCollapse, Trash2 } from "lucide-react";
+import {
+  ToggleLeft,
+  ToggleRight,
+  ListCollapse,
+  Trash2,
+  Pencil,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,6 +18,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@radix-ui/react-select";
 import HRSidebar from "@/app/components/HRSidebar/hrsidebar";
 import {
   Dialog,
@@ -32,6 +45,7 @@ interface Employee {
   _id: string;
   fullName: string;
   email: string;
+  password: string;
   phoneNumber: string;
   position: string;
   created_at: string;
@@ -67,6 +81,8 @@ const EmployeesPage: React.FC = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
     null
   );
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [isAddStaffDialogOpen, setIsAddStaffDialogOpen] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [newStaff, setNewStaff] = useState({
@@ -171,6 +187,41 @@ const EmployeesPage: React.FC = () => {
     } catch (error) {
       console.error("Error updating employee status:", error);
       toast.error("Failed to update employee status");
+    }
+  };
+
+  const handleUpdateStaff = async () => {
+    if (!editingEmployee) return;
+
+    try {
+      const response = await axios.put(
+        `http://127.0.0.1:8000/staff/${editingEmployee._id}`,
+        {
+          fullName: editingEmployee.fullName,
+          password: editingEmployee.password,
+          email: editingEmployee.email,
+          address: editingEmployee.address,
+          phoneNumber: editingEmployee.phoneNumber,
+          status: editingEmployee.status,
+          position: editingEmployee.position,
+          dailyWage: editingEmployee.dailyWage,
+          dept_ids: editingEmployee.departmentNames
+            .map(
+              (name) =>
+                departments.find((dept) => dept.department_name === name)?._id
+            )
+            .filter(Boolean),
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success("Employee updated successfully");
+        setIsUpdateDialogOpen(false);
+        fetchEmployees();
+      }
+    } catch (error) {
+      console.error("Error updating employee:", error);
+      toast.error("Failed to update employee");
     }
   };
 
@@ -289,6 +340,249 @@ const EmployeesPage: React.FC = () => {
                             </div>
                           </DialogDescription>
                         </DialogHeader>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center justify-center w-32"
+                      onClick={() => {
+                        setEditingEmployee(employee);
+                        setIsUpdateDialogOpen(true);
+                      }}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" /> Update
+                    </Button>
+                    <Dialog
+                      open={isUpdateDialogOpen}
+                      onOpenChange={setIsUpdateDialogOpen}
+                    >
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Update Employee</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label
+                              htmlFor="updateFullName"
+                              className="text-right"
+                            >
+                              Full Name
+                            </Label>
+                            <Input
+                              id="updateFullName"
+                              value={editingEmployee?.fullName || ""}
+                              onChange={(e) =>
+                                setEditingEmployee((prev) =>
+                                  prev
+                                    ? { ...prev, fullName: e.target.value }
+                                    : null
+                                )
+                              }
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="updateEmail" className="text-right">
+                              Email
+                            </Label>
+                            <Input
+                              id="updateEmail"
+                              value={editingEmployee?.email || ""}
+                              onChange={(e) =>
+                                setEditingEmployee((prev) =>
+                                  prev
+                                    ? { ...prev, email: e.target.value }
+                                    : null
+                                )
+                              }
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label
+                              htmlFor="updatePassword"
+                              className="text-right"
+                            >
+                              Password
+                            </Label>
+                            <Input
+                              id="updatePassword"
+                              type="password"
+                              placeholder="Enter new password"
+                              onChange={(e) =>
+                                setEditingEmployee((prev) =>
+                                  prev
+                                    ? { ...prev, password: e.target.value }
+                                    : null
+                                )
+                              }
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label
+                              htmlFor="updateAddress"
+                              className="text-right"
+                            >
+                              Address
+                            </Label>
+                            <Input
+                              id="updateAddress"
+                              value={editingEmployee?.address || ""}
+                              onChange={(e) =>
+                                setEditingEmployee((prev) =>
+                                  prev
+                                    ? { ...prev, address: e.target.value }
+                                    : null
+                                )
+                              }
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label
+                              htmlFor="updatePhoneNumber"
+                              className="text-right"
+                            >
+                              Phone Number
+                            </Label>
+                            <Input
+                              id="updatePhoneNumber"
+                              value={editingEmployee?.phoneNumber || ""}
+                              onChange={(e) =>
+                                setEditingEmployee((prev) =>
+                                  prev
+                                    ? { ...prev, phoneNumber: e.target.value }
+                                    : null
+                                )
+                              }
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label
+                              htmlFor="updatePosition"
+                              className="text-right"
+                            >
+                              Position
+                            </Label>
+                            <Input
+                              id="updatePosition"
+                              value={editingEmployee?.position || ""}
+                              onChange={(e) =>
+                                setEditingEmployee((prev) =>
+                                  prev
+                                    ? { ...prev, position: e.target.value }
+                                    : null
+                                )
+                              }
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label
+                              htmlFor="updateDailyWage"
+                              className="text-right"
+                            >
+                              Daily Wage
+                            </Label>
+                            <Input
+                              id="updateDailyWage"
+                              type="number"
+                              value={editingEmployee?.dailyWage || ""}
+                              onChange={(e) =>
+                                setEditingEmployee((prev) =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        dailyWage: Number(e.target.value),
+                                      }
+                                    : null
+                                )
+                              }
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label
+                              htmlFor="updateStatus"
+                              className="text-right"
+                            >
+                              Status
+                            </Label>
+                            <Select
+                              onValueChange={(value) =>
+                                setEditingEmployee((prev) =>
+                                  prev
+                                    ? { ...prev, status: value === "true" }
+                                    : null
+                                )
+                              }
+                              defaultValue={
+                                editingEmployee?.status ? "true" : "false"
+                              }
+                            >
+                              <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="true">Active</SelectItem>
+                                <SelectItem value="false">Inactive</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label
+                              htmlFor="updateDepartments"
+                              className="text-right"
+                            >
+                              Departments
+                            </Label>
+                            <div className="col-span-3 space-y-2">
+                              {departments.map((dept) => (
+                                <div
+                                  key={dept._id}
+                                  className="flex items-center space-x-2"
+                                >
+                                  <Checkbox
+                                    id={`updateDept-${dept._id}`}
+                                    checked={editingEmployee?.departmentNames.includes(
+                                      dept.department_name
+                                    )}
+                                    onCheckedChange={(checked) => {
+                                      setEditingEmployee((prev) => {
+                                        if (!prev) return null;
+                                        const newDepartments = checked
+                                          ? [
+                                              ...prev.departmentNames,
+                                              dept.department_name,
+                                            ]
+                                          : prev.departmentNames.filter(
+                                              (name) =>
+                                                name !== dept.department_name
+                                            );
+                                        return {
+                                          ...prev,
+                                          departmentNames: newDepartments,
+                                        };
+                                      });
+                                    }}
+                                  />
+                                  <Label htmlFor={`updateDept-${dept._id}`}>
+                                    {dept.department_name}
+                                  </Label>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button onClick={handleUpdateStaff}>
+                            Update Employee
+                          </Button>
+                        </DialogFooter>
                       </DialogContent>
                     </Dialog>
 
