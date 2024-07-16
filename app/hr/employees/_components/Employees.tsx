@@ -10,6 +10,7 @@ import {
   ListCollapse,
   Trash2,
   Pencil,
+  Plus,
 } from "lucide-react";
 import {
   Table,
@@ -226,6 +227,7 @@ const EmployeesPage: React.FC = () => {
       <div className="flex-1 p-6">
         <h1 className="text-2xl font-bold mb-4">Employees</h1>
         <Button onClick={() => setIsAddStaffDialogOpen(true)} className="mb-4">
+          <Plus className="mr-1 h-4 w-4" />
           Add Staff
         </Button>
         <Table>
@@ -250,7 +252,17 @@ const EmployeesPage: React.FC = () => {
                 <TableCell>{employee.position}</TableCell>
 
                 <TableCell>{employee.departmentNames.join(", ")}</TableCell>
-                <TableCell>{employee.status ? "Active" : "Inactive"}</TableCell>
+                <TableCell>
+                  {employee.status ? (
+                    <span style={{ fontWeight: "bold", color: "green" }}>
+                      Active
+                    </span>
+                  ) : (
+                    <span style={{ fontWeight: "bold", color: "red" }}>
+                      Inactive
+                    </span>
+                  )}
+                </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
                     <Dialog>
@@ -753,25 +765,7 @@ const EmployeesPage: React.FC = () => {
                 className="col-span-3"
               />
             </div>
-            {/* <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
-                Status
-              </Label>
-              <select
-                id="status"
-                value={newStaff.status.toString()}
-                onChange={(e) =>
-                  setNewStaff({
-                    ...newStaff,
-                    status: e.target.value === "true",
-                  })
-                }
-                className="col-span-3"
-              >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
-            </div> */}
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="departments" className="text-right">
                 Departments
@@ -807,7 +801,10 @@ const EmployeesPage: React.FC = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleAddStaff}>Add Staff</Button>
+            <Button onClick={handleAddStaff}>
+              <Plus className="mr-2 h-4 w-4 bg-white" />
+              Add Staff
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
