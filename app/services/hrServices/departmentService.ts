@@ -3,13 +3,13 @@
 import axios from "axios";
 
 export interface Department {
-  _id: string;
+  id: string;
   department_name: string;
   description: string;
 }
 
 export interface Staff {
-  _id: string;
+  id: string;
   fullName: string;
   email: string;
   position: string;
@@ -21,14 +21,14 @@ const API_URL = "http://127.0.0.1:8000"; // Replace with your actual API base UR
 export const departmentService = {
   getDepartments: async (): Promise<Department[]> => {
     const response = await axios.get(`${API_URL}/department`);
-    return response.data;
+    return response.data.data;
   },
 
   addDepartment: async (
-    department: Omit<Department, "_id">
+    department: Omit<Department, "id">
   ): Promise<Department> => {
     const response = await axios.post(`${API_URL}/department`, department);
-    return response.data;
+    return response.data.data;
   },
 
   updateDepartment: async (
@@ -36,7 +36,7 @@ export const departmentService = {
     department: Omit<Department, "_id">
   ): Promise<Department> => {
     const response = await axios.put(`${API_URL}/department/${id}`, department);
-    return response.data;
+    return response.data.data;
   },
 
   deleteDepartment: async (id: string): Promise<void> => {
@@ -45,6 +45,6 @@ export const departmentService = {
 
   getStaff: async (): Promise<Staff[]> => {
     const response = await axios.get(`${API_URL}/staff`);
-    return response.data;
+    return response.data.data;
   },
 };

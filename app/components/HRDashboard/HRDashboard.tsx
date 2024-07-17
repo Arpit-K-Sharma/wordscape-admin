@@ -38,10 +38,11 @@ const HROverview: React.FC = () => {
           axios.get("http://127.0.0.1:8000/holidays"),
         ]);
 
-        setStaffData(staffResponse.data);
-        setHolidaysData(holidaysResponse.data);
+        setStaffData(staffResponse.data.data || []);
+        setHolidaysData(holidaysResponse.data.data || []);
       } catch (err) {
         setError("An error occurred while fetching data");
+        setLoading(false);
       }
     };
 
@@ -60,7 +61,7 @@ const HROverview: React.FC = () => {
       <HRSidebar />
 
       <main className="flex-1 p-8">
-        <h1 className="text-3xl font-bold mb-6">HR Overview</h1>
+        <h1 className="text-3xl font-bold mb-6">Human Resources</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

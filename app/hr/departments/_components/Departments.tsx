@@ -111,7 +111,7 @@ function Departments() {
   const handleUpdateDepartment = async () => {
     if (selectedDepartment) {
       try {
-        await departmentService.updateDepartment(selectedDepartment._id, {
+        await departmentService.updateDepartment(selectedDepartment.id, {
           department_name: selectedDepartment.department_name,
           description: selectedDepartment.description,
         });
@@ -126,7 +126,7 @@ function Departments() {
   const handleDeleteDepartment = async () => {
     if (selectedDepartment) {
       try {
-        await departmentService.deleteDepartment(selectedDepartment._id);
+        await departmentService.deleteDepartment(selectedDepartment.id);
         await fetchDepartments();
         closeDeleteDialog();
       } catch (error) {

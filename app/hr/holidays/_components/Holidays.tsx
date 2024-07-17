@@ -78,7 +78,9 @@ const HolidaysPage: React.FC = () => {
     if (newHolidayName && newHolidayDate && newHolidayDescription) {
       const newHoliday = {
         name: newHolidayName,
-        date: newHolidayDate.toISOString(),
+        date: new Date(newHolidayDate.getTime() + 86400000)
+          .toISOString()
+          .split("T")[0],
         description: newHolidayDescription,
       };
 
@@ -142,7 +144,9 @@ const HolidaysPage: React.FC = () => {
     ) {
       const updatedHoliday = {
         name: newHolidayName,
-        date: newHolidayDate.toISOString(),
+        date: new Date(newHolidayDate.getTime() + 86400000)
+          .toISOString()
+          .split("T")[0],
         description: newHolidayDescription,
       };
 
@@ -152,6 +156,7 @@ const HolidaysPage: React.FC = () => {
           updatedHoliday
         );
         await fetchHolidayData();
+        console.log("Holiday Data: ", updatedHoliday);
         closeUpdateDialog();
       } catch (error) {
         console.error("Error updating holiday:", error);

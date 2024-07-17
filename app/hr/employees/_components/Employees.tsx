@@ -70,9 +70,8 @@ const newStaffSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
   address: z.string().min(1, "Address is required"),
   phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
-  status: z.boolean(),
   position: z.string().min(1, "Position is required"),
-  dailyWage: z.number().positive("Daily wage must be a positive number"),
+  dailyWage: z.string().or(z.number()).transform(Number),
   dept_ids: z
     .array(z.string())
     .min(1, "At least one department must be selected"),
@@ -95,10 +94,9 @@ const EmployeesPage: React.FC = () => {
     password: "",
     address: "",
     phoneNumber: "",
-    status: true,
     position: "",
     dailyWage: "",
-    dept_ids: [] as string[],
+    dept_ids: [],
   });
 
   useEffect(() => {
@@ -119,7 +117,8 @@ const EmployeesPage: React.FC = () => {
   const fetchDepartments = async () => {
     try {
       const response = await axios.get("http://127.0.0.1:8000/department");
-      setDepartments(response.data);
+      setDepartments(response.data.data);
+      console.log("testing ", JSON.stringify(response.data.data));
     } catch (error) {
       console.error("Error fetching departments:", error);
       toast.error("Failed to fetch departments");
@@ -131,32 +130,66 @@ const EmployeesPage: React.FC = () => {
   };
 
   const handleAddStaff = async () => {
+    console.log("Add New Staff button pressed");
+    console.log("Current newStaff state:", newStaff);
+
     try {
+      console.log("Attempting to validate data with Zod schema");
       const validatedData = newStaffSchema.parse(newStaff);
+      console.log("Data validated successfully:", validatedData);
+
       const staffData = {
         ...validatedData,
-        role: "ROLE_USER", // Default role
+        role: "ROLE_USER",
         status: true,
+        dailyWage: Number(validatedData.dailyWage),
       };
+      console.log("Prepared staff data for API:", staffData);
 
-      await employeeService.addEmployee(staffData);
+      console.log("Calling employeeService.addEmployee");
+      const result = await employeeService.addEmployee(staffData);
+      console.log("API response:", result);
+
       setIsAddStaffDialogOpen(false);
-      fetchEmployees();
+      console.log("Add Staff dialog closed");
+
+      await fetchEmployees();
+      console.log("Employees list refreshed");
+
       toast.success("Staff added successfully");
+      console.log("Success toast displayed");
+
+      // Reset the form
+      setNewStaff({
+        fullName: "",
+        email: "",
+        password: "",
+        address: "",
+        phoneNumber: "",
+        position: "",
+        dailyWage: "",
+        dept_ids: [],
+      });
+      console.log("New staff form reset");
     } catch (error) {
+      console.error("Error in handleAddStaff:", error);
+
       if (error instanceof z.ZodError) {
+        console.log("Zod validation errors:", error.errors);
         error.errors.forEach((err) => {
           toast.error(err.message);
+          console.log("Error toast displayed:", err.message);
         });
       } else {
-        console.error("Error adding staff:", error);
+        console.error("Non-Zod error:", error);
         toast.error("Failed to add staff");
+        console.log("General error toast displayed");
       }
     }
   };
 
-  const handleDeleteStaff = (staffId: string) => {
-    setStaffToDelete(staffId);
+  const handleDeleteStaff = (_id: string) => {
+    setStaffToDelete(_id);
     setIsDeleteDialogOpen(true);
   };
 
@@ -164,7 +197,6 @@ const EmployeesPage: React.FC = () => {
     if (staffToDelete) {
       try {
         await employeeService.deleteEmployee(staffToDelete);
-
         fetchEmployees();
         toast.success("Staff deleted successfully");
       } catch (error) {
@@ -194,7 +226,7 @@ const EmployeesPage: React.FC = () => {
     if (!editingEmployee) return;
 
     try {
-      await employeeService.updateEmployee(editingEmployee._id, {
+      await employeeService.updateEmployee(editingEmployee.id, {
         fullName: editingEmployee.fullName,
         password: editingEmployee.password,
         email: editingEmployee.email,
@@ -208,8 +240,7 @@ const EmployeesPage: React.FC = () => {
             (name) =>
               departments.find((dept) => dept.department_name === name)?._id
           )
-          .filter(Boolean),
-        created_at: editingEmployee.created_at,
+          .filter(Boolean) as string[],
       });
 
       toast.success("Employee updated successfully");
@@ -220,6 +251,10 @@ const EmployeesPage: React.FC = () => {
       toast.error("Failed to update employee");
     }
   };
+
+  {
+    console.log("DEPARTMENT CHECK", departments);
+  }
 
   return (
     <div className="flex h-screen">
@@ -351,6 +386,7 @@ const EmployeesPage: React.FC = () => {
                     </Dialog>
 
                     <Button
+                      key={`update-${employee._id}`}
                       variant="outline"
                       size="sm"
                       className="flex items-center justify-center w-32"
@@ -550,34 +586,26 @@ const EmployeesPage: React.FC = () => {
                             <div className="col-span-3 space-y-2">
                               {departments.map((dept) => (
                                 <div
-                                  key={dept._id}
+                                  key={dept.id}
                                   className="flex items-center space-x-2"
                                 >
                                   <Checkbox
-                                    id={`updateDept-${dept._id}`}
-                                    checked={editingEmployee?.departmentNames.includes(
-                                      dept.department_name
+                                    id={`dept-${dept.id}`}
+                                    checked={newStaff.dept_ids.includes(
+                                      dept.id
                                     )}
                                     onCheckedChange={(checked) => {
-                                      setEditingEmployee((prev) => {
-                                        if (!prev) return null;
-                                        const newDepartments = checked
-                                          ? [
-                                              ...prev.departmentNames,
-                                              dept.department_name,
-                                            ]
-                                          : prev.departmentNames.filter(
-                                              (name) =>
-                                                name !== dept.department_name
-                                            );
-                                        return {
-                                          ...prev,
-                                          departmentNames: newDepartments,
-                                        };
-                                      });
+                                      setNewStaff((prev) => ({
+                                        ...prev,
+                                        dept_ids: checked
+                                          ? [...prev.dept_ids, dept.id]
+                                          : prev.dept_ids.filter(
+                                              (id) => id !== dept.id
+                                            ),
+                                      }));
                                     }}
                                   />
-                                  <Label htmlFor={`updateDept-${dept._id}`}>
+                                  <Label htmlFor={`dept-${dept.id}`}>
                                     {dept.department_name}
                                   </Label>
                                 </div>
@@ -622,20 +650,22 @@ const EmployeesPage: React.FC = () => {
                     </Dialog>
 
                     <Button
+                      key={`delete-${employee.id}`}
                       variant="destructive"
                       size="sm"
                       className="flex items-center justify-center w-32"
-                      onClick={() => handleDeleteStaff(employee._id)}
+                      onClick={() => handleDeleteStaff(employee.id)}
                     >
                       <Trash2 className="mr-2 h-4 w-4" /> Delete Staff
                     </Button>
 
                     <Button
+                      key={`status-${employee.id}`}
                       variant={employee.status ? "outline" : "default"}
                       size="sm"
                       className="flex items-center justify-center w-32"
                       onClick={() =>
-                        handleStatusChange(employee._id, employee.status)
+                        handleStatusChange(employee.id, employee.status)
                       }
                     >
                       {employee.status ? (
@@ -772,27 +802,28 @@ const EmployeesPage: React.FC = () => {
               </Label>
               <div className="col-span-3 space-y-2">
                 {departments.map((dept) => (
-                  <div key={dept._id} className="flex items-center space-x-2">
+                  <div key={dept.id} className="flex items-center space-x-2">
                     <Checkbox
-                      id={`dept-${dept._id}`}
-                      checked={newStaff.dept_ids.includes(dept._id)}
+                      id={`updateDept-${dept.id}`}
+                      checked={editingEmployee?.departmentNames.includes(
+                        dept.department_name
+                      )}
                       onCheckedChange={(checked) => {
-                        if (checked) {
-                          setNewStaff({
-                            ...newStaff,
-                            dept_ids: [...newStaff.dept_ids, dept._id],
-                          });
-                        } else {
-                          setNewStaff({
-                            ...newStaff,
-                            dept_ids: newStaff.dept_ids.filter(
-                              (id) => id !== dept._id
-                            ),
-                          });
-                        }
+                        setEditingEmployee((prev) => {
+                          if (!prev) return null;
+                          const newDepartments = checked
+                            ? [...prev.departmentNames, dept.department_name]
+                            : prev.departmentNames.filter(
+                                (name) => name !== dept.department_name
+                              );
+                          return {
+                            ...prev,
+                            departmentNames: newDepartments,
+                          };
+                        });
                       }}
                     />
-                    <Label htmlFor={`dept-${dept._id}`}>
+                    <Label htmlFor={`updateDept-${dept.id}`}>
                       {dept.department_name}
                     </Label>
                   </div>
@@ -802,7 +833,7 @@ const EmployeesPage: React.FC = () => {
           </div>
           <DialogFooter>
             <Button onClick={handleAddStaff}>
-              <Plus className="mr-2 h-4 w-4 bg-white" />
+              <Plus className="mr-2 h-4 w-4" />
               Add Staff
             </Button>
           </DialogFooter>

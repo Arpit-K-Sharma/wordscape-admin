@@ -50,7 +50,7 @@ const HRSidebar: React.FC = () => {
             onClick={() => router.push("/hr")}
           >
             <LayoutDashboard className="mr-2 h-4 w-4" />
-            Overview
+            Dashboard
           </Button>
           <Button
             variant="ghost"
