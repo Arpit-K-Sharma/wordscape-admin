@@ -17,9 +17,9 @@ const InventorySidebar: React.FC = () => {
   const router = useRouter();
 
   return (
-    <aside className="w-56 bg-white shadow-md  font-archivo">
+    <aside className="w-56 bg-white h-screen font-archivo">
       <div className="p-3 flex flex-col mt-2">
-        <div className="flex items-center mb-4">
+        <div className="flex items-center mb-4 max-sm:ml-[50px]">
           <Image
             src={LogoOnly}
             alt="WordScape Logo"
@@ -74,6 +74,10 @@ const InventorySidebar: React.FC = () => {
           <Button variant="ghost" className="w-full justify-start mb-2 text-sm" onClick={() => router.push("/inventory/reorder")}>
             <ListRestart className="mr-2 h-4 w-4" />
             Reorders
+          </Button>
+          <Button variant="ghost" className="w-full justify-start mb-2 text-sm" onClick={() => router.push("/inventory/leftover")}>
+            <ListRestart className="mr-2 h-4 w-4" />
+            Leftovers
           </Button>
         </nav>
       </div>

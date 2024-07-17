@@ -153,7 +153,7 @@ const StocksPage: React.FC = () => {
 
 
   return (
-    <div className="flex h-screen bg-white font-archivo">
+    <div className="flex h-screen bg-gray-100 font-archivo">
       <InventorySidebar />
       <div className="flex-1 p-10 overflow-auto">
         <Card className="w-full mb-6 bg-white shadow-md rounded-lg overflow-hidden">
@@ -175,7 +175,7 @@ const StocksPage: React.FC = () => {
               </div>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6 pb-8">
+          <CardContent className="pt-6 pb-8 h-[calc(100vh-200px)]">
             {isLoading ? (
               <p className="text-center text-lg text-black">
                 Loading inventory data...
@@ -183,10 +183,10 @@ const StocksPage: React.FC = () => {
             ) : error ? (
               <p className="text-center text-lg text-red-500">{error}</p>
             ) : (
-              <div className="space-y-8">
+              <div className="space-y-8 overflow-y-auto h-full custom-scrollbar">
                 <div className="">
                   {inventoryData.map((inventoryType) => (
-                    <div key={inventoryType._id}>
+                    <div key={inventoryType._id} className="shadow-sm rounded-md p-[20px]">
                       <div className="flex flex-row justify-between">
                         <div>
                           <h2 className="text-2xl font-bold mb-4 text-black">
@@ -227,11 +227,12 @@ const StocksPage: React.FC = () => {
                                 </div>
                                 <div>
                                   <Button
-                                  key={item._id}
+                                    key={item._id}
                                     className="bg-transparent hover:bg-transparent transition-colors shadow-none"
-                                    onClick={() =>{
+                                    onClick={() => {
                                       console.log('item._id:', item._id);
-                                      openDeleteItemDialog(inventoryType)}}
+                                      openDeleteItemDialog(inventoryType)
+                                    }}
                                   >
                                     <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
                                   </Button>
@@ -301,6 +302,7 @@ const StocksPage: React.FC = () => {
                                     <DialogContent>
                                       <DialogHeader>
                                         <DialogTitle>Add to Inventory</DialogTitle>
+                                      </DialogHeader>
                                         {formType === "add" ? (
                                           <StockForm
                                             onSubmit={onSubmit}
@@ -326,8 +328,6 @@ const StocksPage: React.FC = () => {
                                             isSubmitting={isSubmitting}
                                           />
                                         ) : null}
-
-                                      </DialogHeader>
                                     </DialogContent>
                                   </Dialog>
                                 </div>

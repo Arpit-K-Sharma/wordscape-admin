@@ -1,51 +1,63 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "next/navigation";
+import InventorySidebar from "../Sidebar/InventorySidebar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useForm, useFieldArray } from "react-hook-form";
-import toast, { Toaster } from 'react-hot-toast';
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import InventorySidebar from "../Sidebar/InventorySidebar";
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Eye, Upload, RefreshCw } from "lucide-react";
+// import { useToast } from "@/components/ui/use-toast";
+// import { Toast } from "@/components/ui/toast";
 
-const itemSchema = z.object({
-  itemId: z.string(),
-  quantityFromVendor: z.number(),
-  quantityFromStock: z.number(),
-});
+interface PurchaseEntryItem {
+  itemId: string;
+  inventoryId: string;
+  quantityFromVendor: number;
+  quantityFromStock: number;
+  itemCode: string | null;
+  rate: number | null;
+  amount: number | null;
+}
 
-const purchaseEntrySchema = z.object({
-  vendorId: z.string(),
-  isCompleted: z.boolean().default(false),
-  items: z.array(itemSchema),
-});
+interface PurchaseEntryVendor {
+  _id: string;
+  vendorId: string;
+  isCompleted: boolean;
+  items: PurchaseEntryItem[];
+  tag: string | null;
+  remarks: string | null;
+  image: string | null;
+  discount: number | null;
+  vat: number | null;
+  grandTotal: number | null;
+  invoiceNo: string | null;
+  invoiceDate: string | null;
+}
 
-const formSchema = z.object({
-  orderId: z.string(),
-  isCompleted: z.boolean().default(false),
-  purchaseEntry: z.array(purchaseEntrySchema),
-});
+interface PurchaseEntry {
+  _id: string;
+  orderId: string;
+  isCompleted: boolean;
+  purchaseEntry: PurchaseEntryVendor[];
+}
+interface Item {
+  _id: string;
+  itemName: string;
+  availability: number;
+}
+interface InventoryItem {
+  _id: string;
+  type: string;
+  item: Item[];
+}
 
 interface Vendor {
   _id: string;
@@ -55,357 +67,594 @@ interface Vendor {
   vendorPhone: string;
 }
 
-interface Item {
-  _id: string;
-  itemName: string;
-}
-
-interface ApprovedOrders {
-  _id: string;
-}
-
-interface PurchaseEntrySlipProps {
-  orderId: string;
-}
-
-  export default function PurchaseEntrySlip({ orderId }: PurchaseEntrySlipProps) {
+const PurchaseEntryList: React.FC = () => {
+  const [purchaseEntries, setPurchaseEntries] = useState<PurchaseEntry[]>([]);
+  const [selectedEntry, setSelectedEntry] = useState<PurchaseEntry | null>(
+    null
+  );
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [orderId, setOrderId] = useState("");
   const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
-  const [approvedOrders, setApprovedOrders] = useState<ApprovedOrders[]>([]);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [loader, setLoader] = useState(false);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      orderId: orderId,
-      isCompleted: false,
-      purchaseEntry: [
-        {
-          vendorId: "",
-          isCompleted: false,
-          items: [
-            {
-              itemId: "",
-              quantityFromVendor: 0,
-              quantityFromStock: 0,
-            },
-          ],
-        },
-      ],
-    },
-  });
-
-  const {
-    fields: purchaseEntryFields,
-    append: appendPurchaseEntry,
-    remove: removePurchaseEntry,
-  } = useFieldArray({
-    control: form.control,
-    name: "purchaseEntry",
-  });
+  const [vendorInputs, setVendorInputs] = useState<{
+    [vendorId: string]: {
+      invoiceNo: string;
+      invoiceDate: string;
+      grandTotal: string;
+      vat: string;
+      discount: string;
+      image: string;
+      items: { rate: string; code: string; amount: string }[];
+    };
+  }>({});
+  // const { toast } = useToast();
 
   useEffect(() => {
-    const fetchVendors = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/vendors");
-        setVendors(response.data.data);
+        const [purchaseEntriesResponse, inventoryResponse, vendorsResponse] =
+          await Promise.all([
+            axios.get("http://127.0.0.1:8000/purchase_orders_without_entries"),
+            axios.get("http://127.0.0.1:8000/inventory"),
+            axios.get("http://127.0.0.1:8000/vendors"),
+          ]);
+        if (purchaseEntriesResponse.data.status === "success") {
+          const filteredPurchaseEntries = purchaseEntriesResponse.data.data
+            .map((entry) => ({
+              ...entry,
+              purchaseEntry: entry.purchaseEntry.filter(
+                (purchase) => !purchase.isCompleted
+              ),
+            }))
+            .filter((entry) => entry.purchaseEntry.length > 0);
+
+          setPurchaseEntries(filteredPurchaseEntries);
+        }
+        
+        if (inventoryResponse.data.status === "success") {
+          setInventoryItems(inventoryResponse.data.data);
+        }
+
+        if (vendorsResponse.data.status === "success") {
+          setVendors(vendorsResponse.data.data);
+        }
       } catch (error) {
-        console.error("Error fetching vendors:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    const fetchItems = async () => {
-      try {
-        const response = await axios.get("http://localhost:8000/inventory");
-        console.log(response);
-        setItems(response.data.data);
-      } catch (error) {
-        console.error("Error fetching items:", error);
+    fetchData();
+  }, []);
+
+  const handleDetailsClick = (entry: PurchaseEntry) => {
+    setOrderId(entry.orderId);
+    setSelectedEntry(entry);
+    setIsDetailsDialogOpen(true);
+
+    const newVendorInputs = entry.purchaseEntry.reduce((acc, purchase) => {
+      acc[purchase.vendorId] = {
+        invoiceNo: "",
+        invoiceDate: "",
+        grandTotal: "",
+        vat: "",
+        discount: "",
+        image: "",
+        items: purchase.items.map(() => ({ rate: "", code: "", amount: "" })),
+      };
+      return acc;
+    }, {} as typeof vendorInputs);
+
+    setVendorInputs(newVendorInputs);
+  };
+
+  const getItemDetails = (itemId: string) => {
+    for (const inventory of inventoryItems) {
+      const item = inventory.item.find((item) => item._id === itemId);
+      if (item) {
+        return item;
       }
-    };
-
-    const fetch_approved_orders = async () => {
-      try {
-        const orders = await axios.get(
-          "http://127.0.0.1:8000/get/approved_orders"
-        );
-        setApprovedOrders(orders.data.data);
-        console.log(orders.data.data);
-      } catch (error) {
-        console.log("error fetching data: ", error);
-      }
-    };
-
-    fetch_approved_orders();
-    fetchVendors();
-    fetchItems();
-
-    if (orderId) {
-      form.setValue("orderId", orderId);
     }
-  }, [orderId, form]);
-
-  const addItem = (index: number) => {
-    form.setValue(`purchaseEntry.${index}.items`, [
-      ...form.getValues(`purchaseEntry.${index}.items`),
-      {
-        itemId: "",
-        quantityFromVendor: 0,
-        quantityFromStock: 0,
-      },
-    ]);
+    return null;
   };
 
-  const removeItem = (entryIndex: number, itemIndex: number) => {
-    const items = form.getValues(`purchaseEntry.${entryIndex}.items`);
-    items.splice(itemIndex, 1);
-    form.setValue(`purchaseEntry.${entryIndex}.items`, items);
+  const getVendorDetails = (vendorId: string) => {
+    return vendors.find((vendor) => vendor._id === vendorId);
   };
 
-  const addVendor = () => {
-    appendPurchaseEntry({
-      vendorId: "",
-      isCompleted: false,
-      items: [
-        {
-          itemId: "",
-          quantityFromVendor: 0,
-          quantityFromStock: 0,
-        },
-      ],
-    });
-  };
+  const handleFileUpload = async (
+    vendorId: string,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
     try {
       const response = await axios.post(
-        "http://localhost:8000/purchase_order",
-        data
+        "http://127.0.0.1:8000/upload-image/",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
-      console.log("Purchase order created:", response.data);
-      setIsAddDialogOpen(false);
-      toast.success("Purchase Order Placed successfully!");
-      // alert("Purchase Order Placed");
+      console.log(response.data);
+      if (response.data && response.data.filename) {
+        setVendorInputs((prevInputs) => ({
+          ...prevInputs,
+          [vendorId]: {
+            ...prevInputs[vendorId],
+            image: response.data.filename,
+          },
+        }));
+
+        toast({
+          title: "Image Uploaded Successfully",
+          description: `File: ${response.data.filename}`,
+        });
+
+        console.log(
+          `File uploaded successfully for vendor ${vendorId}. Filename: ${response.data.filename}`
+        );
+      }
     } catch (error) {
-      console.error("Error creating purchase order:", error);
+      console.error("Error uploading file:", error);
+      toast({
+        title: "Image Upload Failed",
+        description: "There was an error uploading the image.",
+        variant: "destructive",
+      });
     }
   };
 
-  const downloadPDF = () => {
-    const capture = document.querySelector('.print.flex-1.p-5');
-    setLoader(true);
-    html2canvas(capture).then((canvas) => {
-      const imgData = canvas.toDataURL('img/png');
-      const doc = new jsPDF('p', 'mm', 'a4');
-      const componentWidth = doc.internal.pageSize.getWidth();
-      const componentHeight = doc.internal.pageSize.getHeight();
-      doc.addImage(imgData, 'PNG', 0, 0, componentWidth, componentHeight);
-      setLoader(false);
-      doc.save('receipt.pdf');
-    })
-  }
+  const handleSubmit = async (vendorId: string) => {
+    if (!selectedEntry) return;
+
+    const vendorPurchaseEntry = selectedEntry.purchaseEntry.find(
+      (p) => p.vendorId === vendorId
+    );
+    if (!vendorPurchaseEntry) return;
+
+    const vendorInput = vendorInputs[vendorId];
+    if (!vendorInput) return;
+
+    const data = {
+      purchaseEntryId: vendorPurchaseEntry._id,
+      items: vendorInput.items.map((item, index) => ({
+        code: item.code,
+        inventoryId: vendorPurchaseEntry.items[index].inventoryId,
+        itemId: vendorPurchaseEntry.items[index].itemId,
+        productName:
+          getItemDetails(vendorPurchaseEntry.items[index].itemId)?.itemName ||
+          "",
+        quantity: vendorPurchaseEntry.items[index].quantityFromVendor,
+        rate: parseFloat(item.rate),
+        amount: parseFloat(item.amount),
+      })),
+      image: vendorInput.image,
+      discount: parseFloat(vendorInput.discount) || 0,
+      vat: parseFloat(vendorInput.vat) || 0,
+      grandTotal: parseFloat(vendorInput.grandTotal),
+      invoiceNo: vendorInput.invoiceNo,
+      invoiceDate: vendorInput.invoiceDate,
+    };
+
+    try {
+      const response = await axios.post(
+        `http://127.0.0.1:8000/purchase_entry/${orderId}`,
+        data
+      );
+      console.log("API response:", response.data);
+      if (response.status === 200) {
+        if (selectedEntry) {
+          const updatedPurchaseEntry = selectedEntry.purchaseEntry.filter(
+            (purchase) => purchase.vendorId !== vendorId
+          );
+
+          setSelectedEntry({
+            ...selectedEntry,
+            purchaseEntry: updatedPurchaseEntry,
+          });
+
+          const { [vendorId]: _, ...restVendorInputs } = vendorInputs;
+          setVendorInputs(restVendorInputs);
+
+          if (updatedPurchaseEntry.length === 0) {
+            setIsDetailsDialogOpen(false);
+          }
+          setPurchaseEntries((prevEntries) =>
+            prevEntries.map((entry) =>
+              entry._id === selectedEntry._id
+                ? { ...entry, purchaseEntry: updatedPurchaseEntry }
+                : entry
+            )
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error submitting purchase entry:", error);
+    }
+  };
 
   return (
-    <div className="flex font-archivo bg-[#f7f7f9] h-screen">
+    <div className="flex h-screen bg-gray-100 font-archivo">
       <InventorySidebar />
-      <div className="print flex-1 p-5">
-        <Card className="w-full max-w-2xl justify-center items-center mx-auto">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">
-              Purchase Order Slip
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                <FormField
-                  control={form.control}
-                  name="orderId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel htmlFor="orderId">Order ID</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="text"
-                          id="orderId"
-                          disabled
-                          className="text-[15px] font-semibold"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {purchaseEntryFields && purchaseEntryFields.length > 0 && (
-                purchaseEntryFields.map((entry, index) => (
-                  <div
-                    key={entry.id}
-                    className="space-y-4 p-4 border rounded-lg"
-                  >
-                    <FormField
-                      control={form.control}
-                      name={`purchaseEntry.${index}.vendorId`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Vendor</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a vendor" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {vendors.map((vendor) => (
-                                <SelectItem key={vendor._id} value={vendor._id}>
-                                  {vendor.vendorName}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                          <div className="flex justify-end h-[0px] ">
-                            <Label
-                              className=" w-[110px] hover:text-[red] mt-[8px]"
-                              onClick={() => removePurchaseEntry(index)}
-                            >
-                              - Remove Vendor
-                            </Label>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-
-                    {form
-                      .watch(`purchaseEntry.${index}.items`)
-                      .map((item, itemIndex) => (
-                        <div key={itemIndex} className="space-y-4">
-                          <FormField
-                            control={form.control}
-                            name={`purchaseEntry.${index}.items.${itemIndex}.itemId`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Item</FormLabel>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  defaultValue={field.value}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select an item" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {items.map((item) => (
-                                      <SelectItem
-                                        key={item._id}
-                                        value={item._id}
-                                      >
-                                        {item.itemName}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name={`purchaseEntry.${index}.items.${itemIndex}.quantityFromVendor`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Quantity from Vendor</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="number"
-                                    value={field.value || ""}
-                                    onChange={(e) =>
-                                      field.onChange(Number(e.target.value))
-                                    }
-                                    className="w-full"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name={`purchaseEntry.${index}.items.${itemIndex}.quantityFromStock`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Quantity from Stock</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="number"
-                                    value={field.value || ""}
-                                    onChange={(e) =>
-                                      field.onChange(Number(e.target.value))
-                                    }
-                                    className="w-full"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <div className="flex justify-between">
-                            <Button
-                              type="button"
-                              onClick={() => addItem(index)}
-                            >
-                              + Add Item
-                            </Button>
-                            <Label
-                              className="hover:text-[red]"
-                              onClick={() => removeItem(index, itemIndex)}
-                            >
-                              - Remove Item
-                            </Label>
-                          </div>
-                        </div>
-                      ))}
+      <div className="flex-1 p-8 overflow-auto">
+        <h1 className="text-3xl font-bold mb-6 text-gray-800">
+          Purchase Orders
+          <span className="text-2xl font-normal text-gray-600 ml-2">
+            (Items yet to be received from Vendor)
+          </span>
+        </h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {purchaseEntries.map((entry) => (
+            <Card
+              key={entry._id}
+              className="shadow-lg hover:shadow-xl transition-shadow duration-300"
+            >
+              <CardHeader>
+                <CardTitle className="flex justify-between items-center">
+                  <span className="text-xl font-semibold text-blue-600">
+                    {entry.orderId}
+                  </span>
+                  <span className="text-sm font-medium text-gray-500">
+                    {entry.isCompleted ? "Completed" : "Pending"}
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDetailsClick(entry)}
+                      className="flex items-center"
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      View Details
+                    </Button>
+                    {entry.purchaseEntry.some(
+                      (purchase) => purchase.tag === "reorder"
+                    ) && (
+                      <span className="text-sm font-medium text-orange-500 flex items-center">
+                        <RefreshCw className="mr-1 h-4 w-4" />
+                        Reorder
+                      </span>
+                    )}
                   </div>
-                )))}
+                  <div className="text-sm text-gray-600">
+                    <p>
+                      Grand Total: Rs.{" "}
+                      {entry.purchaseEntry
+                        .reduce(
+                          (total, purchase) =>
+                            total + (purchase.grandTotal || 0),
+                          0
+                        )
+                        .toFixed(2)}
+                    </p>
+                    <p>
+                      Invoice No:{" "}
+                      {entry.purchaseEntry
+                        .map((purchase) => purchase.invoiceNo)
+                        .filter(Boolean)
+                        .join(", ") || "N/A"}
+                    </p>
+                    <p>
+                      Invoice Date:{" "}
+                      {entry.purchaseEntry
+                        .map((purchase) => purchase.invoiceDate)
+                        .filter(Boolean)
+                        .join(", ") || "N/A"}
+                    </p>
+                    {entry.purchaseEntry.some((purchase) => purchase.tag) && (
+                      <p>
+                        Tags:{" "}
+                        {entry.purchaseEntry
+                          .map((purchase) => purchase.tag)
+                          .filter(Boolean)
+                          .join(", ")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-                <Button type="button" onClick={addVendor}>
-                  + Add Vendor
-                </Button>
+        <Dialog
+          open={isDetailsDialogOpen}
+          onOpenChange={setIsDetailsDialogOpen}
+        >
+          <DialogContent className="max-w-4xl font-archivo">
+            <DialogHeader>
+              <DialogTitle className="text-3xl font-bold text-gray-800 mb-4">
+                Purchase Order Details
+              </DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="h-[60vh]">
+              {selectedEntry?.purchaseEntry.map((purchase) => {
+                const vendorDetails = getVendorDetails(purchase.vendorId);
+                return (
+                  <div
+                    key={purchase._id}
+                    className="mb-8 pb-8 border border-gray-200 rounded-lg p-4 last:mb-0"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-2xl font-black text-zinc-900 underline-offset-1">
+                        {vendorDetails?.vendorName || "Unknown Vendor"}
+                      </h3>
+                      <div>
+                        <Label
+                          htmlFor={`file-${selectedEntry._id}-${purchase.vendorId}`}
+                          className="cursor-pointer"
+                        >
+                          <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md p-2 hover:border-blue-500 transition-colors duration-300">
+                            <Upload className="h-4 w-4 text-gray-400 mr-2" />
+                            <span className="text-sm text-gray-600">
+                              Upload Bill
+                            </span>
+                          </div>
+                        </Label>
+                        <Input
+                          id={`file-${selectedEntry._id}-${purchase.vendorId}`}
+                          type="file"
+                          className="hidden"
+                          onChange={(e) =>
+                            handleFileUpload(purchase.vendorId, e)
+                          }
+                          multiple
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="grid gap-[10px] mt-[15px]">
+                        <p>
+                          <span className="font-medium">Address:</span>{" "}
+                          {vendorDetails?.vendorAddress}
+                        </p>
+                        <p>
+                          <span className="font-medium">VAT:</span>{" "}
+                          {vendorDetails?.vendorVAT}
+                        </p>
+                        <p>
+                          <span className="font-medium">Phone:</span>{" "}
+                          {vendorDetails?.vendorPhone}
+                        </p>
+                      </div>
+                      <div className="flex gap-[10px]">
+                        <div className="grid gap-[10px]">
+                          <Input
+                            type="text"
+                            placeholder="Image URL"
+                            value={vendorInputs[purchase.vendorId]?.image || ""}
+                            onChange={(e) =>
+                              setVendorInputs((prev) => ({
+                                ...prev,
+                                [purchase.vendorId]: {
+                                  ...prev[purchase.vendorId],
+                                  image: e.target.value,
+                                },
+                              }))
+                            }
+                          />
+                          <Input
+                            placeholder="Invoice No"
+                            value={
+                              vendorInputs[purchase.vendorId]?.invoiceNo || ""
+                            }
+                            onChange={(e) =>
+                              setVendorInputs((prev) => ({
+                                ...prev,
+                                [purchase.vendorId]: {
+                                  ...prev[purchase.vendorId],
+                                  invoiceNo: e.target.value,
+                                },
+                              }))
+                            }
+                          />
+                          <Input
+                            type="date"
+                            placeholder="Invoice Date"
+                            value={
+                              vendorInputs[purchase.vendorId]?.invoiceDate || ""
+                            }
+                            onChange={(e) =>
+                              setVendorInputs((prev) => ({
+                                ...prev,
+                                [purchase.vendorId]: {
+                                  ...prev[purchase.vendorId],
+                                  invoiceDate: e.target.value,
+                                },
+                              }))
+                            }
+                          />
+                        </div>
+                        <div className="grid gap-[10px]">
+                          <Input
+                            type="number"
+                            placeholder="VAT"
+                            value={vendorInputs[purchase.vendorId]?.vat || ""}
+                            onChange={(e) =>
+                              setVendorInputs((prev) => ({
+                                ...prev,
+                                [purchase.vendorId]: {
+                                  ...prev[purchase.vendorId],
+                                  vat: e.target.value,
+                                },
+                              }))
+                            }
+                          />
+                          <Input
+                            type="number"
+                            placeholder="Discount"
+                            value={
+                              vendorInputs[purchase.vendorId]?.discount || ""
+                            }
+                            onChange={(e) =>
+                              setVendorInputs((prev) => ({
+                                ...prev,
+                                [purchase.vendorId]: {
+                                  ...prev[purchase.vendorId],
+                                  discount: e.target.value,
+                                },
+                              }))
+                            }
+                          />
+                          <Input
+                            type="number"
+                            placeholder="Grand Total"
+                            value={
+                              vendorInputs[purchase.vendorId]?.grandTotal || ""
+                            }
+                            onChange={(e) =>
+                              setVendorInputs((prev) => ({
+                                ...prev,
+                                [purchase.vendorId]: {
+                                  ...prev[purchase.vendorId],
+                                  grandTotal: e.target.value,
+                                },
+                              }))
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <h4 className="text-lg font-bold mb-2 text-zinc-800">
+                      Items
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {purchase.items.map((item, index) => {
+                        const itemDetails = getItemDetails(item.itemId);
+                        return (
+                          <div
+                            key={item.itemId}
+                            className="bg-white p-4 rounded-md shadow-sm border border-gray-200"
+                          >
+                            <h5 className="font-semibold mb-2 flex justify-between items-center">
+                              <span>
+                                {itemDetails?.itemName || "Unknown Item"}
+                              </span>
+                              {purchase.tag === "reorder" && (
+                                <span className="text-xs font-medium text-orange-500 flex items-center">
+                                  <RefreshCw className="mr-1 h-3 w-3" />
+                                  Reordered
+                                </span>
+                              )}
+                            </h5>
+                            <div className="text-sm grid gap-[10px]">
+                              <p>
+                                <span className="font-medium">
+                                  Quantity (Vendor):
+                                </span>{" "}
+                                {item.quantityFromVendor}
+                              </p>
+                              <p>
+                                <span className="font-medium">
+                                  Quantity (Stock):
+                                </span>{" "}
+                                {item.quantityFromStock}
+                              </p>
+                              <div className="grid gap-[10px]">
+                                <Input
+                                  placeholder="Item Rate"
+                                  value={
+                                    vendorInputs[purchase.vendorId]?.items[
+                                      index
+                                    ]?.rate || ""
+                                  }
+                                  onChange={(e) =>
+                                    setVendorInputs((prev) => ({
+                                      ...prev,
+                                      [purchase.vendorId]: {
+                                        ...prev[purchase.vendorId],
+                                        items: prev[
+                                          purchase.vendorId
+                                        ].items.map((item, i) =>
+                                          i === index
+                                            ? { ...item, rate: e.target.value }
+                                            : item
+                                        ),
+                                      },
+                                    }))
+                                  }
+                                />
+                                <Input
+                                  placeholder="Item Code"
+                                  value={
+                                    vendorInputs[purchase.vendorId]?.items[
+                                      index
+                                    ]?.code || ""
+                                  }
+                                  onChange={(e) =>
+                                    setVendorInputs((prev) => ({
+                                      ...prev,
+                                      [purchase.vendorId]: {
+                                        ...prev[purchase.vendorId],
+                                        items: prev[
+                                          purchase.vendorId
+                                        ].items.map((item, i) =>
+                                          i === index
+                                            ? { ...item, code: e.target.value }
+                                            : item
+                                        ),
+                                      },
+                                    }))
+                                  }
+                                />
+                                <Input
+                                  placeholder="Amount"
+                                  value={
+                                    vendorInputs[purchase.vendorId]?.items[
+                                      index
+                                    ]?.amount || ""
+                                  }
+                                  onChange={(e) =>
+                                    setVendorInputs((prev) => ({
+                                      ...prev,
+                                      [purchase.vendorId]: {
+                                        ...prev[purchase.vendorId],
+                                        items: prev[
+                                          purchase.vendorId
+                                        ].items.map((item, i) =>
+                                          i === index
+                                            ? {
+                                                ...item,
+                                                amount: e.target.value,
+                                              }
+                                            : item
+                                        ),
+                                      },
+                                    }))
+                                  }
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
 
-                <Button type="submit" className="w-full">
-                  Submit Purchase Order
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                    <Button
+                      onClick={() => handleSubmit(purchase.vendorId)}
+                      className="mt-4"
+                    >
+                      Submit
+                    </Button>
+                  </div>
+                );
+              })}
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
       </div>
-      <Button
-            className="receipt-modal-download-button"
-            onClick={downloadPDF}
-            disabled={!(loader === false)}
-          >
-            {loader ? (
-              <span>Downloading</span>
-            ) : (
-              <span>Download</span>
-            )}
-
-          </Button>
-      <Toaster />
     </div>
   );
-}
+};
+
+export default PurchaseEntryList;

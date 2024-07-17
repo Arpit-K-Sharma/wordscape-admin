@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Menu, X, ChevronRight } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   LayoutDashboard,
@@ -69,6 +70,8 @@ interface Paper {
   paperType: string;
 }
 
+type POStatus = 'not_requested' | 'requested' | 'created';
+
 const Dashboard = () => {
   const [approvedOrders, setApprovedOrders] = useState<ApprovedOrders[]>([]);
   const [user, setUser] = useState<User | null>(null);
@@ -78,6 +81,8 @@ const Dashboard = () => {
   const [innerPaper, setInnerPaper] = useState<Paper | null>(null);
   const [outerPaper, setOuterPaper] = useState<Paper | null>(null);
   const [poRequested, setPoRequested] = useState<{ [key: string]: boolean }>({});
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const fetch_approved_orders = async () => {
@@ -149,34 +154,59 @@ const Dashboard = () => {
   // const handleRequestPO = (orderId: string) => {
   //   router.push(`/inventory/entry/${orderId}`);
   // };
-
+  const [poStatus, setPoStatus] = useState<Record<string, POStatus>>({});
   const router = useRouter();
 
   // Load state from localStorage on component mount
   useEffect(() => {
-    const storedPoRequested = localStorage.getItem('poRequested');
-    if (storedPoRequested) {
-      setPoRequested(JSON.parse(storedPoRequested));
+    const storedPoStatus = localStorage.getItem('poStatus');
+    if (storedPoStatus) {
+      setPoStatus(JSON.parse(storedPoStatus));
     }
   }, []);
 
   const handleRequestPO = (orderId: string) => {
-    const newState = { ...poRequested, [orderId]: true };
-    setPoRequested(newState);
-    
+    const newStatus = { ...poStatus, [orderId]: 'requested' };
+    setPoStatus(newStatus);
+
     // Store the updated state in localStorage
-    localStorage.setItem('poRequested', JSON.stringify(newState));
+    localStorage.setItem('poStatus', JSON.stringify(newStatus));
 
     router.push(`/inventory/entry/${orderId}`);
   };
 
-  return (
-    <div className="flex h-screen bg-gray-100 font-archivo">
-      <InventorySidebar />
+  const handlePOSubmit = (orderId: string) => {
+    const newStatus = { ...poStatus, [orderId]: 'created' };
+    setPoStatus(newStatus);
 
-      <main className="flex-1 p-8">
-        <h1 className="text-3xl font-bold mb-6">Inventory Overview</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    // Store the updated state in localStorage
+    localStorage.setItem('poStatus', JSON.stringify(newStatus));
+
+    // Additional logic for PO submission
+  };
+
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  return (
+    <div className="flex min-h-screen bg-gray-100 font-archivo">
+      <button
+        className="sm:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-md shadow-md"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+      >
+        {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
+      <div className={`
+    fixed inset-y-0 left-0 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+    sm:relative sm:translate-x-0 transition duration-200 ease-in-out
+    w-64 bg-white shadow-lg z-40 sm:z-0 max-lg:h-screen
+  `}>
+        <InventorySidebar />
+      </div>
+
+      <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
+        <h1 className="text-3xl sm:text-3xl max-sm:ml-[50px] font-bold mb-4 sm:mb-6">Inventory Overview</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Paper Stock</CardTitle>
