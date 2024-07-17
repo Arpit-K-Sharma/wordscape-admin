@@ -303,12 +303,15 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                     className="space-y-4 p-4 border rounded-lg"
                   >
                     <div className="flex justify-end h-[0px] ">
-                      <Label
+                      {!isReorder && (
+                        <Label
                         className=" w-[110px] hover:text-[red] mt-[8px]"
                         onClick={() => removePurchaseEntry(index)}
                       >
                         - Remove Vendor
                       </Label>
+                      )}
+                      
                     </div>
                     <FormField
                       control={form.control}
@@ -450,13 +453,15 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                 + Add Item
                               </Button>
                             )}
-
-                            <Label
+                            {!isReorder && (
+                              <Label
                               className="hover:text-[red]"
                               onClick={() => removeItem(index, itemIndex)}
                             >
                               - Remove Item
                             </Label>
+                            )}
+                            
                           </div>
                         </div>
                       ))}

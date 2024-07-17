@@ -165,7 +165,7 @@ const StocksPage: React.FC = () => {
                 </div>
                 <div>
                   <Button
-                    onClick={() => handleOpenForm('addType', "6696b51c2372a1a25eda992f")}
+                    onClick={() => handleOpenForm('addType', "6697898fae9ff72cee6b1ee7")}
                     disabled={isSubmitting}
                     className="font-semibold text-[15px]"
                   >
@@ -185,7 +185,7 @@ const StocksPage: React.FC = () => {
             ) : (
               <div className="space-y-8 overflow-y-auto h-full custom-scrollbar">
                 <div className="">
-                  {inventoryData.map((inventoryType) => (
+                  {inventoryData && inventoryData.map((inventoryType) => (
                     <div key={inventoryType._id} className="shadow-sm rounded-md p-[20px]">
                       <div className="flex flex-row justify-between">
                         <div>
@@ -212,7 +212,7 @@ const StocksPage: React.FC = () => {
 
 
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-archivo">
-                        {inventoryType.item.map((item) => (
+                        {inventoryType && inventoryType.item.map((item) => (
                           <Card
                             key={item._id}
                             className="bg-white shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200"

@@ -207,7 +207,7 @@ const PurchaseWithEntry: React.FC = () => {
             (Items received from Vendors)
           </span>
         </h1>
-        <div className="grid-flow-row grid-row-1 md:grid-row-2 lg:grid-row-3 gap-6 p-6">
+        <div className="grid grid-flow-cols grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-6 p-6">
           {Array.isArray(purchaseOrders) && purchaseOrders.length > 0 ? (
             <div>
               {purchaseOrders.map((order) => (
