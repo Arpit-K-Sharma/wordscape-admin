@@ -190,6 +190,7 @@ const PurchaseEntryList: React.FC = () => {
             image: response.data.filename,
           },
         }));
+        
 
         toast({
           title: "Image Uploaded Successfully",
