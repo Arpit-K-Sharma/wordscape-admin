@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import InventorySidebar from "../Sidebar/InventorySidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,9 +15,9 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Eye, Upload, RefreshCw } from "lucide-react";
-// import { useToast } from "@/components/ui/use-toast";
-// import { Toast } from "@/components/ui/toast";
+import toast, { Toaster } from "react-hot-toast";
 
+import { purchaseEntryService } from "@/app/services/inventoryServices/purchaseEntryListService";
 interface PurchaseEntryItem {
   itemId: string;
   inventoryId: string;
@@ -48,6 +49,7 @@ interface PurchaseEntry {
   isCompleted: boolean;
   purchaseEntry: PurchaseEntryVendor[];
 }
+
 interface Item {
   _id: string;
   itemName: string;
@@ -72,6 +74,7 @@ const PurchaseEntryList: React.FC = () => {
   const [selectedEntry, setSelectedEntry] = useState<PurchaseEntry | null>(
     null
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [orderId, setOrderId] = useState("");
@@ -94,30 +97,29 @@ const PurchaseEntryList: React.FC = () => {
       try {
         const [purchaseEntriesResponse, inventoryResponse, vendorsResponse] =
           await Promise.all([
-            axios.get("http://127.0.0.1:8000/purchase_orders_without_entries"),
-            axios.get("http://127.0.0.1:8000/inventory"),
-            axios.get("http://127.0.0.1:8000/vendors"),
+            purchaseEntryService.getPurchaseOrdersWithoutEntries(),
+            purchaseEntryService.getInventoryItems(),
+            purchaseEntryService.getVendors(),
           ]);
-        if (purchaseEntriesResponse.data.status === "success") {
-          const filteredPurchaseEntries = purchaseEntriesResponse.data.data
-            .map((entry) => ({
-              ...entry,
-              purchaseEntry: entry.purchaseEntry.filter(
-                (purchase) => !purchase.isCompleted
-              ),
-            }))
-            .filter((entry) => entry.purchaseEntry.length > 0);
+        console.log(purchaseEntriesResponse);
+        console.log(inventoryResponse);
 
-          setPurchaseEntries(filteredPurchaseEntries);
-        }
+        const filteredPurchaseEntries = (
+          purchaseEntriesResponse as PurchaseEntry[]
+        )
+          .map((entry: PurchaseEntry) => ({
+            ...entry,
+            purchaseEntry: entry.purchaseEntry.filter(
+              (purchase) => !purchase.isCompleted
+            ),
+          }))
+          .filter((entry: PurchaseEntry) => entry.purchaseEntry.length > 0);
 
-        if (inventoryResponse.data.status === "success") {
-          setInventoryItems(inventoryResponse.data.data);
-        }
+        setPurchaseEntries(filteredPurchaseEntries);
 
-        if (vendorsResponse.data.status === "success") {
-          setVendors(vendorsResponse.data.data);
-        }
+        setInventoryItems(inventoryResponse as InventoryItem[]);
+
+        setVendors(vendorsResponse);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -157,6 +159,11 @@ const PurchaseEntryList: React.FC = () => {
     return null;
   };
 
+  const router = useRouter();
+  const handleReorderClick = (orderId: string) => {
+    router.push(`/inventory/entry/${orderId}?reorder=True`);
+  };
+
   const getVendorDetails = (vendorId: string) => {
     return vendors.find((vendor) => vendor._id === vendorId);
   };
@@ -190,12 +197,6 @@ const PurchaseEntryList: React.FC = () => {
             image: response.data.filename,
           },
         }));
-        
-
-        toast({
-          title: "Image Uploaded Successfully",
-          description: `File: ${response.data.filename}`,
-        });
 
         console.log(
           `File uploaded successfully for vendor ${vendorId}. Filename: ${response.data.filename}`
@@ -203,11 +204,6 @@ const PurchaseEntryList: React.FC = () => {
       }
     } catch (error) {
       console.error("Error uploading file:", error);
-      toast({
-        title: "Image Upload Failed",
-        description: "There was an error uploading the image.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -243,41 +239,56 @@ const PurchaseEntryList: React.FC = () => {
       invoiceDate: vendorInput.invoiceDate,
     };
 
-    try {
-      const response = await axios.post(
-        `http://127.0.0.1:8000/purchase_entry/${orderId}`,
-        data
-      );
-      console.log("API response:", response.data);
-      if (response.status === 200) {
-        if (selectedEntry) {
-          const updatedPurchaseEntry = selectedEntry.purchaseEntry.filter(
-            (purchase) => purchase.vendorId !== vendorId
-          );
-
-          setSelectedEntry({
-            ...selectedEntry,
-            purchaseEntry: updatedPurchaseEntry,
-          });
-
-          const { [vendorId]: _, ...restVendorInputs } = vendorInputs;
-          setVendorInputs(restVendorInputs);
-
-          if (updatedPurchaseEntry.length === 0) {
-            setIsDetailsDialogOpen(false);
-          }
-          setPurchaseEntries((prevEntries) =>
-            prevEntries.map((entry) =>
-              entry._id === selectedEntry._id
-                ? { ...entry, purchaseEntry: updatedPurchaseEntry }
-                : entry
-            )
-          );
-        }
+    await toast.promise(
+      axios.post(`http://127.0.0.1:8000/purchase_entry/${orderId}`, data),
+      {
+        loading: "Creating Purchase Order",
+        success: (response) => {
+          console.log("Purchase Order created:", response.data);
+          return "Purchase Order Placed Successfully";
+        },
+        error: "Error creating reorder",
+      },
+      {
+        duration: 3000,
       }
-    } catch (error) {
-      console.error("Error submitting purchase entry:", error);
-    }
+    );
+    setIsDetailsDialogOpen(false);
+    // try {
+    //   const response = await axios.post(
+    //     `http://127.0.0.1:8000/purchase_entry/${orderId}`,
+    //     data
+    //   );
+    //   console.log("API response:", response.data);
+    //   if (response.status === 200) {
+    //     if (selectedEntry) {
+    //       const updatedPurchaseEntry = selectedEntry.purchaseEntry.filter(
+    //         (purchase) => purchase.vendorId !== vendorId
+    //       );
+
+    //       setSelectedEntry({
+    //         ...selectedEntry,
+    //         purchaseEntry: updatedPurchaseEntry,
+    //       });
+
+    //       const { [vendorId]: _, ...restVendorInputs } = vendorInputs;
+    //       setVendorInputs(restVendorInputs);
+
+    //       if (updatedPurchaseEntry.length === 0) {
+    //         setIsDetailsDialogOpen(false);
+    //       }
+    //       setPurchaseEntries((prevEntries) =>
+    //         prevEntries.map((entry) =>
+    //           entry._id === selectedEntry._id
+    //             ? { ...entry, purchaseEntry: updatedPurchaseEntry }
+    //             : entry
+    //         )
+    //       );
+    //     }
+    //   }
+    // } catch (error) {
+    //   console.error("Error submitting purchase entry:", error);
+    // }
   };
 
   return (
@@ -290,7 +301,7 @@ const PurchaseEntryList: React.FC = () => {
             (Items yet to be received from Vendor)
           </span>
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-flow-cols grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-6 p-6">
           {purchaseEntries.map((entry) => (
             <Card
               key={entry._id}
@@ -321,10 +332,13 @@ const PurchaseEntryList: React.FC = () => {
                     {entry.purchaseEntry.some(
                       (purchase) => purchase.tag === "reorder"
                     ) && (
-                      <span className="text-sm font-medium text-orange-500 flex items-center">
+                      <Button
+                        className="text-sm font-medium bg-transparent hover:bg-transparent text-orange-500 flex items-center"
+                        onClick={() => handleReorderClick(entry.orderId)}
+                      >
                         <RefreshCw className="mr-1 h-4 w-4" />
                         Reorder
-                      </span>
+                      </Button>
                     )}
                   </div>
                   <div className="text-sm text-gray-600">
@@ -395,10 +409,10 @@ const PurchaseEntryList: React.FC = () => {
                           htmlFor={`file-${selectedEntry._id}-${purchase.vendorId}`}
                           className="cursor-pointer"
                         >
-                          <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md p-2 hover:border-blue-500 transition-colors duration-300">
+                          <div className="flex items-center justify-center border-2 border-dashed border-gray-300 mr-7 rounded-md p-2 hover:border-blue-500 transition-colors duration-300">
                             <Upload className="h-4 w-4 text-gray-400 mr-2" />
                             <span className="text-sm text-gray-600">
-                              Upload Bill
+                              Proof of Payment
                             </span>
                           </div>
                         </Label>

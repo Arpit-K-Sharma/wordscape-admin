@@ -3,7 +3,7 @@
 import axios from "axios";
 
 export interface Employee {
-  id: string;
+  _id: string;
   fullName: string;
   email: string;
   password: string;
@@ -18,7 +18,7 @@ export interface Employee {
 }
 
 export interface Department {
-  id: string;
+  _id: string;
   department_name: string;
   description: string;
 }
@@ -48,22 +48,9 @@ export const employeeService = {
     return response.data.data;
   },
 
-  addEmployee: async (employeeData: NewStaffData): Promise<string> => {
-    const formattedData = {
-      ...employeeData,
-      role: "ROLE_USER",
-      status: true,
-      dailyWage: Number(employeeData.dailyWage),
-    };
-    const response = await axios.post(`${BASE_URL}/staff`, formattedData);
-    if (
-      response.data.status === "success" &&
-      response.data.status_code === 200
-    ) {
-      return response.data.message;
-    } else {
-      throw new Error(`Failed to add employee: ${response.data.message}`);
-    }
+  addEmployee: async (employeeData: NewStaffData): Promise<Employee> => {
+    const response = await axios.post(`${BASE_URL}/staff`, employeeData);
+    return response.data.data;
   },
 
   updateEmployee: async (
@@ -71,7 +58,7 @@ export const employeeService = {
     employeeData: Partial<Employee>
   ): Promise<Employee> => {
     const response = await axios.put(`${BASE_URL}/staff/${id}`, employeeData);
-    return response.data;
+    return response.data.data;
   },
 
   deleteEmployee: async (id: string): Promise<void> => {

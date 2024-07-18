@@ -97,7 +97,7 @@ const HROverview: React.FC = () => {
             {/* Recent Employees */}
             <Card className="h-[calc(100%-130px)]">
               <CardHeader className="flex justify-between items-center">
-                <CardTitle>Recent Employees</CardTitle>
+                <CardTitle className="text-xl">Recent Employees</CardTitle>
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-[calc(100%-64px)]">
@@ -139,7 +139,7 @@ const HROverview: React.FC = () => {
 
           <Card className="h-[calc(132%-130px)]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-xl font-bold text-center">
                 Upcoming Holidays
               </CardTitle>
               <GraduationCap className="h-4 w-4 text-muted-foreground" />
@@ -147,8 +147,7 @@ const HROverview: React.FC = () => {
             <CardContent>
               {currentYearHolidays.slice(0, 5).map((holiday) => (
                 <p key={holiday.holiday_id} className="mt-3 mb-">
-                  <b>{holiday.name}:</b>{" "}
-                  {new Date(holiday.date).toLocaleDateString()}
+                  <b>{holiday.name}:</b> {holiday.date}
                 </p>
               ))}
               <Button

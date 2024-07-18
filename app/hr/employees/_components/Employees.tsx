@@ -59,7 +59,7 @@ interface Employee {
 }
 
 interface Department {
-  _id: string;
+  id: string;
   department_name: string;
   description: string;
 }
@@ -71,7 +71,7 @@ const newStaffSchema = z.object({
   address: z.string().min(1, "Address is required"),
   phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
   position: z.string().min(1, "Position is required"),
-  dailyWage: z.string().or(z.number()).transform(Number),
+  dailyWage: z.number().positive("Daily wage must be a positive number"),
   dept_ids: z
     .array(z.string())
     .min(1, "At least one department must be selected"),
@@ -118,7 +118,6 @@ const EmployeesPage: React.FC = () => {
     try {
       const response = await axios.get("http://127.0.0.1:8000/department");
       setDepartments(response.data.data);
-      console.log("testing ", JSON.stringify(response.data.data));
     } catch (error) {
       console.error("Error fetching departments:", error);
       toast.error("Failed to fetch departments");
@@ -130,34 +129,26 @@ const EmployeesPage: React.FC = () => {
   };
 
   const handleAddStaff = async () => {
-    console.log("Add New Staff button pressed");
-    console.log("Current newStaff state:", newStaff);
-
     try {
-      console.log("Attempting to validate data with Zod schema");
-      const validatedData = newStaffSchema.parse(newStaff);
-      console.log("Data validated successfully:", validatedData);
-
       const staffData = {
-        ...validatedData,
-        role: "ROLE_USER",
+        fullName: newStaff.fullName,
+        password: newStaff.password,
+        email: newStaff.email,
+        address: newStaff.address,
+        phoneNumber: newStaff.phoneNumber,
         status: true,
-        dailyWage: Number(validatedData.dailyWage),
+        role: "ROLE_USER",
+        position: newStaff.position,
+        dailyWage: Number(newStaff.dailyWage),
+        dept_ids: newStaff.dept_ids,
       };
-      console.log("Prepared staff data for API:", staffData);
 
-      console.log("Calling employeeService.addEmployee");
-      const result = await employeeService.addEmployee(staffData);
-      console.log("API response:", result);
+      console.log("Sending staff data:", JSON.stringify(staffData, null, 2));
 
+      await employeeService.addEmployee(staffData);
       setIsAddStaffDialogOpen(false);
-      console.log("Add Staff dialog closed");
-
-      await fetchEmployees();
-      console.log("Employees list refreshed");
-
+      fetchEmployees();
       toast.success("Staff added successfully");
-      console.log("Success toast displayed");
 
       // Reset the form
       setNewStaff({
@@ -170,21 +161,9 @@ const EmployeesPage: React.FC = () => {
         dailyWage: "",
         dept_ids: [],
       });
-      console.log("New staff form reset");
     } catch (error) {
-      console.error("Error in handleAddStaff:", error);
-
-      if (error instanceof z.ZodError) {
-        console.log("Zod validation errors:", error.errors);
-        error.errors.forEach((err) => {
-          toast.error(err.message);
-          console.log("Error toast displayed:", err.message);
-        });
-      } else {
-        console.error("Non-Zod error:", error);
-        toast.error("Failed to add staff");
-        console.log("General error toast displayed");
-      }
+      console.error("Error adding staff:", error);
+      toast.error("Failed to add staff");
     }
   };
 
@@ -226,7 +205,7 @@ const EmployeesPage: React.FC = () => {
     if (!editingEmployee) return;
 
     try {
-      await employeeService.updateEmployee(editingEmployee.id, {
+      await employeeService.updateEmployee(editingEmployee._id, {
         fullName: editingEmployee.fullName,
         password: editingEmployee.password,
         email: editingEmployee.email,
@@ -235,12 +214,7 @@ const EmployeesPage: React.FC = () => {
         status: editingEmployee.status,
         position: editingEmployee.position,
         dailyWage: editingEmployee.dailyWage,
-        dept_ids: editingEmployee.departmentNames
-          .map(
-            (name) =>
-              departments.find((dept) => dept.department_name === name)?._id
-          )
-          .filter(Boolean) as string[],
+        dept_ids: editingEmployee.dept_ids,
       });
 
       toast.success("Employee updated successfully");
@@ -251,10 +225,6 @@ const EmployeesPage: React.FC = () => {
       toast.error("Failed to update employee");
     }
   };
-
-  {
-    console.log("DEPARTMENT CHECK", departments);
-  }
 
   return (
     <div className="flex h-screen">
@@ -577,10 +547,7 @@ const EmployeesPage: React.FC = () => {
                             </Select>
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
-                            <Label
-                              htmlFor="updateDepartments"
-                              className="text-right"
-                            >
+                            <Label htmlFor="departments" className="text-right">
                               Departments
                             </Label>
                             <div className="col-span-3 space-y-2">
@@ -590,22 +557,25 @@ const EmployeesPage: React.FC = () => {
                                   className="flex items-center space-x-2"
                                 >
                                   <Checkbox
-                                    id={`dept-${dept.id}`}
+                                    id={`newDept-${dept.id}`}
                                     checked={newStaff.dept_ids.includes(
                                       dept.id
                                     )}
                                     onCheckedChange={(checked) => {
-                                      setNewStaff((prev) => ({
-                                        ...prev,
-                                        dept_ids: checked
+                                      setNewStaff((prev) => {
+                                        const newDeptIds = checked
                                           ? [...prev.dept_ids, dept.id]
                                           : prev.dept_ids.filter(
                                               (id) => id !== dept.id
-                                            ),
-                                      }));
+                                            );
+                                        return {
+                                          ...prev,
+                                          dept_ids: newDeptIds,
+                                        };
+                                      });
                                     }}
                                   />
-                                  <Label htmlFor={`dept-${dept.id}`}>
+                                  <Label htmlFor={`newDept-${dept.id}`}>
                                     {dept.department_name}
                                   </Label>
                                 </div>
@@ -834,7 +804,7 @@ const EmployeesPage: React.FC = () => {
           <DialogFooter>
             <Button onClick={handleAddStaff}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Staff
+              Add New Staff
             </Button>
           </DialogFooter>
         </DialogContent>
