@@ -205,17 +205,28 @@ const EmployeesPage: React.FC = () => {
     if (!editingEmployee) return;
 
     try {
-      await employeeService.updateEmployee(editingEmployee._id, {
+      const updatedEmployeeData = {
         fullName: editingEmployee.fullName,
-        password: editingEmployee.password,
         email: editingEmployee.email,
         address: editingEmployee.address,
         phoneNumber: editingEmployee.phoneNumber,
         status: editingEmployee.status,
         position: editingEmployee.position,
         dailyWage: editingEmployee.dailyWage,
-        dept_ids: editingEmployee.dept_ids,
-      });
+        dept_ids: editingEmployee.dept_ids, // We'll update this in the UI
+      };
+
+      if (editingEmployee.password) {
+        updatedEmployeeData.password = editingEmployee.password;
+      }
+
+      console.log("Updating employee with ID:", editingEmployee._id);
+      console.log("Updated data:", updatedEmployeeData);
+
+      await employeeService.updateEmployee(
+        editingEmployee._id,
+        updatedEmployeeData
+      );
 
       toast.success("Employee updated successfully");
       setIsUpdateDialogOpen(false);
@@ -354,14 +365,14 @@ const EmployeesPage: React.FC = () => {
                         </DialogHeader>
                       </DialogContent>
                     </Dialog>
-
                     <Button
                       key={`update-${employee._id}`}
                       variant="outline"
                       size="sm"
                       className="flex items-center justify-center w-32"
                       onClick={() => {
-                        setEditingEmployee(employee);
+                        console.log("Employee being edited:", employee);
+                        setEditingEmployee({ ...employee });
                         setIsUpdateDialogOpen(true);
                       }}
                     >
@@ -557,15 +568,16 @@ const EmployeesPage: React.FC = () => {
                                   className="flex items-center space-x-2"
                                 >
                                   <Checkbox
-                                    id={`newDept-${dept.id}`}
-                                    checked={newStaff.dept_ids.includes(
+                                    id={`updateDept-${dept.id}`}
+                                    checked={editingEmployee?.dept_ids?.includes(
                                       dept.id
                                     )}
                                     onCheckedChange={(checked) => {
-                                      setNewStaff((prev) => {
+                                      setEditingEmployee((prev) => {
+                                        if (!prev) return prev;
                                         const newDeptIds = checked
-                                          ? [...prev.dept_ids, dept.id]
-                                          : prev.dept_ids.filter(
+                                          ? [...(prev.dept_ids || []), dept.id]
+                                          : (prev.dept_ids || []).filter(
                                               (id) => id !== dept.id
                                             );
                                         return {
@@ -575,7 +587,7 @@ const EmployeesPage: React.FC = () => {
                                       });
                                     }}
                                   />
-                                  <Label htmlFor={`newDept-${dept.id}`}>
+                                  <Label htmlFor={`updateDept-${dept.id}`}>
                                     {dept.department_name}
                                   </Label>
                                 </div>
