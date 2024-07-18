@@ -129,7 +129,7 @@ const HROverview: React.FC = () => {
                 <Button
                   variant="secondary"
                   onClick={() => router.push("/hr/employees")}
-                  className="mt-3 bg-slate-600 text-white hover:bg-slate-800"
+                  className="mt-3 bg-blue-700 text-white hover:bg-slate-800"
                 >
                   View All Employees
                 </Button>
@@ -151,7 +151,7 @@ const HROverview: React.FC = () => {
                 </p>
               ))}
               <Button
-                className="mt-4 bg-slate-600 text-white hover:bg-slate-800"
+                className="mt-4 bg-green-700 text-white hover:bg-slate-800"
                 onClick={() => router.push("/hr/holidays")}
               >
                 View All Holidays
