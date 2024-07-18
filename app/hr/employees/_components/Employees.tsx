@@ -774,26 +774,18 @@ const EmployeesPage: React.FC = () => {
                 {departments.map((dept) => (
                   <div key={dept.id} className="flex items-center space-x-2">
                     <Checkbox
-                      id={`updateDept-${dept.id}`}
-                      checked={editingEmployee?.departmentNames.includes(
-                        dept.department_name
-                      )}
+                      id={`newDept-${dept.id}`}
+                      checked={newStaff.dept_ids.includes(dept.id)}
                       onCheckedChange={(checked) => {
-                        setEditingEmployee((prev) => {
-                          if (!prev) return null;
-                          const newDepartments = checked
-                            ? [...prev.departmentNames, dept.department_name]
-                            : prev.departmentNames.filter(
-                                (name) => name !== dept.department_name
-                              );
-                          return {
-                            ...prev,
-                            departmentNames: newDepartments,
-                          };
+                        setNewStaff((prev) => {
+                          const newDeptIds = checked
+                            ? [...prev.dept_ids, dept.id]
+                            : prev.dept_ids.filter((id) => id !== dept.id);
+                          return { ...prev, dept_ids: newDeptIds };
                         });
                       }}
                     />
-                    <Label htmlFor={`updateDept-${dept.id}`}>
+                    <Label htmlFor={`newDept-${dept.id}`}>
                       {dept.department_name}
                     </Label>
                   </div>
