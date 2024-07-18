@@ -252,7 +252,15 @@ const Dashboard = () => {
                         Rs.{order.estimatedAmount}
                       </TableCell>
                       <TableCell className="px-6 py-[20px]">
-                        <Sheet>
+                        <Sheet
+                          onOpenChange={(open) => {
+                            // This will prevent the sheet from closing on Escape key press
+                            if (!open) {
+                              // Custom close logic here if needed
+                            }
+                          }}
+                          onEscapeKeyDown={(e) => e.preventDefault()}
+                        >
                           <SheetTrigger>
                             <Button
                               className="px-[15px] font-semibold"
@@ -261,7 +269,10 @@ const Dashboard = () => {
                               Order Details
                             </Button>
                           </SheetTrigger>
-                          <SheetContent className="w-[800px]">
+                          <SheetContent
+                            className="w-[800px]"
+                            onPointerDownOutside={(e) => e.preventDefault()}
+                          >
                             <SheetHeader>
                               <SheetTitle className="font-bold text-[20px] text-center mb-[10px]">
                                 Order Details

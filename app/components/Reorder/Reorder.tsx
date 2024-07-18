@@ -1,399 +1,282 @@
 "use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray } from "react-hook-form";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
+
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
+import { SearchIcon } from "lucide-react";
 import InventorySidebar from "../Sidebar/InventorySidebar";
+import { Button } from "@/components/ui/button";
 
-const itemSchema = z.object({
-  itemId: z.string(),
-  quantityFromVendor: z.number().int(),
-  quantityFromStock: z.number().int(),
-  itemCode: z.string(),
-  rate: z.number(),
-  amount: z.number(),
-});
+interface Item {
+  inventoryId: string;
+  itemId: string;
+  quantityFromVendor: number;
+  quantityFromStock: number;
+  itemCode: string | null;
+  rate: number | null;
+  amount: number | null;
+}
 
-const formSchema = z.object({
-  vendorId: z.string(),
-  isCompleted: z.boolean(),
-  items: z.array(itemSchema),
-  tag: z.string(),
-  remarks: z.string(),
-  image: z.string(),
-  discount: z.number(),
-  vat: z.number(),
-  grandTotal: z.number(),
-  invoiceNo: z.string(),
-  invoiceDate: z.string(),
-});
+interface PurchaseEntry {
+  _id: string | null;
+  vendorId: string;
+  isCompleted: boolean;
+  items: Item[];
+  tag: string;
+  remarks: string;
+  image: string | null;
+  discount: number | null;
+  vat: number | null;
+  grandTotal: number | null;
+  invoiceNo: string | null;
+  invoiceDate: string | null;
+}
 
-const Reorder: React.FC = () => {
-  const router = useRouter();
-  const [orderId, setOrderId] = useState("");
+interface PurchaseOrder {
+  _id: string | null;
+  orderId: string;
+  isCompleted: boolean;
+  purchaseEntry: PurchaseEntry[];
+}
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      vendorId: "",
-      isCompleted: false,
-      items: [
-        {
-          itemId: "",
-          quantityFromVendor: 0,
-          quantityFromStock: 0,
-          itemCode: "",
-          rate: 0,
-          amount: 0,
-        },
-      ],
-      tag: "",
-      remarks: "",
-      image: "",
-      discount: 0,
-      vat: 0,
-      grandTotal: 0,
-      invoiceNo: "",
-      invoiceDate: "",
-    },
-  });
+interface Vendor {
+  _id: string;
+  vendorName: string;
+}
+interface Items {
+  _id: string;
+  itemName: string;
+}
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "items",
-  });
+interface InventoryItem {
+  _id: string;
+  type: string;
+  item: Items[];
+}
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      const response = await fetch(`/api/reorder/${orderId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
+interface ApiResponse {
+  status: string;
+  status_code: number;
+  data: PurchaseOrder[];
+}
 
-      if (response.ok) {
-        router.push("/inventory");
-      } else {
-        console.error("Submission failed");
+export function ReorderTable() {
+  const [reorders, setReorders] = useState<PurchaseOrder[]>([]);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [reordersRes, vendorsRes, inventoryRes] = await Promise.all([
+          axios.get<ApiResponse>("http://127.0.0.1:8000/reorders"),
+          axios.get<{ data: Vendor[] }>("http://127.0.0.1:8000/vendors"),
+          axios.get<{ data: InventoryItem[] }>(
+            "http://127.0.0.1:8000/inventory"
+          ),
+        ]);
+        console.log("Reorders response:", reordersRes.data);
+        console.log("Vendors response:", vendorsRes.data);
+        console.log("Inventory response:", inventoryRes.data);
+        setReorders(reordersRes.data.data);
+        setVendors(vendorsRes.data.data);
+        setInventoryItems(inventoryRes.data.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error submitting form:", error);
+    };
+    fetchData();
+  }, []);
+
+  const getVendorName = (vendorId: string) => {
+    const vendor = vendors.find((v) => v._id === vendorId);
+    return vendor ? vendor.vendorName : "Unknown Vendor";
+  };
+
+  const getItemName = (itemId: string) => {
+    const item = inventoryItems.find((i) =>
+      i.item.find((item) => item._id === itemId)
+    );
+    if (item) {
+      const nestedItem = item.item.find((item) => item._id === itemId);
+      return nestedItem ? nestedItem.itemName : "Unknown Item";
     }
+    return "Unknown Item";
+  };
+  const filteredReorders = reorders.filter((reorder) =>
+    reorder.purchaseEntry.some((entry) =>
+      getVendorName(entry.vendorId)
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    )
+  );
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  const truncate = (str, maxLength) => {
+    if (str.length <= maxLength) return str;
+    return str.substring(0, maxLength) + "...";
+  };
+
+  const openRemarks = () => {
+    setDialogOpen(true);
   };
 
   return (
-    <div className="flex">
+    <div className="flex h-screen bg-gray-100 font-archivo">
       <InventorySidebar />
-      <div className="flex-1 p-8">
-        <h1 className="text-2xl font-bold mb-6">Reorder Form</h1>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="vendorId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Vendor ID</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="isCompleted"
-              render={({ field }) => (
-                <FormItem className="flex items-center space-x-2">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormLabel>Is Completed</FormLabel>
-                </FormItem>
-              )}
-            />
-
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Items</h3>
-              {fields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="space-y-4 mb-4 p-4 border rounded"
-                >
-                  <FormField
-                    control={form.control}
-                    name={`items.${index}.itemId`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Item ID</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`items.${index}.quantityFromVendor`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Quantity from Vendor</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`items.${index}.quantityFromStock`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Quantity from Stock</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`items.${index}.itemCode`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Item Code</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`items.${index}.rate`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Rate</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`items.${index}.amount`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Amount</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => remove(index)}
-                    variant="destructive"
-                  >
-                    Remove Item
-                  </Button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                onClick={() =>
-                  append({
-                    itemId: "",
-                    quantityFromVendor: 0,
-                    quantityFromStock: 0,
-                    itemCode: "",
-                    rate: 0,
-                    amount: 0,
-                  })
-                }
-              >
-                Add Item
-              </Button>
-            </div>
-
-            <FormField
-              control={form.control}
-              name="tag"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tag</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="remarks"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Remarks</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image URL</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="discount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Discount</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value))
-                      }
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="vat"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>VAT</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value))
-                      }
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="grandTotal"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Grand Total</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value))
-                      }
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="invoiceNo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Invoice Number</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="invoiceDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Invoice Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
+      <div className="container mx-auto py-10 px-4">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-4">
+            Reordered Items (Item that are reordered)
+          </h1>
+          <div className="relative ">
+            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <Input
-              type="text"
-              placeholder="Order ID"
-              value={orderId}
-              onChange={(e) => setOrderId(e.target.value)}
-              className="mb-4"
+              placeholder="Search by vendor name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 bg-[white] w-full max-w-md border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-
-            <Button type="submit">Submit Reorder</Button>
-          </form>
-        </Form>
+          </div>
+        </div>
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-[#e7e7e7]">
+                <TableHead className="font-semibold text-gray-700 px-6 py-4">
+                  Vendor
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700 px-6 py-4">
+                  Order ID
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700 px-6 py-4">
+                  Items
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700 px-6 py-4">
+                  Status
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700 px-6 py-4">
+                  Total reorder
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700 px-6 py-4">
+                  Remarks
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {reorders ? (
+                filteredReorders.length > 0 ? (
+                  filteredReorders.flatMap((reorder) =>
+                    reorder.purchaseEntry.map((entry, entryIndex) => (
+                      <TableRow
+                        key={`${reorder.orderId}-${entryIndex}`}
+                        className="hover:bg-gray-50"
+                      >
+                        <TableCell className="px-6 py-4">
+                          {getVendorName(entry.vendorId)}
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          {truncate(reorder.orderId, 10)}
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          <ul className="list-disc list-inside">
+                            {entry.items.map((item, itemIndex) => (
+                              <li
+                                key={`${item.itemId}-${itemIndex}`}
+                                className="text-sm"
+                              >
+                                {getItemName(item.itemId)} - Qty:{" "}
+                                {item.quantityFromVendor}
+                              </li>
+                            ))}
+                          </ul>
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              entry.isCompleted
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}
+                          >
+                            {entry.isCompleted ? "Completed" : "Pending"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          {entry.grandTotal ?? "N/A"}
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          <Button onClick={() => openRemarks()}>
+                            View Remarks
+                          </Button>
+                          <Dialog
+                            open={dialogOpen}
+                            onOpenChange={setDialogOpen}
+                          >
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Remarks Details</DialogTitle>
+                                <DialogDescription>
+                                  {entry.remarks}
+                                </DialogDescription>
+                              </DialogHeader>
+                            </DialogContent>
+                          </Dialog>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-8 text-gray-500"
+                    >
+                      No matching reorders found
+                    </TableCell>
+                  </TableRow>
+                )
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-8 text-gray-500"
+                  >
+                    No reorders available
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );
-};
+}
 
-export default Reorder;
+export default ReorderTable;
