@@ -201,9 +201,8 @@ const EmployeesPage: React.FC = () => {
     }
   };
 
-  const handleUpdateStaff = async () => {
+  const handleUpdateStaff = async (id: string) => {
     if (!editingEmployee) return;
-
     try {
       const updatedEmployeeData = {
         fullName: editingEmployee.fullName,
@@ -213,21 +212,14 @@ const EmployeesPage: React.FC = () => {
         status: editingEmployee.status,
         position: editingEmployee.position,
         dailyWage: editingEmployee.dailyWage,
-        dept_ids: editingEmployee.dept_ids, // We'll update this in the UI
+        dept_ids: editingEmployee.dept_ids,
       };
-
       if (editingEmployee.password) {
         updatedEmployeeData.password = editingEmployee.password;
       }
-
-      console.log("Updating employee with ID:", editingEmployee._id);
+      console.log("Updating employee with ID:", id);
       console.log("Updated data:", updatedEmployeeData);
-
-      await employeeService.updateEmployee(
-        editingEmployee._id,
-        updatedEmployeeData
-      );
-
+      await employeeService.updateEmployee(id, updatedEmployeeData);
       toast.success("Employee updated successfully");
       setIsUpdateDialogOpen(false);
       fetchEmployees();
@@ -596,7 +588,11 @@ const EmployeesPage: React.FC = () => {
                           </div>
                         </div>
                         <DialogFooter>
-                          <Button onClick={handleUpdateStaff}>
+                          <Button
+                            onClick={() =>
+                              handleUpdateStaff(editingEmployee?.id)
+                            }
+                          >
                             Update Employee
                           </Button>
                         </DialogFooter>
