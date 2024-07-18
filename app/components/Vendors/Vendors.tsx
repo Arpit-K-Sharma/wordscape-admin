@@ -25,6 +25,7 @@ import VendorForm from "./VendorForm";
 import UpdateVendorDialog from "./UpdateVendorDialog";
 import { FiEdit2, FiTrash2, FiPlus, FiX } from "react-icons/fi";
 import InventorySidebar from "../Sidebar/InventorySidebar";
+import { vendorService } from "@/app/services/vendorService";
 
 interface Vendor {
   _id: string;
@@ -43,22 +44,13 @@ function Vendors() {
 
   const fetchVendors = async () => {
     try {
-      const response = await axios.get<{ status: string; data: Vendor[] }>(
-        "http://localhost:8000/vendors"
-      );
-      if (
-        response.data.status === "success" &&
-        Array.isArray(response.data.data)
-      ) {
-        setVendors(response.data.data);
-      } else {
-        console.error("Unexpected response format:", response.data);
-        setVendors([]);
-      }
+      const vendors = await vendorService.getVendors();
+      setVendors(vendors);
     } catch (error) {
       console.error("Error fetching vendors:", error);
       setVendors([]);
     }
+  
   };
 
   useEffect(() => {

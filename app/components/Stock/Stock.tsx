@@ -32,19 +32,20 @@ interface InventoryItem {
   item: Item[];
 }
 
+interface InventoryResponse {
+  data: InventoryItem[];
+}
+
 const StocksPage: React.FC = () => {
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [openDialogId, setOpenDialogId] = useState<string | null>(null);
+  const [openDialogId, setOpenDialogId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [formType, setFormType] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
-
-  const openDialog = () => setIsDialogOpen(true);
-  const closeDialog = () => setIsDialogOpen(false);
   const [selectedType, setSelectedType] = useState<InventoryItem | null>(null);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [isItemDeleteDialogOpen, setIsItemDeleteDialogOpen] = useState(false);
@@ -52,15 +53,24 @@ const StocksPage: React.FC = () => {
 
   const fetchInventory = async () => {
     try {
-      const response = await stockService.fetchInventory()
-      setInventoryData(response.data)
-      console.log(response.data)
+      const response = await stockService.fetchInventory();
+      const data: InventoryItem[] = (response as InventoryResponse).data;
+
+      if (Array.isArray(data)) {
+        setInventoryData(data);
+      } else {
+        throw new Error("Data is not an array");
+      }
+
+      console.log(data);
       setIsLoading(false);
     } catch (err) {
       setError("Failed to fetch inventory data");
+      console.error(err);
       setIsLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchInventory();
@@ -71,8 +81,18 @@ const StocksPage: React.FC = () => {
   }, []);
 
   const handleOpenForm = (type: 'add' | 'update' | 'addType', inventoryId: string) => {
+    console.log(`Handling form for type: ${type}, inventoryId: ${inventoryId}`);
     setFormType(type);
     setOpenDialogId(inventoryId);
+    // openDialog();
+  };
+
+  const openDialog = () => {
+    setIsDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setIsDialogOpen(false);
   };
 
   const onSubmit = async (data: { type: string; itemName: string; availability: string }) => {
@@ -114,29 +134,29 @@ const StocksPage: React.FC = () => {
   const handleTypeDelete = async () => {
     if (!selectedType) return;
     try {
-      const url = `http://127.0.0.1:8000/inventory/${selectedType._id}`;
-      const response = await axios.delete<{ status: string }>(url);
-      if (response.data.status === "success") {
-        console.log("Item Type deleted", response.data);
+      const response = await stockService.deleteType(selectedType._id);
+      if (response.status === 'success') {
+        console.log('Item Type deleted', response);
         setInventoryData(inventoryData.filter((v) => v._id !== selectedType._id));
+        toast.success("Category deleted successfully!");
         closeDeleteDialog();
         fetchInventory();
       } else {
-        console.error("Unexpected response format:", response.data);
+        console.error('Unexpected response format:', response);
       }
     } catch (error) {
-      console.error("Error occurred while deleting the item Type:", error);
+      console.error('Error occurred while deleting the item Type:', error);
     }
   };
 
   const handleItemDelete = async (itemId: string) => {
     if (!selectedItem) return;
-    console.log(selectedItem)
+    console.error('No selected item to delete');
     try {
       const url = `http://127.0.0.1:8000/inventory/${selectedItem._id}/${itemId}`;
       const response = await axios.delete<{ status: string }>(url);
       if (response.data.status === "success") {
-        console.log("Item Type deleted", response.data);
+        console.log("Item Type deleted", selectedItem._id, response.data);
         setInventoryData(inventoryData.filter((item) => item._id !== itemId));
         closeDeleteItemDialog();
         await fetchInventory();
@@ -148,7 +168,6 @@ const StocksPage: React.FC = () => {
       console.error("Error occurred while deleting the item Type:", error);
     }
   };
-
 
 
 
@@ -165,7 +184,7 @@ const StocksPage: React.FC = () => {
                 </div>
                 <div>
                   <Button
-                    onClick={() => handleOpenForm('addType', "6697898fae9ff72cee6b1ee7")}
+                    onClick={() => handleOpenForm('addType', '6697898fae9ff72cee6b1ee7')}
                     disabled={isSubmitting}
                     className="font-semibold text-[15px]"
                   >
@@ -238,7 +257,7 @@ const StocksPage: React.FC = () => {
                                   </Button>
                                   <Dialog
                                     open={isDeleteDialogOpen}
-                                    onOpenChange={setIsDeleteDialogOpen}
+                                    onOpenChange={(open) => open ? setIsDeleteDialogOpen(true) : closeDeleteDialog()}
                                   >
                                     <DialogContent>
                                       <DialogHeader>
@@ -284,50 +303,38 @@ const StocksPage: React.FC = () => {
                                       </DialogFooter>
                                     </DialogContent>
                                   </Dialog>
-                                  <Dialog open={openDialogId === inventoryType._id} onOpenChange={(open) => setOpenDialogId(open ? inventoryType._id : null)}>
+                                  <Dialog open={openDialogId === inventoryType._id} onOpenChange={(open) => setOpenDialogId(inventoryType._id)}>
                                     <DialogTrigger>
-                                      {isClient ? (
-                                        <Button
-                                          onClick={() => handleOpenForm('update', inventoryType._id)}
-                                          disabled={isSubmitting}
-                                          className="font-semibold text-[15px] bg-transparent text-black hover:text-blue-600 hover:bg-transparent"
-                                        >
-                                          <FiEdit2 className="mr-1" /> Update
-                                        </Button>
-                                      ) : (
-                                        <></>
-                                      )}
 
                                     </DialogTrigger>
                                     <DialogContent>
                                       <DialogHeader>
                                         <DialogTitle>Add to Inventory</DialogTitle>
                                       </DialogHeader>
-                                        {formType === "add" ? (
-                                          <StockForm
-                                            onSubmit={onSubmit}
-                                            buttonText="Add New Item"
-                                            isSubmitting={isSubmitting}
-                                            inventoryId={inventoryType._id}
-
-                                            onClose={closeDialog}
-                                          />
-                                        ) : formType === "update" ? (
-                                          <UpdateItemForm
-                                            onSubmit={onSubmit}
-                                            buttonText="Update Item"
-                                            isSubmitting={isSubmitting}
-                                            inventoryId={inventoryType._id}
-                                            itemId={item._id}
-                                            onClose={() => setIsUpdateFormOpen(false)}
-                                          />
-                                        ) : formType === "addType" ? (
-                                          <AddTypeForm
-                                            onSubmit={onSubmit}
-                                            buttonText="Add New Type"
-                                            isSubmitting={isSubmitting}
-                                          />
-                                        ) : null}
+                                      {formType === "add" ? (
+                                        <StockForm
+                                          onSubmit={onSubmit}
+                                          buttonText="Add New Item"
+                                          isSubmitting={isSubmitting}
+                                          inventoryId={inventoryType._id}
+                                          onOpenChange={(open) => open ? setIsDialogOpen(true) : closeDialog()}
+                                        />
+                                      ) : formType === "update" ? (
+                                        <UpdateItemForm
+                                          onSubmit={onSubmit}
+                                          buttonText="Update Item"
+                                          isSubmitting={isSubmitting}
+                                          inventoryId={inventoryType._id}
+                                          itemId={item._id}
+                                          onClose={() => setIsUpdateFormOpen(false)}
+                                        />
+                                      ) : formType === "addType" ? (
+                                        <AddTypeForm
+                                          onSubmit={onSubmit}
+                                          buttonText="Add New Type"
+                                          isSubmitting={isSubmitting}
+                                        />
+                                      ) : null}
                                     </DialogContent>
                                   </Dialog>
                                 </div>

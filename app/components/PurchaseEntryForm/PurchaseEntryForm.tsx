@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from 'next/navigation';
@@ -26,6 +27,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import InventorySidebar from "../Sidebar/InventorySidebar";
 import toast, { Toaster } from "react-hot-toast";
+import { purchaseEntryService } from "@/app/services/purchaseEntryFormService";
+import { vendorService } from "@/app/services/vendorService";
+import { dashboardService } from "@/app/services/dashboardService";
 
 
 const itemSchema = z.object({
@@ -65,9 +69,27 @@ interface PurchaseEntrySlipProps {
   isReorder?: boolean;
 }
 
+interface Item {
+  _id: string;
+  itemName: string;
+  availability: number;
+}
+
+interface Inventory {
+  _id: string;
+  item: Item[];
+}
+
+interface CustomButtonProps {
+  type: "submit" | "button" | "reset";
+  className?: string;
+  isSubmitting?: boolean;
+  onClick?: () => void;
+}
+
 export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps) {
   const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [inventory, setInventory] = useState([]);
+  const [inventory, setInventory] = useState<Inventory[]>([]);
   const [approvedOrders, setApprovedOrders] = useState<ApprovedOrders[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -108,17 +130,18 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
   useEffect(() => {
     const fetchVendors = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/vendors");
-        setVendors(response.data.data);
+        const vendors = await vendorService.getVendors();
+        setVendors(vendors);
       } catch (error) {
         console.error("Error fetching vendors:", error);
+        setVendors([]);
       }
     };
 
     const fetchItems = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/inventory");
-        setInventory(response.data.data);
+        const response = await purchaseEntryService.getItems();
+        setInventory(response);
       } catch (error) {
         console.error("Error fetching items:", error);
       }
@@ -126,8 +149,8 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
 
     const fetch_approved_orders = async () => {
       try {
-        const orders = await axios.get("http://127.0.0.1:8000/get/approved_orders");
-        setApprovedOrders(orders.data.data);
+        const orders = await dashboardService.fetch_approved_orders();
+        setApprovedOrders(orders);
       } catch (error) {
         console.log("error fetching data: ", error);
       }
@@ -181,8 +204,8 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
 
   const fetchReorderData = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/purchase_orders/${orderId}`);
-      const orderData = response.data.data;
+      const purchase_order = await purchaseEntryService.getPurchaseEntries()
+      const orderData = purchase_order;
 
       form.reset({
         orderId: orderId,
@@ -236,11 +259,11 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
         );
       } else {
         await toast.promise(
-          axios.post("http://localhost:8000/purchase_order", data),
+          purchaseEntryService.createPurchaseEntry(data),
           {
             loading: 'Creating purchase order...',
             success: (response) => {
-              console.log("Purchase order created:", response.data);
+              console.log("Purchase order created:", response);
               return "Purchase Order Placed Successfully";
             },
             error: "Error creating purchase order",
@@ -263,6 +286,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <div className="flex font-archivo bg-[#f7f7f9]">
@@ -297,7 +321,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                   )}
                 />
 
-                {purchaseEntryFields.map((entry, index) => (
+                {purchaseEntryFields && purchaseEntryFields.map((entry, index) => (
                   <div
                     key={entry.id}
                     className="space-y-4 p-4 border rounded-lg"

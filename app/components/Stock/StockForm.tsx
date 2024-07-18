@@ -30,13 +30,20 @@ type StockFormValues = z.infer<typeof stockSchema>;
 
 interface StockFormProps {
     // onSubmit: (data: StockFormValues) => void;
+    onSubmit: (data: {
+        type: string;
+        itemName: string;
+        availability: string;
+    }) => Promise<void>;
     defaultValues?: Partial<StockFormValues>;
     buttonText: string;
     isSubmitting: boolean;
     inventoryId: string;
+    onOpenChange: (open: boolean) => void;
 }
 
-function StockForm({ defaultValues, buttonText, isSubmitting,inventoryId }: StockFormProps) {
+function StockForm({ defaultValues, buttonText, isSubmitting,inventoryId, onOpenChange}: StockFormProps) {
+    
     const form = useForm<StockFormValues>({
         resolver: zodResolver(stockSchema),
         defaultValues: {
@@ -67,10 +74,12 @@ function StockForm({ defaultValues, buttonText, isSubmitting,inventoryId }: Stoc
     };
 
     const [item, setItem] = useState<StockFormProps[]>([]);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
     const onSubmit = async (data: StockFormValues) => {
         try {
             const url = `http://localhost:8000/add-item/${inventoryId}`;
-            const response = await toast.promise(
+            await toast.promise(
                 axios.post<StockFormProps>(url, data.items),
                 {
                     loading: 'Creating item...',
@@ -78,6 +87,7 @@ function StockForm({ defaultValues, buttonText, isSubmitting,inventoryId }: Stoc
                         console.log("Item created", response.data);
                         setItem([...item, response.data]);
                         return "Item created successfully";
+                        
                     },
                     error: (error) => {
                         console.error("Error occurred while creating a new item:", error);
@@ -93,12 +103,14 @@ function StockForm({ defaultValues, buttonText, isSubmitting,inventoryId }: Stoc
         }
     };
 
+
     return (
         <Form {...form}>
             <form
                 onSubmit={handleSubmit((data) => {
                     onSubmit(data);
                     form.reset(); // Optionally reset form after submission
+                    onOpenChange(false); 
                 })}
                 className="space-y-4"
             >

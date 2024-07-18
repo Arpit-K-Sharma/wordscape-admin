@@ -166,7 +166,7 @@ const Dashboard = () => {
   }, []);
 
   const handleRequestPO = (orderId: string) => {
-    const newStatus = { ...poStatus, [orderId]: 'requested' };
+    const newStatus: Record<string, POStatus> = { ...poStatus, [orderId]: 'requested' };
     setPoStatus(newStatus);
 
     // Store the updated state in localStorage
@@ -176,7 +176,7 @@ const Dashboard = () => {
   };
 
   const handlePOSubmit = (orderId: string) => {
-    const newStatus = { ...poStatus, [orderId]: 'created' };
+    const newStatus: Record<string, POStatus> = { ...poStatus, [orderId]: 'created' };
     setPoStatus(newStatus);
 
     // Store the updated state in localStorage

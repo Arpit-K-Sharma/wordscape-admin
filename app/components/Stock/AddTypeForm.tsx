@@ -45,6 +45,11 @@ interface TypeFormProps {
     defaultValues?: Partial<TypeFormValues>;
     buttonText: string;
     isSubmitting: boolean;
+    onSubmit: (data: {
+        type: string;
+        itemName: string;
+        availability: string;
+    }) => Promise<void>;
 }
 
 // TypeForm component
@@ -69,14 +74,13 @@ function TypeForm({
     const onSubmit = async (data: TypeFormValues) => {
         try {
             const url = "http://localhost:8000/inventory";
-            const response = await toast.promise(
+            await toast.promise(
                 axios.post<TypeFormProps>(url, data),
                 {
                     loading: 'Creating item...',
                     success: (response) => {
                         console.log("Item created", response.data);
                         setItem([...item, response.data]);
-                        setIsAddDialogOpen(false);
                         return "Item created successfully";
                     },
                     error: (error) => {
@@ -91,7 +95,9 @@ function TypeForm({
         } catch (error) {
             console.error("Error occurred while creating a new item:", error);
         }
+        setIsAddDialogOpen(false);
     };
+
 
     const { control, handleSubmit} = form;
 

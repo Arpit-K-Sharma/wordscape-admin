@@ -1,30 +1,30 @@
 import axios from 'axios';
 
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = "http://127.0.0.1:8000";
 
 
 interface Item {
     _id: string;
     itemName: string;
     availability: number;
-  }
-  
-  interface InventoryItem {
+}
+
+interface InventoryItem {
     _id: string;
     type: string;
     item: Item[];
-  }
+}
 
-interface ApiResponse<> {
+interface ApiResponse<T> {
     status: string;
-    data: InventoryItem[];
+    data: T;
 }
 
 export const stockService = {
-    fetchInventory: async (): Promise<InventoryItem[]> => {
+    fetchInventory: async (): Promise<ApiResponse<InventoryItem[]>> => {
         try {
-            const response = await axios.get<InventoryItem[]>(
-              `${BASE_URL}/inventory`
+            const response = await axios.get<ApiResponse<InventoryItem[]>>(
+                `${BASE_URL}/inventory`
             );
             return response.data;
         } catch (error) {
@@ -33,15 +33,35 @@ export const stockService = {
         }
     },
 
-    createInventoryItem: async (data: { itemName: string; availability: string}): Promise<InventoryItem> => {
+    createInventoryItem: async (data: { itemName: string; availability: string }): Promise<InventoryItem> => {
         try {
             const response = await axios.post<InventoryItem>(
-              `${BASE_URL}/inventory/`,
-              data
+                `${BASE_URL}/inventory/`,
+                data
             );
             return response.data;
         } catch (error) {
             console.error("Error occurred while creating an inventory item:", error);
+            throw error;
+        }
+    },
+
+    deleteType: async (typeId: string): Promise<{ status: string }> => {
+        try {
+            const response = await axios.delete<{ status: string }>(`${BASE_URL}/inventory/${typeId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error occurred while deleting the item type:', error);
+            throw error;
+        }
+    },
+
+    deleteItem: async (typeId: string, itemId: string): Promise<{ status: string }> => {
+        try {
+            const response = await axios.delete<{ status: string }>(`${BASE_URL}/inventory/${typeId}/${itemId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error occurred while deleting the item:', error);
             throw error;
         }
     }

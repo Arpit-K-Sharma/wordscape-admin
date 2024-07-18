@@ -1,9 +1,9 @@
 "use client";
-import LeftoversPage from "@/app/components/Leftover/Leftover";
+import Leftover from "@/app/components/Leftover/Leftovers";
 import React from "react";
 
 const page = () => {
-  return <LeftoversPage />;
+  return <Leftover/>;
 };
 
 export default page;

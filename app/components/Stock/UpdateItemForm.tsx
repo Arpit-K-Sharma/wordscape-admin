@@ -24,7 +24,12 @@ interface UpdateFormProps {
     isSubmitting: boolean;
     inventoryId: string;
     itemId: string;
-    onClose: () => void;  // Add this prop to handle form closing
+    onClose: () => void; 
+    onSubmit: (data: {
+        type: string;
+        itemName: string;
+        availability: string;
+    }) => Promise<void>;
 }
 
 function UpdateItemForm({ defaultValues, buttonText, isSubmitting, inventoryId, itemId, onClose }: UpdateFormProps) {
@@ -50,7 +55,7 @@ function UpdateItemForm({ defaultValues, buttonText, isSubmitting, inventoryId, 
             });
             console.log("Item updated", response.data);
             toast.success('Availability updated successfully!');
-            onClose();  // Close the form after successful update
+            onClose();  
         } catch (error) {
             console.error("Error occurred while updating the item:", error);
             toast.error('Failed to update availability. Please try again.');

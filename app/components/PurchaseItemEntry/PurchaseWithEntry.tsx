@@ -12,10 +12,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Eye, RefreshCw } from "lucide-react";
+import { Eye, RefreshCw, CheckCircle } from "lucide-react";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import Logo from '../../images/LogoBG.webp';
+import purchaseService from "@/app/services/purchaseOrderService";
 
 interface PurchaseOrderItem {
   itemId: string;
@@ -78,14 +79,14 @@ const PurchaseWithEntry: React.FC = () => {
     const fetchData = async () => {
       try {
         const [purchaseOrders, inventoryItems, vendors] = await Promise.all([
-          axios.get("http://127.0.0.1:8000/purchase_orders_with_entries"),
-          axios.get("http://127.0.0.1:8000/inventory"),
-          axios.get("http://127.0.0.1:8000/vendors"),
+          purchaseService.getPurchaseOrders(),
+          purchaseService.getInventoryItems(),
+          purchaseService.getVendors(),
         ]);
 
-        setPurchaseOrders(purchaseOrders.data.data);
-        setInventoryItems(inventoryItems.data.data);
-        setVendors(vendors.data.data);
+        setPurchaseOrders(purchaseOrders);
+        setInventoryItems(inventoryItems);
+        setVendors(vendors);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -110,7 +111,11 @@ const PurchaseWithEntry: React.FC = () => {
     router.push(`/inventory/entry/${orderId}?reorder=True`)
   };
 
-  const contentRef = useRef(null);
+  const handleleftOverClick = (orderId: string) => {
+    router.push(`/inventory/leftover/${orderId}`)
+  }
+
+  const contentRef = useRef<HTMLDivElement>(null);
   const downloadPDF = async () => {
     if (!contentRef.current || !isDetailsDialogOpen) {
       console.error('Content not available or dialog not open');
@@ -120,7 +125,7 @@ const PurchaseWithEntry: React.FC = () => {
     setLoader(true);
 
     // Clone the content to remove scrollbars and ensure all content is visible
-    const clonedContent = contentRef.current.cloneNode(true);
+    const clonedContent = contentRef.current.cloneNode(true) as HTMLElement;
     clonedContent.style.height = 'auto';
     clonedContent.style.overflow = 'visible';
     document.body.appendChild(clonedContent);
@@ -129,7 +134,7 @@ const PurchaseWithEntry: React.FC = () => {
     const viewportHeight = window.innerHeight;
     const numPages = Math.ceil(scrollHeight / viewportHeight);
 
-    const canvasArray = [];
+    const canvasArray: HTMLCanvasElement[] = [];
 
     // Scroll through the content and capture multiple screenshots
     for (let i = 0; i < numPages; i++) {
@@ -180,8 +185,7 @@ const PurchaseWithEntry: React.FC = () => {
         imgX, imgY, scaledWidth, scaledHeight,
         undefined,
         'FAST',
-        0,
-        cropX, cropY, cropWidth, cropHeight
+        0
       );
 
 
@@ -196,6 +200,10 @@ const PurchaseWithEntry: React.FC = () => {
     document.body.removeChild(clonedContent);
     setLoader(false);
   };
+  
+
+
+
 
   return (
     <div className="flex h-screen bg-gray-100 font-archivo">
@@ -227,7 +235,7 @@ const PurchaseWithEntry: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center">
                         <Button
                           variant="outline"
                           size="sm"
@@ -236,6 +244,15 @@ const PurchaseWithEntry: React.FC = () => {
                         >
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleleftOverClick(order.orderId)}
+                          className="flex items-center ml-2"
+                        >
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          Left Overs
                         </Button>
                       </div>
                       <div className="text-sm text-gray-600">

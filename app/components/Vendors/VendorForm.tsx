@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 
 const vendorSchema = z.object({
+  id: z.string(),
   vendorName: z.string().min(1, "Vendor name is required"),
   vendorAddress: z.string().min(1, "Vendor address is required"),
   vendorVAT: z.string().min(1, "Vendor VAT is required"),
@@ -26,7 +27,7 @@ type VendorFormValues = z.infer<typeof vendorSchema>;
 interface VendorFormProps {
   onSubmit: (data: VendorFormValues) => void;
   defaultValues?: Partial<VendorFormValues>;
-  buttonText: string;
+  buttonText: React.ReactNode;
 }
 
 function VendorForm({ onSubmit, defaultValues, buttonText }: VendorFormProps) {

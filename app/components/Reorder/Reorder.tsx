@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input"
 import { SearchIcon } from "lucide-react"
 import InventorySidebar from "../Sidebar/InventorySidebar";
 import { Button } from "@/components/ui/button";
+import reorderService from "@/app/services/reorderService"
 
 interface Item {
   inventoryId: string
@@ -89,16 +90,16 @@ export function ReorderTable() {
     const fetchData = async () => {
       try {
         const [reordersRes, vendorsRes, inventoryRes] = await Promise.all([
-          axios.get<ApiResponse>("http://127.0.0.1:8000/reorders"),
-          axios.get<{ data: Vendor[] }>("http://127.0.0.1:8000/vendors"),
-          axios.get<{ data: InventoryItem[] }>("http://127.0.0.1:8000/inventory"),
+          reorderService.getReorders(),
+          reorderService.getVendors(),
+          reorderService.getInventoryItems(),
         ])
-        console.log('Reorders response:', reordersRes.data)
-        console.log('Vendors response:', vendorsRes.data)
-        console.log('Inventory response:', inventoryRes.data)
-        setReorders(reordersRes.data.data)
-        setVendors(vendorsRes.data.data)
-        setInventoryItems(inventoryRes.data.data)
+        console.log('Reorders response:', reordersRes)
+        console.log('Vendors response:', vendorsRes)
+        console.log('Inventory response:', inventoryRes)
+        setReorders(reordersRes)
+        setVendors(vendorsRes)
+        setInventoryItems(inventoryRes)
       } catch (error) {
         console.error("Error fetching data:", error)
       } finally {
@@ -121,17 +122,17 @@ export function ReorderTable() {
     }
     return "Unknown Item"
   }
-  const filteredReorders = reorders.filter((reorder) =>
+  const filteredReorders = reorders? reorders.filter((reorder) =>
     reorder.purchaseEntry.some((entry) =>
       getVendorName(entry.vendorId).toLowerCase().includes(searchTerm.toLowerCase())
     )
-  )
+  ): []
 
   if (loading) {
     return <div>Loading...</div>
   }
 
-  const truncate = (str, maxLength) => {
+  const truncate = (str: string, maxLength: number) => {
     if (str.length <= maxLength) return str;
     return str.substring(0, maxLength) + '...';
   };
