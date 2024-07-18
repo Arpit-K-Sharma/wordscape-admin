@@ -132,7 +132,7 @@ const HolidaysPage: React.FC = () => {
     setNewHolidayDate(undefined);
     setNewHolidayDescription("");
   };
-
+ 
   const handleUpdateHoliday = async () => {
     if (
       holidayToUpdate &&

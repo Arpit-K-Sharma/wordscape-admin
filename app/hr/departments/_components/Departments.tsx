@@ -152,7 +152,7 @@ function Departments() {
                     >
                       <FiTrash2 className="mr-1" /> Delete
                     </Button>
-                  </TableCell>
+                  </TableCell> 
                 </TableRow>
               ))}
             </TableBody>
