@@ -58,7 +58,7 @@ export const employeeService = {
     employeeData: Partial<Employee>
   ): Promise<Employee> => {
     const response = await axios.put(`${BASE_URL}/staff/${id}`, employeeData);
-    return response.data.data;
+    return response.data.message;
   },
 
   deleteEmployee: async (id: string): Promise<void> => {

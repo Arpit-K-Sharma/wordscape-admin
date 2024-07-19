@@ -134,7 +134,16 @@ const HolidaysPage: React.FC = () => {
     setNewHolidayDate(undefined);
     setNewHolidayDescription("");
   };
- 
+
+  const formatDateForBackend = (date: Date) => {
+    // Create a new Date object to avoid modifying the original
+    const adjustedDate = new Date(date);
+    // Add one day
+    adjustedDate.setDate(adjustedDate.getDate() + 1);
+    // Format to YYYY-MM-DD
+    return adjustedDate.toISOString().split("T")[0];
+  };
+
   const handleUpdateHoliday = async () => {
     if (
       holidayToUpdate &&
@@ -142,11 +151,12 @@ const HolidaysPage: React.FC = () => {
       newHolidayDate &&
       newHolidayDescription
     ) {
+      // Format the date as "DD-MM-YYYY"
+      const formattedDate = formatDateForBackend(newHolidayDate);
+
       const updatedHoliday = {
         name: newHolidayName,
-        date: new Date(newHolidayDate.getTime() + 86400000)
-          .toISOString()
-          .split("T")[0],
+        date: formattedDate,
         description: newHolidayDescription,
       };
 
@@ -165,7 +175,7 @@ const HolidaysPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex">
       <HRSidebar />
       <main className="flex-1 p-6">
         <h1 className="text-2xl font-bold mb-6">Holidays</h1>
