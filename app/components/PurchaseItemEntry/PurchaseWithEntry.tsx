@@ -12,11 +12,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Eye, RefreshCw, CheckCircle } from "lucide-react";
+import { Eye, RefreshCw, CheckCircle, CalendarDays } from "lucide-react";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import Logo from '../../images/LogoBG.webp';
 import purchaseService from "@/app/services/purchaseOrderService";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 interface PurchaseOrderItem {
   itemId: string;
@@ -40,6 +53,7 @@ interface PurchaseEntry {
   grandTotal: number | null;
   invoiceNo: string | null;
   invoiceDate: string | null;
+  is_issued: boolean | null;
 }
 
 interface PurchaseOrder {
@@ -49,11 +63,16 @@ interface PurchaseOrder {
   purchaseEntry: PurchaseEntry[];
 }
 
-interface InventoryItem {
+interface Items {
   _id: string;
   itemName: string;
   availability: number;
+}
+
+interface InventoryItem {
+  _id: string;
   type: string;
+  item: Items[];
 }
 
 interface Vendor {
@@ -64,16 +83,22 @@ interface Vendor {
   vendorPhone: string;
 }
 
+interface IssueItemsPayload {
+  order_id: string;
+  approved_by: string;
+  issued_date: string;
+}
+
 const PurchaseWithEntry: React.FC = () => {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(
-    null
-  );
+  const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
   const router = useRouter();
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loader, setLoader] = useState(false);
+  const [isIssuing, setIsIssuing] = useState(false);
+  const [issueError, setIssueError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,7 +108,7 @@ const PurchaseWithEntry: React.FC = () => {
           purchaseService.getInventoryItems(),
           purchaseService.getVendors(),
         ]);
-
+        console.log(purchaseOrders);
         setPurchaseOrders(purchaseOrders);
         setInventoryItems(inventoryItems);
         setVendors(vendors);
@@ -116,6 +141,7 @@ const PurchaseWithEntry: React.FC = () => {
   }
 
   const contentRef = useRef<HTMLDivElement>(null);
+
   const downloadPDF = async () => {
     if (!contentRef.current || !isDetailsDialogOpen) {
       console.error('Content not available or dialog not open');
@@ -124,7 +150,6 @@ const PurchaseWithEntry: React.FC = () => {
 
     setLoader(true);
 
-    // Clone the content to remove scrollbars and ensure all content is visible
     const clonedContent = contentRef.current.cloneNode(true) as HTMLElement;
     clonedContent.style.height = 'auto';
     clonedContent.style.overflow = 'visible';
@@ -136,7 +161,6 @@ const PurchaseWithEntry: React.FC = () => {
 
     const canvasArray: HTMLCanvasElement[] = [];
 
-    // Scroll through the content and capture multiple screenshots
     for (let i = 0; i < numPages; i++) {
       window.scrollTo(0, i * viewportHeight);
       await html2canvas(clonedContent, {
@@ -156,7 +180,6 @@ const PurchaseWithEntry: React.FC = () => {
       format: 'a4'
     });
 
-    // Add each canvas to the PDF
     for (let i = 0; i < canvasArray.length; i++) {
       const canvas = canvasArray[i];
       const imgData = canvas.toDataURL('image/jpeg', 1.0);
@@ -171,7 +194,6 @@ const PurchaseWithEntry: React.FC = () => {
       const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
       const scaledWidth = pageWidth * widthReduction;
       const scaledHeight = (scaledWidth / imgWidth) * imgHeight;
-      // Calculate the position to center the image
       const imgX = (pageWidth - scaledWidth) / 2;
       const imgY = 10;
 
@@ -188,7 +210,6 @@ const PurchaseWithEntry: React.FC = () => {
         0
       );
 
-
       if (i < canvasArray.length - 1) {
         pdf.addPage();
       }
@@ -196,15 +217,50 @@ const PurchaseWithEntry: React.FC = () => {
 
     pdf.save('purchase_order_details.pdf');
 
-    // Clean up
     document.body.removeChild(clonedContent);
     setLoader(false);
   };
-  
 
+  const handleIssueItems = async (orderId: string) => {
+    setIsIssuing(true);
+    setIssueError(null);
+    console.log(orderId);
+    const payload: IssueItemsPayload = {
+      order_id: orderId,
+      approved_by: "John Doe",
+      issued_date: new Date().toISOString().split('T')[0]
+    };
 
+    try {
+      const response = await axios.post("http://127.0.0.1:8000/issued_item", payload);
+      alert("Items issued successfully:");
+    } catch (error) {
+      console.error("Error issuing items:", error);
+      setIssueError("Failed to issue items. Please try again.");
+    } finally {
+      setIsIssuing(false);
+    }
+  };
 
-
+  const getItemName = (itemId: string): string => {
+    console.log(itemId)
+    for (const inventoryItem of inventoryItems) {
+      console.log(inventoryItem, "this is", itemId)
+      const foundItem = inventoryItem.item.find(item => item._id == itemId);
+      if (foundItem) {
+        return foundItem.itemName;
+      }
+    }
+    return "Unknown Item";
+  };
+  const getItemType = (itemId: string): string => {
+    for (const inventoryItem of inventoryItems) {
+      if (inventoryItem.item.some(item => item._id === itemId)) {
+        return inventoryItem.type;
+      }
+    }
+    return "N/A";
+  };
   return (
     <div className="flex h-screen bg-gray-100 font-archivo">
       <InventorySidebar />
@@ -221,21 +277,21 @@ const PurchaseWithEntry: React.FC = () => {
               {purchaseOrders.map((order) => (
                 <Card
                   key={order._id}
-                  className="shadow-lg hover:shadow-xl transition-shadow duration-300 mb-[20px]"
+                  className="shadow-lg hover:shadow-xl transition-shadow duration-300 mb-[20px] mr-[-20px] "
                 >
                   <CardHeader>
                     <CardTitle className="flex justify-between items-center">
-                      <span className="text-xl font-semibold text-blue-600">
+                      <span className="text-xl font-semibold text-blue-600 truncate w-[250px]">
                         {order.orderId}
                       </span>
-                      <span className="text-sm font-medium text-green-800">
+                      <span className="text-sm font-medium text-green-800 ">
                         {order.isCompleted ? "Completed" : "Pending"}
                       </span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                    <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center">
                         <Button
                           variant="outline"
                           size="sm"
@@ -245,6 +301,51 @@ const PurchaseWithEntry: React.FC = () => {
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
                         </Button>
+                        <HoverCard>
+                          <HoverCardTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleIssueItems(order.orderId)}
+                              className="flex items-center ml-2"
+                              disabled={isIssuing || order.purchaseEntry.every(entry => entry.is_issued)}
+                            >
+                              {isIssuing ? (
+                                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                              )}
+                              Issue Items
+                            </Button>
+                          </HoverCardTrigger>
+                          <HoverCardContent className="w-80">
+                            <div className="space-y-2">
+                              <h4 className="text-sm font-semibold mb-2">Items that are not Issued</h4>
+                              {order.purchaseEntry.some(entry => entry.is_issued === null) ? (
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead className="w-[50%]">Item Name</TableHead>
+                                      <TableHead>Quantity</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {order.purchaseEntry.map((entry, index) =>
+                                      entry.is_issued === null && entry.items.map((item, itemIndex) => (
+                                        <TableRow key={`${index}-${itemIndex}`}>
+                                          <TableCell className="font-medium">{getItemName(item.itemId)}</TableCell>
+                                          <TableCell>{item.quantityFromVendor}</TableCell>
+                                        </TableRow>
+                                      ))
+                                    )}
+                                  </TableBody>
+                                </Table>
+                              ) : (
+                                <p className="text-sm text-muted-foreground">All items have been issued.</p>
+                              )}
+                            </div>
+                          </HoverCardContent>
+                        </HoverCard>
                         <Button
                           variant="outline"
                           size="sm"
@@ -384,51 +485,48 @@ const PurchaseWithEntry: React.FC = () => {
                           Items
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {purchase.items.map((item) => {
-                            const itemDetails = getItemDetails(item.itemId);
-                            return (
-                              <div
-                                key={item.itemId}
-                                className="bg-white p-4 rounded-md shadow-sm border border-gray-200"
-                              >
-                                <h5 className="font-semibold mb-2 flex justify-between items-center">
-                                  <span>
-                                    {itemDetails?.itemName || "Unknown Item"}
-                                  </span>
-                                </h5>
-                                <div className="text-sm">
-                                  <p>
-                                    <span className="font-medium">Type:</span>{" "}
-                                    {itemDetails?.type || "N/A"}
-                                  </p>
-                                  <p>
-                                    <span className="font-medium">
-                                      Quantity (Vendor):
-                                    </span>{" "}
-                                    {item.quantityFromVendor}
-                                  </p>
-                                  <p>
-                                    <span className="font-medium">
-                                      Quantity (Stock):
-                                    </span>{" "}
-                                    {item.quantityFromStock}
-                                  </p>
-                                  <p>
-                                    <span className="font-medium">Item Code:</span>{" "}
-                                    {item.itemCode || "N/A"}
-                                  </p>
-                                  <p>
-                                    <span className="font-medium">Rate:</span> Rs.{" "}
-                                    {item.rate?.toFixed(2) || "N/A"}
-                                  </p>
-                                  <p>
-                                    <span className="font-medium">Amount:</span> Rs.{" "}
-                                    {item.amount?.toFixed(2) || "N/A"}
-                                  </p>
-                                </div>
+                          {purchase.items.map((item) => (
+                            <div
+                              key={item.itemId}
+                              className="bg-white p-4 rounded-md shadow-sm border border-gray-200"
+                            >
+                              <h5 className="font-semibold mb-2 flex justify-between items-center">
+                                <span>
+                                  {getItemName(item.itemId)}
+                                </span>
+                              </h5>
+                              <div className="text-sm">
+                                <p>
+                                  <span className="font-medium">Type:</span>{" "}
+                                  {getItemType(item.itemId)}
+                                </p>
+                                <p>
+                                  <span className="font-medium">
+                                    Quantity (Vendor):
+                                  </span>{" "}
+                                  {item.quantityFromVendor}
+                                </p>
+                                <p>
+                                  <span className="font-medium">
+                                    Quantity (Stock):
+                                  </span>{" "}
+                                  {item.quantityFromStock}
+                                </p>
+                                <p>
+                                  <span className="font-medium">Item Code:</span>{" "}
+                                  {item.itemCode || "N/A"}
+                                </p>
+                                <p>
+                                  <span className="font-medium">Rate:</span> Rs.{" "}
+                                  {item.rate?.toFixed(2) || "N/A"}
+                                </p>
+                                <p>
+                                  <span className="font-medium">Amount:</span> Rs.{" "}
+                                  {item.amount?.toFixed(2) || "N/A"}
+                                </p>
                               </div>
-                            );
-                          })}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     );
@@ -445,7 +543,6 @@ const PurchaseWithEntry: React.FC = () => {
                 ) : (
                   <span>Download</span>
                 )}
-
               </Button>
             </DialogContent>
           </Dialog>

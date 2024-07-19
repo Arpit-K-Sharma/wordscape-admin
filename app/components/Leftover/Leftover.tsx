@@ -34,6 +34,7 @@ interface InventoryItem {
 }
 
 interface LeftoverItem {
+    inventory_id: string;
     item_id: string;
     quantity: number;
     reason: string;
@@ -58,7 +59,7 @@ const LeftoverForm: React.FC<LeftoverFormProps> = ({ orderId, onSubmit }) => {
     const form = useForm({
         defaultValues: {
             order_id: orderId,
-            items: [{ item_id: '', quantity: 0, reason: '' }]
+            items: [{ inventory_id: '', item_id: '', quantity: 0, reason: '' }]
         }
     });
 
@@ -103,14 +104,23 @@ const LeftoverForm: React.FC<LeftoverFormProps> = ({ orderId, onSubmit }) => {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Item</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
+                                    <Select 
+                                        onValueChange={(value) => {
+                                            const [inventoryId, itemId] = value.split('|');
+                                            form.setValue(`items.${index}.inventory_id`, inventoryId);
+                                            field.onChange(itemId);
+                                        }} 
+                                        value={field.value ? `${form.getValues(`items.${index}.inventory_id`)}|${field.value}` : ''}
+                                    >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select an item" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {inventory.flatMap(inv =>
                                                 inv.item.map(item => (
-                                                    <SelectItem key={item._id} value={item._id}>{item.itemName}</SelectItem>
+                                                    <SelectItem key={`${inv._id}|${item._id}`} value={`${inv._id}|${item._id}`}>
+                                                        {item.itemName}
+                                                    </SelectItem>
                                                 ))
                                             )}
                                         </SelectContent>
@@ -141,7 +151,7 @@ const LeftoverForm: React.FC<LeftoverFormProps> = ({ orderId, onSubmit }) => {
                         <Button type="button" onClick={() => remove(index)}>Remove</Button>
                     </div>
                 ))}
-                <Button type="button" onClick={() => append({ item_id: '', quantity: 0, reason: '' })}>
+                <Button type="button" onClick={() => append({ inventory_id: '', item_id: '', quantity: 0, reason: '' })}>
                     Add Item
                 </Button>
                 <Button type="submit">Submit</Button>
@@ -180,20 +190,26 @@ const LeftoverPage: React.FC<{ orderId: string }> = ({ orderId }) => {
 
     const handleSubmit = async (data: any) => {
         try {
-            await leftoverService.postInventory(data)
+            const formattedData = {
+                ...data,
+                items: data.items.map((item: LeftoverItem) => ({
+                    inventory_id: item.inventory_id,
+                    item_id: item.item_id,
+                    quantity: item.quantity,
+                    reason: item.reason
+                }))
+            };
+            await leftoverService.postInventory(formattedData);
             setIsDialogOpen(false);
-            // Refetch leftovers
             const response = await leftoverService.fetchLeftovers(orderId);
             setLeftovers(response);
         } catch (error) {
             console.error('Error submitting leftover:', error);
             setError('Failed to submit leftover. Please try again.');
         }
-
     };
 
     const getItemName = (itemId: string) => {
-        console.log(inventory)
         for (const inv of inventory) {
             const item = inv.item.find(i => i._id === itemId);
             if (item) return item.itemName;

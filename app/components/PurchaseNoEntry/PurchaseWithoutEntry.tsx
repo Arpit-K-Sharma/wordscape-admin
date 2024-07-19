@@ -1,12 +1,15 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import ReactDOM from 'react-dom';
 import { useRouter } from 'next/navigation';
 import axios from "axios";
+import html2canvas from 'html2canvas';
 import InventorySidebar from "../Sidebar/InventorySidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Logo from '../../images/LogoBG.webp';
 import {
   Dialog,
   DialogContent,
@@ -15,9 +18,23 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Eye, Upload, RefreshCw } from "lucide-react";
+import { CheckCircle, CalendarDays } from "lucide-react";
 import toast, { Toaster } from 'react-hot-toast';
 import purchaseService from "@/app/services/purchaseOrderService";
 import { purchaseEntryService } from "@/app/services/purchaseEntryList.service";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 interface PurchaseEntryItem {
   itemId: string;
@@ -42,6 +59,7 @@ interface PurchaseEntryVendor {
   grandTotal: number | null;
   invoiceNo: string | null;
   invoiceDate: string | null;
+  is_issued: boolean | null;
 }
 
 interface PurchaseEntry {
@@ -56,6 +74,7 @@ interface Item {
   itemName: string;
   availability: number;
 }
+
 interface InventoryItem {
   _id: string;
   type: string;
@@ -70,16 +89,64 @@ interface Vendor {
   vendorPhone: string;
 }
 
+interface IssueItemsPayload {
+  order_id: string;
+  approved_by: string;
+  issued_date: string;
+}
+
+const PurchaseSlip: React.FC<{
+  vendorDetails: Vendor | undefined;
+  purchase: PurchaseEntryVendor;
+  getItemDetails: (itemId: string) => Item | null;
+}> = ({ vendorDetails, purchase, getItemDetails }) => {
+  return (
+    <div className="p-8 bg-white" id="purchase-slip">
+      <div className="flex items-center mb-4">
+        <img src={Logo.src} className="w-16 h-16 mr-4" />
+        <h1 className="text-2xl font-bold">Wordscape Printing Company</h1>
+      </div>
+      <h2 className="text-2xl font-bold mb-4">Purchase Order Slip</h2>
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold">{vendorDetails?.vendorName || 'Unknown Vendor'}</h2>
+        <p>{vendorDetails?.vendorAddress || 'N/A'}</p>
+        <p>VAT: {vendorDetails?.vendorVAT || 'N/A'}</p>
+        <p>Phone: {vendorDetails?.vendorPhone || 'N/A'}</p>
+      </div>
+      <Table className="w-full mb-4">
+        <th>
+          <tr>
+            <th className="text-left">Item</th>
+            <th className="text-right">Quantity</th>
+          </tr>
+        </th>
+        <tbody>
+          {purchase.items.map((item, index) => {
+            const itemDetails = getItemDetails(item.itemId);
+            return (
+              <tr key={index}>
+                <td>{itemDetails?.itemName || 'Unknown Item'}</td>
+                <td className="text-right">{item.quantityFromVendor}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </Table>
+    </div>
+  );
+};
+
+// PurchaseEntryList Component
 const PurchaseEntryList: React.FC = () => {
   const [purchaseEntries, setPurchaseEntries] = useState<PurchaseEntry[]>([]);
-  const [selectedEntry, setSelectedEntry] = useState<PurchaseEntry | null>(
-    null
-  );
+  const [selectedEntry, setSelectedEntry] = useState<PurchaseEntry | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [orderId, setOrderId] = useState("");
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [isIssuing, setIsIssuing] = useState(false);
+  const [issueError, setIssueError] = useState<string | null>(null);
   const [vendorInputs, setVendorInputs] = useState<{
     [vendorId: string]: {
       invoiceNo: string;
@@ -91,7 +158,8 @@ const PurchaseEntryList: React.FC = () => {
       items: { rate: string; code: string; amount: string }[];
     };
   }>({});
-  // const { toast } = useToast();
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -102,8 +170,6 @@ const PurchaseEntryList: React.FC = () => {
             purchaseEntryService.getInventoryItems(),
             purchaseEntryService.getVendors(),
           ]);
-        console.log(purchaseEntriesResponse)
-        console.log(inventoryResponse)
 
         const filteredPurchaseEntries = (purchaseEntriesResponse as PurchaseEntry[])
           .map((entry: PurchaseEntry) => ({
@@ -115,11 +181,8 @@ const PurchaseEntryList: React.FC = () => {
           .filter((entry: PurchaseEntry) => entry.purchaseEntry.length > 0);
 
         setPurchaseEntries(filteredPurchaseEntries);
-
         setInventoryItems(inventoryResponse as InventoryItem[]);
-
         setVendors(vendorsResponse);
-
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -149,7 +212,7 @@ const PurchaseEntryList: React.FC = () => {
     setVendorInputs(newVendorInputs);
   };
 
-  const getItemDetails = (itemId: string) => {
+  const getItemDetails = (itemId: string): Item | null => {
     for (const inventory of inventoryItems) {
       const item = inventory.item.find((item) => item._id === itemId);
       if (item) {
@@ -159,12 +222,7 @@ const PurchaseEntryList: React.FC = () => {
     return null;
   };
 
-  const router = useRouter();
-  const handleReorderClick = (orderId: string) => {
-    router.push(`/inventory/entry/${orderId}?reorder=True`)
-  };
-
-  const getVendorDetails = (vendorId: string) => {
+  const getVendorDetails = (vendorId: string): Vendor | undefined => {
     return vendors.find((vendor) => vendor._id === vendorId);
   };
 
@@ -188,7 +246,6 @@ const PurchaseEntryList: React.FC = () => {
           },
         }
       );
-      console.log(response.data);
       if (response.data && response.data.filename) {
         setVendorInputs((prevInputs) => ({
           ...prevInputs,
@@ -197,11 +254,6 @@ const PurchaseEntryList: React.FC = () => {
             image: response.data.filename,
           },
         }));
-
-
-        console.log(
-          `File uploaded successfully for vendor ${vendorId}. Filename: ${response.data.filename}`
-        );
       }
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -241,8 +293,7 @@ const PurchaseEntryList: React.FC = () => {
     };
 
     await toast.promise(
-      axios.post(`http://127.0.0.1:8000/purchase_entry/${orderId}`,
-        data),
+      axios.post(`http://127.0.0.1:8000/purchase_entry/${orderId}`, data),
       {
         loading: 'Creating Purchase Order',
         success: (response) => {
@@ -254,43 +305,82 @@ const PurchaseEntryList: React.FC = () => {
       {
         duration: 3000,
       }
-    )
-    setIsDetailsDialogOpen(false)
-    // try {
-    //   const response = await axios.post(
-    //     `http://127.0.0.1:8000/purchase_entry/${orderId}`,
-    //     data
-    //   );
-    //   console.log("API response:", response.data);
-    //   if (response.status === 200) {
-    //     if (selectedEntry) {
-    //       const updatedPurchaseEntry = selectedEntry.purchaseEntry.filter(
-    //         (purchase) => purchase.vendorId !== vendorId
-    //       );
+    );
+    setIsDetailsDialogOpen(false);
+  };
 
-    //       setSelectedEntry({
-    //         ...selectedEntry,
-    //         purchaseEntry: updatedPurchaseEntry,
-    //       });
+  const handleIssueItems = async (orderId: string) => {
+    setIsIssuing(true);
+    setIssueError(null);
+    const payload: IssueItemsPayload = {
+      order_id: orderId,
+      approved_by: "John Doe",
+      issued_date: new Date().toISOString().split('T')[0]
+    };
 
-    //       const { [vendorId]: _, ...restVendorInputs } = vendorInputs;
-    //       setVendorInputs(restVendorInputs);
+    try {
+      const response = await axios.post("http://127.0.0.1:8000/issued_item", payload);
+      alert("Items issued successfully:");
+    } catch (error) {
+      console.error("Error issuing items:", error);
+      setIssueError("Failed to issue items. Please try again.");
+    } finally {
+      setIsIssuing(false);
+    }
+  };
 
-    //       if (updatedPurchaseEntry.length === 0) {
-    //         setIsDetailsDialogOpen(false);
-    //       }
-    //       setPurchaseEntries((prevEntries) =>
-    //         prevEntries.map((entry) =>
-    //           entry._id === selectedEntry._id
-    //             ? { ...entry, purchaseEntry: updatedPurchaseEntry }
-    //             : entry
-    //         )
-    //       );
-    //     }
-    //   }
-    // } catch (error) {
-    //   console.error("Error submitting purchase entry:", error);
-    // }
+  const handleReorderClick = (orderId: string) => {
+    router.push(`/inventory/entry/${orderId}?reorder=True`);
+  };
+
+  const handleleftOverClick = (orderId: string) => {
+    router.push(`/inventory/leftover/${orderId}`);
+  };
+
+  const handleDownload = async (purchase: PurchaseEntryVendor) => {
+    const vendorDetails = getVendorDetails(purchase.vendorId);
+
+    // Create a temporary div to render the PurchaseSlip
+    const tempDiv = document.createElement('div');
+    document.body.appendChild(tempDiv);
+
+    // Render the PurchaseSlip component
+    ReactDOM.render(
+      <PurchaseSlip
+        vendorDetails={vendorDetails}
+        purchase={purchase}
+        getItemDetails={getItemDetails}
+      />,
+      tempDiv
+    );
+
+    // Wait for the component to render
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    try {
+      // Convert the rendered component to canvas
+      const canvas = await html2canvas(tempDiv.firstChild as HTMLElement);
+
+      // Convert canvas to blob
+      const blob = await new Promise<Blob>((resolve) =>
+        canvas.toBlob((blob) => resolve(blob as Blob))
+      );
+
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `purchase_slip_${purchase.vendorId}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error generating purchase slip:', error);
+    } finally {
+      // Clean up
+      document.body.removeChild(tempDiv);
+    }
   };
 
   return (
@@ -307,7 +397,7 @@ const PurchaseEntryList: React.FC = () => {
           {purchaseEntries.map((entry) => (
             <Card
               key={entry._id}
-              className="shadow-lg hover:shadow-xl transition-shadow duration-300"
+              className="shadow-lg hover:shadow-xl transition-shadow duration-300 mr-[-20px]"
             >
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
@@ -334,11 +424,63 @@ const PurchaseEntryList: React.FC = () => {
                     {entry.purchaseEntry.some(
                       (purchase) => purchase.tag === "reorder"
                     ) && (
-                        <Button className="text-sm font-medium bg-transparent hover:bg-transparent text-orange-500 flex items-center"
-                          onClick={() => handleReorderClick(entry.orderId)}>
-                          <RefreshCw className="mr-1 h-4 w-4" />
-                          Reorder
-                        </Button>
+                        <>
+                          <HoverCard>
+                            <HoverCardTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleIssueItems(entry.orderId)}
+                                className="flex items-center ml-2"
+                                disabled={isIssuing || entry.purchaseEntry.every(entry => entry.is_issued)}
+                              >
+                                {isIssuing ? (
+                                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="mr-2 h-4 w-4" />
+                                )}
+                                Issue Items
+                              </Button>
+                            </HoverCardTrigger>
+                            <HoverCardContent className="w-80">
+                              <div className="space-y-2">
+                                <h4 className="text-sm font-semibold mb-2">Items that are not Issued</h4>
+                                {entry.purchaseEntry.some(entry => entry.is_issued === null) ? (
+                                  <Table>
+                                    <TableHeader>
+                                      <TableRow>
+                                        <TableHead className="w-[50%]">Item Name</TableHead>
+                                        <TableHead>Quantity</TableHead>
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {entry.purchaseEntry.map((entry, index) =>
+                                        entry.is_issued === null && entry.items.map((item, itemIndex) => (
+                                          <TableRow key={`${index}-${itemIndex}`}>
+                                            <TableCell className="font-medium">{getItemDetails(item.itemId)?.itemName}</TableCell>
+                                            <TableCell>{item.quantityFromVendor}</TableCell>
+                                          </TableRow>
+                                        ))
+                                      )}
+                                    </TableBody>
+                                  </Table>
+                                ) : (
+                                  <p className="text-sm text-muted-foreground">All items have been issued.</p>
+                                )}
+                              </div>
+                            </HoverCardContent>
+                          </HoverCard>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleleftOverClick(entry.orderId)}
+                            className="flex items-center ml-2"
+                          >
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Left Overs
+                          </Button>
+                        </>
                       )}
                   </div>
                   <div className="text-sm text-gray-600">
@@ -377,6 +519,19 @@ const PurchaseEntryList: React.FC = () => {
                     )}
                   </div>
                 </div>
+                {entry.purchaseEntry.some(
+                  (purchase) => purchase.tag === "reorder"
+                ) && (
+                    <div className="flex justify-end">
+                      <Button
+                        className="text-sm font-medium bg-transparent hover:bg-transparent text-orange-500"
+                        onClick={() => handleReorderClick(entry.orderId)}
+                      >
+                        <RefreshCw className="mr-1 h-4 w-4" />
+                        Reorder
+                      </Button>
+                    </div>
+                  )}
               </CardContent>
             </Card>
           ))}
@@ -657,12 +812,18 @@ const PurchaseEntryList: React.FC = () => {
                         );
                       })}
                     </div>
-
                     <Button
                       onClick={() => handleSubmit(purchase.vendorId)}
                       className="mt-4"
                     >
                       Submit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleDownload(purchase)}
+                      className="mt-4 ml-2"
+                    >
+                      Download Purchase Slip
                     </Button>
                   </div>
                 );
