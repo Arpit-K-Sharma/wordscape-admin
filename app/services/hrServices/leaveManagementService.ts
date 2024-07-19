@@ -3,7 +3,7 @@ import axios from "axios";
 const API_URL = "http://127.0.1:8000";
 
 export interface LeaveManagement {
-    _id: string;
+    id: string;
     staff_id: string;
     staff_name: string;
     start_date: string;
@@ -25,7 +25,7 @@ export const LeaveManagementService = {
         }
     },
 
-    addLeave: async (staff_id: string, leave: Omit<LeaveManagement, "_id" | "staff_name">): Promise<void> => {
+    addLeave: async (staff_id: string, leave: Omit<LeaveManagement, "id" | "staff_name">): Promise<void> => {
         try {
             await axios.post(`${API_URL}/leave/${staff_id}`, leave);
         } catch (error) {
@@ -34,7 +34,7 @@ export const LeaveManagementService = {
         }
     },
     
-    updateLeave: async (leave_id: string, leave: Omit<LeaveManagement, "_id" | "status">): Promise<void> => {
+    updateLeave: async (leave_id: string, leave: Omit<LeaveManagement, "id" | "status">): Promise<void> => {
         try {
             await axios.put(`${API_URL}/leave/${leave_id}`, leave);
         } catch (error) {

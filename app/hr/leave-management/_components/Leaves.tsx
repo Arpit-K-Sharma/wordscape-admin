@@ -41,19 +41,21 @@ import { staffService, Staff } from '@/app/services/hrServices/staffService';
 const Leaves: React.FC = () => {
   const [leaveManagement, setLeaveManagement] = useState<LeaveManagement[]>([]);
   const [employeeOptions, setEmployeeOptions] = useState<any[]>([]); // State for employee options
-  const [selectedEmployee, setSelectedEmployee] = useState<Staff | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Staff | null>({fullName:"Select Your Employee"});
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [leaveType, setLeaveType] = useState<string | undefined>(undefined);
-  const [leaveStatus, setLeaveStatus] = useState<string | undefined>("Pending");
+  const [leaveStatus, setLeaveStatus] = useState<string>("Pending");
   const [leaveReason, setLeaveReason] = useState<string>('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [calendarType, setCalendarType] = useState<'start' | 'end'>('start');
   const [isCalendarDialogOpen, setIsCalendarDialogOpen] = useState(false);
   const[leaveToUpdate, setLeaveToUpdate] = useState<LeaveManagement | null>(null);
   const [selectedLeaveId, setSelectedLeaveId] = useState<string | null>(null);
+  const[leaveToHandle,  setLeaveToHandle] = useState<string>("");
+  const[handleStatus,  setHandleStatus] = useState<string>("");
 
   useEffect(() => {
     fetchLeaveData();
@@ -61,11 +63,14 @@ const Leaves: React.FC = () => {
   }, [leaveStatus]); 
 
 
+  useEffect(() =>{
+    console.log(leaveStatus);
+  },[setLeaveStatus,leaveStatus])
 
   const fetchLeaveData = async () => {
     try {
       const data = await LeaveManagementService.getLeave();
-      setLeaveManagement(data);
+      setLeaveManagement(data.data);
     } catch (error) {
       console.log("Error fetching leave data", error);
     }
@@ -74,12 +79,12 @@ const Leaves: React.FC = () => {
   const addLeave = async() => {
     if (selectedEmployee && startDate && endDate && leaveType && leaveReason) {
       const newLeave = {
-        staff_id: selectedEmployee._id,
+        staff_id: selectedEmployee.id,
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
         reason: leaveReason,
         type: leaveType,
-        status: leaveStatus || "Pending", // Ensure status is a string
+        status: leaveStatus, // Ensure status is a string
       };
       
       try {
@@ -98,8 +103,9 @@ const Leaves: React.FC = () => {
 
   const fetchEmployeeOptions = async () => {
     try {
-      const employees = await staffService.getStaff(); // Corrected: add parentheses to call the function
-      setEmployeeOptions(employees); // Set employee options in state
+      const employees = await staffService.getStaff(); 
+      console.log(employees.data);
+      setEmployeeOptions(employees.data);
     } catch (error) {
       console.log('Error fetching employees', error);
     }
@@ -111,42 +117,50 @@ const Leaves: React.FC = () => {
   };
 
   const handleChange = (value: any) => {
-    const filteredObject = employeeOptions.filter((option) => option._id === value);
+    const filteredObject = employeeOptions.filter((option) => option.id === value);
+    console.log(filteredObject);
     if (filteredObject.length > 0) {
+        console.log(filteredObject[0]);
         setSelectedEmployee(filteredObject[0]);
     } else {
         console.warn("No employee found with the given ID:", value);
     }
 };
 
-const handleLeave = async(leave_id: string, type: string) =>{
-  
-  try{
-    
-    if(type == "approve"){
-      await LeaveManagementService.approveLeave(leave_id);
-      setLeaveStatus("Approved");
-      console.log("approved")
-    }
-    else if(type == "reject"){
-      await LeaveManagementService.declineLeave(leave_id);
-      setLeaveStatus("Declined");
-      console.log("declined")
-    }
-  }
-  catch{
-    console.log("Error approving leave");
-  }
+const handleLeave = async(leave_id: string, type:string) =>{
+  setIsApproveDialogOpen(true);
+  setLeaveToHandle(leave_id);
+  setHandleStatus(type);
+};
+
+
+const handleApproval = async() =>{
+  await LeaveManagementService.approveLeave(leaveToHandle);
+  setLeaveStatus("Approved");
+  handleClose();
+};
+
+const handleRejection = async()=>{
+  await LeaveManagementService.declineLeave(leaveToHandle);
+  setLeaveStatus("Declined");
+  handleClose();
+};
+
+const handleClose= async() =>{
+  setIsApproveDialogOpen(false);
+  setLeaveToHandle("");
+  setHandleStatus("");
 };
 
   const openUpdateDialog = (leave: LeaveManagement) => {
-    setSelectedLeaveId(leave._id);
+    setSelectedLeaveId(leave.id);
     setLeaveToUpdate(leave);
     handleChange(leave.staff_id);
     setStartDate(new Date(leave.start_date));
     setEndDate(new Date(leave.end_date));
     setLeaveReason(leave.reason);
     setLeaveType(leave.type);
+    setLeaveStatus(leave.status);
     setIsUpdateDialogOpen(true);
   };
 
@@ -164,7 +178,7 @@ const handleLeave = async(leave_id: string, type: string) =>{
   const handleUpdateLeave = async () => {
     if (selectedEmployee && startDate && endDate && leaveType && leaveReason && selectedLeaveId) { // Ensure selectedLeaveId is available
       const updatedLeave = {
-        staff_id: selectedEmployee._id,
+        staff_id: selectedEmployee.id,
         staff_name: selectedEmployee.fullName,
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
@@ -215,7 +229,7 @@ const handleLeave = async(leave_id: string, type: string) =>{
                   </SelectTrigger>
                   <SelectContent>
                     {employeeOptions.map((employee) => (
-                      <SelectItem key={employee.fullName} value={employee._id}>
+                      <SelectItem key={employee.fullName} value={employee.id}>
                         {employee.fullName}
                       </SelectItem>
                     ))}
@@ -328,15 +342,33 @@ const handleLeave = async(leave_id: string, type: string) =>{
     </TableRow>
   </TableHeader>
   <TableBody>
-    {leaveManagement.map((leave) => (
-      <TableRow key={leave._id} className="border-t border-gray-200">
+    {leaveManagement && leaveManagement.map((leave) => (
+      <TableRow key={leave.id} className="border-t border-gray-200">
         <TableCell className="text-center py-2 px-4">{leave.staff_name}</TableCell>
         <TableCell className="text-center py-2 px-4">{new Date(leave.start_date).toLocaleDateString()}</TableCell>
         <TableCell className="text-center py-2 px-4">{new Date(leave.end_date).toLocaleDateString()}</TableCell>
         <TableCell className="text-center py-2 px-4">{leave.reason}</TableCell>
         <TableCell className="text-center py-2 px-4">{leave.type}</TableCell>
-        <TableCell className="text-center py-2 px-4">{leave.status}</TableCell>
         <TableCell className="text-center py-2 px-4">
+            {leave.status !== "Pending" ? (
+              leave.status === "Approved" ? (
+                <span className="w-24 inline-block bg-green-500 text-white text-center px-2 py-1 rounded-md">
+                  {leave.status}
+                </span>
+              ) : (
+                <span className="w-24 inline-block bg-red-500 text-white text-center px-2 py-1 rounded-md">
+                  {leave.status}
+                </span>
+              )
+            ) : (
+              <span className="w-24 inline-block bg-yellow-500 text-white text-center px-2 py-1 rounded-md">
+                {leave.status}
+              </span>
+            )}
+        </TableCell>
+
+
+        <TableCell className="flex justify-center ml-3 text-center py-2 px-4">
           <Button
             variant="outline"
             onClick={() => openUpdateDialog(leave)}
@@ -348,7 +380,7 @@ const handleLeave = async(leave_id: string, type: string) =>{
         </TableCell>
         <TableCell className="text-center py-2 px-4">
           <Button
-            onClick={() => handleLeave(leave._id, "approve")}
+            onClick={() => handleLeave(leave.id,"approve")}
             className="mr-3 bg-success text-success-foreground hover:bg-success-hover"
           >
             <FiCheck className="mr-2" />
@@ -356,7 +388,7 @@ const handleLeave = async(leave_id: string, type: string) =>{
           </Button>
           <Button
             variant="destructive"
-            onClick={() => handleLeave(leave._id, "reject")}
+            onClick={() => handleLeave(leave.id,"reject")}
             className="mr-3"
           >
             <FiX className="mr-2" />
@@ -468,6 +500,39 @@ const handleLeave = async(leave_id: string, type: string) =>{
             <Button variant="secondary" onClick={closeUpdateDialog}>
                 Cancel
               </Button>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{handleStatus=="approve"? "Approve Leave":"Reject Leave"}</DialogTitle>
+              <DialogDescription>
+              {
+              handleStatus=="approve"? 
+              "Are you sure you want to approve the leave ?":
+              "Are you sure you want reject the leave ?"}
+                
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+            {handleStatus === "approve" ? (
+            <Button onClick={handleApproval} className=' bg-success text-success-foreground hover:bg-success-hover'>
+              <FiCheck className="mr-2"/>
+              Approve
+            </Button>
+          ) : 
+          <Button variant="destructive" onClick={handleRejection}>
+          <FiTrash2 className="mr-2" />
+          Reject
+        </Button>}
+
+          
+              <Button variant="outline" onClick={handleClose}>
+                <FiX className="mr-2" />
+                Cancel
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </main>
