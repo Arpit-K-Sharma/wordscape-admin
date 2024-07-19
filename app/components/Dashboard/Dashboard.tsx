@@ -291,7 +291,7 @@ const Dashboard = () => {
                         {order._id || order._id === "0" ? order._id : "N/A"}
                       </TableCell>
                       <TableCell className="px-6 py-[20px]">
-                        {order.date}
+                        {new Date(order.date).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="px-6 py-[20px]">
                         {user?.fullName}

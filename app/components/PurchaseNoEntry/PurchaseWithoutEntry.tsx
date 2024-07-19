@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Eye, Upload, RefreshCw } from "lucide-react";
+import { Eye, Upload, RefreshCw, Send } from "lucide-react";
 import { CheckCircle, CalendarDays } from "lucide-react";
 import toast, { Toaster } from 'react-hot-toast';
 import purchaseService from "@/app/services/purchaseOrderService";
@@ -564,7 +564,7 @@ const PurchaseEntryList: React.FC = () => {
                           htmlFor={`file-${selectedEntry._id}-${purchase.vendorId}`}
                           className="cursor-pointer"
                         >
-                          <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md p-2 hover:border-blue-500 transition-colors duration-300">
+                          <div className="flex items-center justify-center mr-[10px] border-2 border-dashed border-gray-300 rounded-md p-2 hover:border-blue-500 transition-colors duration-300">
                             <Upload className="h-4 w-4 text-gray-400 mr-2" />
                             <span className="text-sm text-gray-600">
                               Proof of Payment
@@ -582,8 +582,8 @@ const PurchaseEntryList: React.FC = () => {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div className="grid gap-[10px] mt-[15px]">
+                    <div className="md:grid-cols-2 gap-4 mb-4">
+                      <div className="grid gap-[5px] mt-[15px]">
                         <p>
                           <span className="font-medium">Address:</span>{" "}
                           {vendorDetails?.vendorAddress}
@@ -630,7 +630,9 @@ const PurchaseEntryList: React.FC = () => {
                               }))
                             }
                           />
+                          <Label>Date</Label>
                           <Input
+                            className=""
                             type="date"
                             placeholder="Invoice Date"
                             value={
@@ -647,6 +649,7 @@ const PurchaseEntryList: React.FC = () => {
                             }
                           />
                           <div className="grid gap-[10px]">
+                            <Label>VAT</Label>
                             <Input
                               type="number"
                               placeholder="VAT"
@@ -661,6 +664,7 @@ const PurchaseEntryList: React.FC = () => {
                                 }))
                               }
                             />
+                            <Label>Discount</Label>
                             <Input
                               type="number"
                               placeholder="Discount"
@@ -677,6 +681,7 @@ const PurchaseEntryList: React.FC = () => {
                                 }))
                               }
                             />
+                            <Label>Grand Total</Label>
                             <Input
                               type="number"
                               placeholder="Grand Total"
@@ -812,19 +817,29 @@ const PurchaseEntryList: React.FC = () => {
                         );
                       })}
                     </div>
-                    <Button
-                      onClick={() => handleSubmit(purchase.vendorId)}
-                      className="mt-4"
-                    >
-                      Submit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleDownload(purchase)}
-                      className="mt-4 ml-2"
-                    >
-                      Download Purchase Slip
-                    </Button>
+
+                    <div className="flex items-center mt-[20px]">
+                      <Button
+                        type="submit"
+                        onClick={() => handleSubmit(purchase.vendorId)}
+                        className="flex items-center mr-3"
+                      >
+                        <div className="mr-[10px]">
+                          <Send size={15} />
+                        </div>
+                        <div>
+                          Submit
+                        </div>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleDownload(purchase)}
+                        className="flex items-center"
+                      >
+                        Download Purchase Slip
+                      </Button>
+                    </div>
+
                   </div>
                 );
               })}

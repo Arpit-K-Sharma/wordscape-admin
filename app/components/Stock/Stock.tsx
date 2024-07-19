@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import { useForm, useFieldArray, Control } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import InventorySidebar from "../Sidebar/InventorySidebar";
 import { Button } from "@/components/ui/button";
@@ -14,11 +18,20 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import StockForm from "./StockForm";
 import UpdateItemForm from "./UpdateItemForm";
 import AddTypeForm from "./AddTypeForm";
 import toast, { Toaster } from "react-hot-toast";
 import { stockService } from "@/app/services/stockService";
+import { Input } from "@/components/ui/input";
 
 interface Item {
   _id: string;
@@ -36,6 +49,49 @@ interface InventoryResponse {
   data: InventoryItem[];
 }
 
+// Define the zod schema for item validation
+const itemSchema = z.object({
+  itemName: z.string().min(1, "Item name is required"),
+  availability: z.string().default("0"),
+});
+
+// Define the zod schema for type validation
+const typeSchema = z.object({
+  type: z.string(),
+  item: z.array(
+    itemSchema
+  ),
+});
+
+const stockSchema = z.object({
+  items: z.array(itemSchema).min(1, "At least one item is required"),
+});
+
+// Infer the type from the typeSchema
+type TypeFormValues = z.infer<typeof typeSchema>;
+type AddItemValues = z.infer<typeof stockSchema>;
+
+// Define the interface for the item structure
+interface ItemType {
+  itemName: string;
+  availability: string;
+}
+
+// Define the props interface for TypeForm component
+interface TypeFormProps {
+  // onSubmit: (data: TypeFormValues) => Promise<void>;
+  defaultValues?: Partial<TypeFormValues>;
+  buttonText: string;
+  isSubmitting: boolean;
+  onSubmit: (data: {
+    type: string;
+    itemName: string;
+    availability: string;
+  }) => Promise<void>;
+}
+
+
+
 const StocksPage: React.FC = () => {
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,6 +106,86 @@ const StocksPage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [isItemDeleteDialogOpen, setIsItemDeleteDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState<string>('');
+
+  const router = useRouter();
+
+  const form = useForm<TypeFormValues>({
+    resolver: zodResolver(typeSchema),
+    defaultValues: {
+      type: "",
+      item: [{ itemName: "", availability: "" || "0" }],
+    }
+  });
+  const { control: typeControl,
+    handleSubmit: handleSubmit } = form;
+  const { fields: typeFields,
+    append: appendType,
+    remove: removeType } = useFieldArray({
+      control: typeControl,
+      name: "item",
+    });
+
+  const [item, setItem] = useState<TypeFormProps[]>([]);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const onSubmit = async (data: TypeFormValues) => {
+    try {
+      const url = "http://localhost:8000/inventory";
+      await toast.promise(
+        axios.post<TypeFormProps>(url, data),
+        {
+          loading: 'Creating item...',
+          success: (response) => {
+            console.log("Item created", response.data);
+            setItem([...item, response.data]);
+            return "Item created successfully";
+          },
+          error: (error) => {
+            console.error("Error occurred while creating a new item:", error);
+            return "Error creating item";
+          },
+        },
+        {
+          duration: 3000,
+        }
+      );
+      // router.push("/inventory/stocks")
+    } catch (error) {
+      console.error("Error occurred while creating a new item:", error);
+    }
+    setIsAddDialogOpen(false);
+  };
+
+  const onSubmitAdd = async (data: AddItemValues, itemId: string) => {
+    try {
+      const url = `http://localhost:8000/add-item/${itemId}`;
+      await toast.promise(
+        axios.post(url, data.items),
+        {
+          loading: 'Creating item...',
+          success: (response) => {
+            console.log("Item created", response.data);
+            setItem([...item, response.data]);
+            return "Item created successfully";
+
+          },
+          error: (error) => {
+            console.error("Error occurred while creating a new item:", error);
+            return "Error creating item";
+          },
+        },
+        {
+          duration: 3000,
+        }
+      );
+    } catch (error) {
+      console.error("Error occurred while creating a new item:", error);
+    }
+  };
+
+
 
   const fetchInventory = async () => {
     try {
@@ -80,11 +216,19 @@ const StocksPage: React.FC = () => {
     setIsClient(true);
   }, []);
 
-  const handleOpenForm = (type: 'add' | 'update' | 'addType', inventoryId: string) => {
+  const handleOpenForm = (type: 'add' | 'update', inventoryId: string) => {
     console.log(`Handling form for type: ${type}, inventoryId: ${inventoryId}`);
     setFormType(type);
     setOpenDialogId(inventoryId);
     // openDialog();
+  };
+
+  const openItemDialog = () => {
+    setIsItemDialogOpen(true);
+  };
+
+  const closeItemDialog = () => {
+    setIsItemDialogOpen(false);
   };
 
   const openDialog = () => {
@@ -93,22 +237,6 @@ const StocksPage: React.FC = () => {
 
   const closeDialog = () => {
     setIsDialogOpen(false);
-  };
-
-  const onSubmit = async (data: { type: string; itemName: string; availability: string }) => {
-    try {
-      setIsSubmitting(true);
-      const newItem = await stockService.createInventoryItem(data);
-      console.log("Inventory item created", newItem);
-      setInventoryData([...inventoryData, newItem]);
-      await fetchInventory();
-      toast.success("Item added to inventory successfully!");
-      closeDialog();
-    } catch (error) {
-      console.error("Error occurred while creating a vendor:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const openDeleteDialog = (type: InventoryItem) => {
@@ -169,6 +297,37 @@ const StocksPage: React.FC = () => {
     }
   };
 
+  const itemform = useForm<AddItemValues>({
+    resolver: zodResolver(stockSchema),
+    defaultValues: {
+      items: [
+        { itemName: "", availability: "" || "0"},
+      ],
+    },
+  });
+
+  const { control: itemControl,
+    handleSubmit: handleItemSubmit } = itemform;
+  const { fields: itemFields,
+    append: appendItem,
+    remove: removeItems } = useFieldArray({
+      control: itemControl,
+      name: "items",
+    });
+
+  const addItem = () => {
+    itemform.setValue(`items`, [
+      ...itemform.getValues("items"),
+      { itemName: "", availability: "" || "0" },
+    ]);
+  };
+
+  const removeItem = (index: number) => {
+    if (itemFields.length > 1) {
+      removeItems(index);
+    }
+  };
+
 
 
   return (
@@ -183,13 +342,89 @@ const StocksPage: React.FC = () => {
                   Inventory Stock Levels
                 </div>
                 <div>
-                  <Button
-                    onClick={() => handleOpenForm('addType', '6697898fae9ff72cee6b1ee7')}
-                    disabled={isSubmitting}
-                    className="font-semibold text-[15px]"
-                  >
-                    Add Type
-                  </Button>
+                  <Dialog
+                  open={isDialogOpen}
+                  onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger>
+                      <Button
+                        disabled={isSubmitting}
+                        className="font-semibold text-[15px]"
+                        onClick={() => {
+                          openDialog()
+                        }}
+                      >
+                        Add Type
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add New Category to Inventory</DialogTitle>
+                        <DialogDescription>
+                          <Form {...form}>
+                            <form onSubmit={handleSubmit(async (data) => {
+                              await onSubmit(data);
+                              form.reset();
+                            })}
+                              className="space-y-4"
+                            >
+                              {typeFields.map((item, index) => (
+                                <div key={item.id} className="bg-white rounded-md shadow-lg p-4 space-y-4">
+                                  <FormField
+                                    control={typeControl}
+                                    name="type"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Type</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="Insert the type" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+
+                                  <FormField
+                                    control={typeControl}
+                                    name={`item.${index}.itemName`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Item Name</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="Insert the item name" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  {/* <FormField
+                                    control={typeControl}
+                                    name={`item.${index}.availability`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Availability</FormLabel>
+                                        <FormControl>
+                                          <Input
+                                            placeholder="Insert the availability of the item"
+                                            {...field}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  /> */}
+
+                                </div>
+                              ))}
+                              <Button type="submit" className="w-full" disabled={isSubmitting} 
+                              onClick={closeDialog}>
+                                Add to Inventory
+                              </Button>
+                            </form>
+                          </Form>
+                        </DialogDescription>
+                      </DialogHeader>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             </CardTitle>
@@ -213,19 +448,127 @@ const StocksPage: React.FC = () => {
                           </h2>
                         </div>
                         <div>
-                          <Button
-                            className="bg-transparent hover:bg-transparent transition-colors shadow-none"
-                            onClick={() => openDeleteDialog(inventoryType)}
+                          <Dialog
+                            open={isDeleteDialogOpen}
+                            onOpenChange={setIsDeleteDialogOpen}
                           >
-                            <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
-                          </Button>
-                          <Button
-                            onClick={() => handleOpenForm('add', inventoryType._id)}
-                            disabled={isSubmitting}
-                            className="font-semibold text-[15px]"
-                          >
-                            <GrAddCircle className="font-semibold text-[15px] w-[20px] h-[20px] p-0 flex items-center justify-center" />
-                          </Button>
+                            <DialogTrigger>
+                              <Button
+                                className="bg-transparent hover:bg-transparent transition-colors shadow-none"
+                                onClick={() => {
+                                  console.log('item._id:', inventoryType._id);
+                                  openDeleteDialog(inventoryType)
+                                }}
+                              >
+                                <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Delete Category from Inventory</DialogTitle>
+                                <DialogDescription>
+                                  Are you sure you want to delete this? This action
+                                  cannot be undone.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter>
+                                <Button variant="destructive" onClick={() => handleTypeDelete()}>
+                                  <FiTrash2 className="mr-2" />
+                                  Delete
+                                </Button>
+                                <Button variant="secondary" onClick={closeDeleteDialog}>
+                                  <FiX className="mr-2" />
+                                  Cancel
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+
+                          <Dialog
+                          open={isItemDialogOpen}
+                          onOpenChange={setIsItemDialogOpen}>
+                            <DialogTrigger>
+                              <Button
+                                disabled={isSubmitting}
+                                className="font-semibold text-[15px]"
+                                onClick={() => {
+                                  openItemDialog()
+                                }}
+                              >
+                                <GrAddCircle className="font-semibold text-[15px] w-[20px] h-[20px] p-0 flex items-center justify-center" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Add Item to Inventory</DialogTitle>
+                                <DialogDescription>
+                                  <Form {...itemform}>
+                                    <form
+                                      onSubmit={handleItemSubmit((data) => {
+                                        onSubmitAdd(data, inventoryType._id);
+                                        itemform.reset(); // Optionally reset form after submission
+                                      })}
+                                      className="space-y-4"
+                                    >
+                                      {itemFields.map((item, index) => (
+                                        <div
+                                          key={item.id}
+                                          className="bg-white rounded-md shadow-lg p-4 space-y-4"
+                                        >
+                                          <FormField
+                                            control={itemControl}
+                                            name={`items.${index}.itemName`}
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <FormLabel>Item Name</FormLabel>
+                                                <FormLabel className="ml-[300px]">
+                                                  <Button
+                                                    type="button"
+                                                    className="bg-transparent hover:bg-transparent transition-colors shadow-none"
+                                                    onClick={() => removeItem(index)}
+                                                  >
+                                                    <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
+                                                  </Button>
+                                                </FormLabel>
+                                                <FormControl>
+                                                  <Input placeholder="Insert the item name" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                          {/* <FormField
+                                            control={itemControl}
+                                            name={`items.${index}.availability`}
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <FormLabel>Availability</FormLabel>
+                                                <FormControl>
+                                                  <Input
+                                                    placeholder="Insert the availability of the item"
+                                                    {...field}
+                                                  />
+                                                </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          /> */}
+                                        </div>
+                                      ))}
+                                      <Button type="button" onClick={addItem} className="">
+                                        Add Item
+                                      </Button>
+                                      <Button type="submit" className="w-full" disabled={isSubmitting}
+                                      onClick={closeItemDialog}>
+                                        Add Item to {inventoryType.type}
+                                      </Button>
+                                    </form>
+                                  </Form>
+                                </DialogDescription>
+                              </DialogHeader>
+                            </DialogContent>
+                          </Dialog>
+
                         </div>
                       </div>
 
@@ -245,96 +588,41 @@ const StocksPage: React.FC = () => {
                                   </h3>
                                 </div>
                                 <div>
-                                  <Button
-                                    key={item._id}
-                                    className="bg-transparent hover:bg-transparent transition-colors shadow-none"
-                                    onClick={() => {
-                                      console.log('item._id:', item._id);
-                                      openDeleteItemDialog(inventoryType)
-                                    }}
-                                  >
-                                    <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
-                                  </Button>
-                                  <Dialog
-                                    open={isDeleteDialogOpen}
-                                    onOpenChange={(open) => open ? setIsDeleteDialogOpen(true) : closeDeleteDialog()}
-                                  >
-                                    <DialogContent>
-                                      <DialogHeader>
-                                        <DialogTitle>Delete Category Form Inventory</DialogTitle>
-                                        <DialogDescription>
-                                          Are you sure you want to delete this? This action
-                                          cannot be undone.
-                                        </DialogDescription>
-                                      </DialogHeader>
-                                      <DialogFooter>
-                                        <Button variant="destructive" onClick={handleTypeDelete}>
-                                          <FiTrash2 className="mr-2" />
-                                          Delete
-                                        </Button>
-                                        <Button variant="secondary" onClick={closeDeleteDialog}>
-                                          <FiX className="mr-2" />
-                                          Cancel
-                                        </Button>
-                                      </DialogFooter>
-                                    </DialogContent>
-                                  </Dialog>
                                   <Dialog
                                     open={isItemDeleteDialogOpen}
                                     onOpenChange={setIsItemDeleteDialogOpen}
                                   >
+                                    <DialogTrigger>
+                                      <Button
+                                        key={item._id}
+                                        className="bg-transparent hover:bg-transparent transition-colors shadow-none"
+                                        onClick={() => {
+                                          console.log('item._id:', item._id);
+                                          setSelectedItemId(item._id);
+                                          openDeleteItemDialog(inventoryType)
+                                        }}
+                                      > 
+                                        <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
+                                      </Button>
+                                    </DialogTrigger>
                                     <DialogContent>
                                       <DialogHeader>
-                                        <DialogTitle>Delete Item From Category</DialogTitle>
+                                        <DialogTitle>Delete {item.itemName} From {inventoryType.type}</DialogTitle>
                                         <DialogDescription>
                                           Are you sure you want to delete this? This action
                                           cannot be undone.
                                         </DialogDescription>
                                       </DialogHeader>
                                       <DialogFooter>
-                                        <Button variant="destructive" onClick={() => handleItemDelete(item._id)}>
+                                        <Button variant="destructive" onClick={() => handleItemDelete(selectedItemId)}>
                                           <FiTrash2 className="mr-2" />
                                           Delete
                                         </Button>
-                                        <Button variant="secondary" onClick={closeDeleteDialog}>
+                                        <Button variant="secondary" onClick={closeDeleteItemDialog}>
                                           <FiX className="mr-2" />
                                           Cancel
                                         </Button>
                                       </DialogFooter>
-                                    </DialogContent>
-                                  </Dialog>
-                                  <Dialog open={openDialogId === inventoryType._id} onOpenChange={(open) => setOpenDialogId(inventoryType._id)}>
-                                    <DialogTrigger>
-
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <DialogHeader>
-                                        <DialogTitle>Add to Inventory</DialogTitle>
-                                      </DialogHeader>
-                                      {formType === "add" ? (
-                                        <StockForm
-                                          onSubmit={onSubmit}
-                                          buttonText="Add New Item"
-                                          isSubmitting={isSubmitting}
-                                          inventoryId={inventoryType._id}
-                                          onOpenChange={(open) => open ? setIsDialogOpen(true) : closeDialog()}
-                                        />
-                                      ) : formType === "update" ? (
-                                        <UpdateItemForm
-                                          onSubmit={onSubmit}
-                                          buttonText="Update Item"
-                                          isSubmitting={isSubmitting}
-                                          inventoryId={inventoryType._id}
-                                          itemId={item._id}
-                                          onClose={() => setIsUpdateFormOpen(false)}
-                                        />
-                                      ) : formType === "addType" ? (
-                                        <AddTypeForm
-                                          onSubmit={onSubmit}
-                                          buttonText="Add New Type"
-                                          isSubmitting={isSubmitting}
-                                        />
-                                      ) : null}
                                     </DialogContent>
                                   </Dialog>
                                 </div>

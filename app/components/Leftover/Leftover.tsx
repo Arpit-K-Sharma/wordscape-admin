@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/table";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShoppingCart } from "lucide-react";
+import { AlertCircle, BarChart2, Package, PlusCircle, Send, ShoppingCart, Trash2 } from "lucide-react";
+import toast from 'react-hot-toast';
 
 interface InventoryItem {
     _id: string;
@@ -97,7 +98,18 @@ const LeftoverForm: React.FC<LeftoverFormProps> = ({ orderId, onSubmit }) => {
         <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
                 {fields.map((field, index) => (
-                    <div key={field.id} className="flex space-x-4">
+                    <div key={field.id} className="flex flex-col space-y-4 shadow-md p-[10px] rounded-md">
+                        <div className=''>
+                            <div className="flex flex-row w-[70px]">
+                                <div className='ml-[390px]'>
+                                    <Button type="button"
+                                        className='bg-transparent hover:bg-transparent shadow-sm self-start'
+                                        onClick={() => remove(index)}>
+                                        <Trash2 className="mr-1 text-gray-800  hover:text-red-600" size={18} />
+                                    </Button>
+                                </div>
+
+                            </div>
                         <FormField
                             control={form.control}
                             name={`items.${index}.item_id`}
@@ -129,37 +141,57 @@ const LeftoverForm: React.FC<LeftoverFormProps> = ({ orderId, onSubmit }) => {
                             )}
                         />
                         <FormField
-                            control={form.control}
-                            name={`items.${index}.quantity`}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Quantity</FormLabel>
-                                    <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name={`items.${index}.reason`}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Reason</FormLabel>
-                                    <Input {...field} />
-                                </FormItem>
-                            )}
-                        />
-                        <Button type="button" onClick={() => remove(index)}>Remove</Button>
+                                control={form.control}
+                                name={`items.${index}.quantity`}
+                                render={({ field }) => (
+                                    <FormItem className='p-[10px]'>
+                                        <FormLabel className='font-semibold'>Quantity</FormLabel>
+                                        <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name={`items.${index}.reason`}
+                                render={({ field }) => (
+                                    <FormItem className='p-[10px]'>
+                                        <FormLabel className='font-semibold'>Reason</FormLabel>
+                                        <Input {...field} />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                     </div>
                 ))}
-                <Button type="button" onClick={() => append({ inventory_id: '', item_id: '', quantity: 0, reason: '' })}>
-                    Add Item
-                </Button>
-                <Button type="submit">Submit</Button>
+                <div className="flex space-x-4">
+
+                    <div>
+                        <Button type="button"
+                            onClick={() => append({ item_id: '', inventory_id: '', quantity: 0, reason: '' })}>
+                            <div className='bg-transparent shadow-sm hover:bg-transparent mr-[10px]'>
+                                <PlusCircle size={18} />
+                            </div>
+                            <div>
+                                Add Item
+                            </div>
+
+                        </Button>
+                    </div>
+
+                    <Button type="submit">
+                        <div className='mr-[10px]'>
+                            <Send size={15} />
+                        </div>
+                        <div>
+                            Submit
+                        </div>
+                    </Button>
+
+                </div>
             </form>
         </Form>
     );
 };
-
 const LeftoverPage: React.FC<{ orderId: string }> = ({ orderId }) => {
     const [leftovers, setLeftovers] = useState<Leftover[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -200,6 +232,17 @@ const LeftoverPage: React.FC<{ orderId: string }> = ({ orderId }) => {
                 }))
             };
             await leftoverService.postInventory(formattedData);
+            await toast.promise(
+                leftoverService.postInventory(data),
+                {
+                    loading: 'Submitting leftover...',
+                    success: 'Leftover submitted successfully',
+                    error: 'Failed to submit leftover'
+                },
+                {
+                    duration: 3000
+                }
+            );
             setIsDialogOpen(false);
             const response = await leftoverService.fetchLeftovers(orderId);
             setLeftovers(response);
@@ -221,66 +264,78 @@ const LeftoverPage: React.FC<{ orderId: string }> = ({ orderId }) => {
 
     return (
         <div className="flex h-screen bg-gray-100 font-archivo">
-            <InventorySidebar />
+                <InventorySidebar />
 
-            <div className="container mx-auto p-4 ml-[20px] mr-[20px]">
-                <h1 className="text-2xl font-bold mb-4 mt-[20px]">Leftovers for Order {orderId}</h1>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button>Add Leftover</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Add New Leftover</DialogTitle>
-                        </DialogHeader>
-                        <LeftoverForm orderId={orderId} onSubmit={handleSubmit} />
-                    </DialogContent>
-                </Dialog>
-                <Card className="mt-6">
-                    <CardHeader>
-                        <CardTitle>Left Over Items</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ScrollArea className="h-[600px]">
-                            <Table className="w-full text-sm text-left rtl:text-right text-white">
-                                <TableHeader className="text-xs text-black uppercase bg-gray-100 shadow-md">
-                                    <TableRow>
-                                        <TableHead className="py-[30px] flex items-center"></TableHead>
-                                        <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
-                                            Item Name
-                                        </TableHead>
-                                        <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
-                                            Quantity
-                                        </TableHead>
-                                        <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
-                                            Reason
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {leftovers.flatMap((leftover) =>
-                                        leftover.items.map((item, index) => (
-                                            <TableRow
-                                                key={`${leftover._id}-${index}`}
-                                                className="bg-white border-b font-medium text-[17px] hover:bg-gray-200 text-black"
-                                            >
-                                                <TableCell className="w-4 p-4 text-[17px]"></TableCell>
-                                                <TableCell className="px-6 font-medium text-[17px] whitespace-nowrap text-black py-[20px]">
-                                                    {getItemName(item.item_id)}
-                                                </TableCell>
-                                                <TableCell className="px-6 py-[20px]">{item.quantity}</TableCell>
-                                                <TableCell className="px-6 py-[20px]">{item.reason}</TableCell>
-                                            </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </ScrollArea>
-                    </CardContent>
-                </Card>
+                <div className="container mx-auto p-4 ml-[20px] mr-[20px]">
+                    <h1 className="text-2xl font-bold mb-4 mt-[20px]">Leftovers for Order {orderId}</h1>
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button
+                                className='ml-[10px]'>
+                                Add Leftover
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Add New Leftover</DialogTitle>
+                            </DialogHeader>
+                            <LeftoverForm orderId={orderId} onSubmit={handleSubmit} />
+                        </DialogContent>
+                    </Dialog>
+                    <Card className="mt-6">
+                        <CardHeader>
+                            <CardTitle className='ml-[10px]'>Left Over Items</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ScrollArea className="h-[600px]">
+                                <Table className="w-full text-sm text-left rtl:text-right text-white">
+                                    <TableHeader className="text-xs text-black uppercase bg-gray-100 shadow-md">
+                                        <TableRow>
+                                            <TableHead className="py-[30px] flex items-center"></TableHead>
+                                            <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
+                                                <div className="flex items-center">
+                                                    <Package className="mr-2" size={18} />
+                                                    Item Name
+                                                </div>
+                                            </TableHead>
+                                            <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
+                                                <div className="flex items-center">
+                                                    <BarChart2 className="mr-2" size={18} />
+                                                    Quantity
+                                                </div>
+                                            </TableHead>
+                                            <TableHead className="px-6 py-3 text-[15px] text-black font-bold">
+                                                <div className="flex items-center">
+                                                    <AlertCircle className="mr-2" size={18} />
+                                                    Reason
+                                                </div>
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {leftovers && leftovers.flatMap((leftover) =>
+                                            leftover.items.map((item, index) => (
+                                                <TableRow
+                                                    key={`${leftover._id}-${index}`}
+                                                    className="bg-white border-b font-medium text-[17px] hover:bg-gray-200 text-black"
+                                                >
+                                                    <TableCell className="w-4 p-4 text-[17px]"></TableCell>
+                                                    <TableCell className="px-6 font-medium text-[17px] whitespace-nowrap text-black py-[20px]">
+                                                        {getItemName(item.item_id)}
+                                                    </TableCell>
+                                                    <TableCell className="px-6 py-[20px]">{item.quantity}</TableCell>
+                                                    <TableCell className="px-6 py-[20px]">{item.reason}</TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
-        </div>
-    );
-};
+        );
+    };
 
-export default LeftoverPage;
+    export default LeftoverPage;
