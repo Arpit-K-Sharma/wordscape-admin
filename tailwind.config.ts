@@ -56,7 +56,7 @@ const config = {
           foreground: "hsl(var(--card-foreground))",
         },
         success: {
-          DEFAULT: "#4CAF50",
+          DEFAULT: "#3D8C40",
           foreground: "#FFFFFF",
           hover: "#45A049",
         },

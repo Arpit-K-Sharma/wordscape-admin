@@ -351,16 +351,16 @@ const handleClose= async() =>{
         <TableCell className="text-center py-2 px-4">
             {leave.status !== "Pending" ? (
               leave.status === "Approved" ? (
-                <span className="w-24 inline-block bg-green-500 text-white text-center px-2 py-1 rounded-md">
+                <span className="w-24 inline-block font-bold text-green-500 text-center px-2 py-1">
                   {leave.status}
                 </span>
               ) : (
-                <span className="w-24 inline-block bg-red-500 text-white text-center px-2 py-1 rounded-md">
+                <span className="w-24 inline-block font-bold text-red-500 text-center px-2 py-1">
                   {leave.status}
                 </span>
               )
             ) : (
-              <span className="w-24 inline-block bg-yellow-500 text-white text-center px-2 py-1 rounded-md">
+              <span className="w-24 inline-block font-bold text-yellow-500 text-center px-2 py-1">
                 {leave.status}
               </span>
             )}
@@ -380,7 +380,7 @@ const handleClose= async() =>{
         <TableCell className="text-center py-2 px-4">
           <Button
             onClick={() => handleLeave(leave.id,"approve")}
-            className="mr-3 bg-success text-success-foreground hover:bg-success-hover"
+            className="mr-3 bg-success font-bold text-success-foreground hover:bg-success-hover"
           >
             <FiCheck className="mr-2" />
             Approve
@@ -388,7 +388,7 @@ const handleClose= async() =>{
           <Button
             variant="destructive"
             onClick={() => handleLeave(leave.id,"reject")}
-            className="mr-3"
+            className="mr-3 font-bold"
           >
             <FiX className="mr-2" />
             Reject
