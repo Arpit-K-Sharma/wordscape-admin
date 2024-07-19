@@ -219,7 +219,6 @@ const handleClose= async() =>{
                 <Label htmlFor="name" className="text-right">
                   Employee Name
                 </Label>
-                {/* Replace Input with Select from react-select */}
                 <Select
                   value={selectedEmployee?.fullName}
                   onValueChange={handleChange}
