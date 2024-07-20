@@ -101,10 +101,14 @@ const PurchaseSlip: React.FC<{
   getItemDetails: (itemId: string) => Item | null;
 }> = ({ vendorDetails, purchase, getItemDetails }) => {
   return (
-    <div className="p-8 bg-white" id="purchase-slip">
-      <div className="flex items-center mb-4">
-        <img src={Logo.src} className="w-16 h-16 mr-4" />
-        <h1 className="text-2xl font-bold">Wordscape Printing Company</h1>
+    <div className="p-8 bg-white ml-[200px] w-[500px]" id="purchase-slip">
+      <div className="flex flex-col items-center mb-4">
+        <div>
+          <img src={Logo.src} className="w-16 h-16 mr-4" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold mb-[20px]">WordScape Printing Company</h1>
+        </div>
       </div>
       <h2 className="text-2xl font-bold mb-4">Purchase Order Slip</h2>
       <div className="mb-4">
@@ -125,8 +129,7 @@ const PurchaseSlip: React.FC<{
             const itemDetails = getItemDetails(item.itemId);
             return (
               <tr key={index}>
-                <td>{itemDetails?.itemName || 'Unknown Item'}</td>
-                <td className="text-right">{item.quantityFromVendor}</td>
+                <td>{itemDetails?.itemName || 'Unknown Item'}: {item.quantityFromVendor} </td>
               </tr>
             );
           })}
