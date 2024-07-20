@@ -328,76 +328,76 @@ const handleClose= async() =>{
 
         {leaveManagement.length > 0 ?(
           <Table className="w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-  <TableHeader className="bg-gray-100">
-    <TableRow>
-      <TableHead className="text-center py-2 px-4">Employee Name</TableHead>
-      <TableHead className="text-center py-2 px-4">Start Date</TableHead>
-      <TableHead className="text-center py-2 px-4">End Date</TableHead>
-      <TableHead className="text-center py-2 px-4">Cause</TableHead>
-      <TableHead className="text-center py-2 px-4">Type</TableHead>
-      <TableHead className="text-center py-2 px-4">Status</TableHead>
-      <TableHead className="text-center py-2 px-4">Edit</TableHead>
-      <TableHead className="text-center py-2 px-4">Actions</TableHead>
-    </TableRow>
-  </TableHeader>
-  <TableBody>
-    {leaveManagement && leaveManagement.map((leave) => (
-      <TableRow key={leave.id} className="border-t border-gray-200">
-        <TableCell className="text-center py-2 px-4">{leave.staff_name}</TableCell>
-        <TableCell className="text-center py-2 px-4">{new Date(leave.start_date).toLocaleDateString()}</TableCell>
-        <TableCell className="text-center py-2 px-4">{new Date(leave.end_date).toLocaleDateString()}</TableCell>
-        <TableCell className="text-center py-2 px-4">{leave.reason}</TableCell>
-        <TableCell className="text-center py-2 px-4">{leave.type}</TableCell>
-        <TableCell className="text-center py-2 px-4">
-            {leave.status !== "Pending" ? (
-              leave.status === "Approved" ? (
-                <span className="w-24 inline-block font-bold text-green-500 text-center px-2 py-1">
-                  {leave.status}
-                </span>
-              ) : (
-                <span className="w-24 inline-block font-bold text-red-500 text-center px-2 py-1">
-                  {leave.status}
-                </span>
-              )
-            ) : (
-              <span className="w-24 inline-block font-bold text-yellow-500 text-center px-2 py-1">
-                {leave.status}
-              </span>
-            )}
-        </TableCell>
+          <TableHeader className="bg-gray-100">
+            <TableRow>
+              <TableHead className="text-center py-2 px-4">Employee Name</TableHead>
+              <TableHead className="text-center py-2 px-4">Start Date</TableHead>
+              <TableHead className="text-center py-2 px-4">End Date</TableHead>
+              <TableHead className="text-center py-2 px-4">Cause</TableHead>
+              <TableHead className="text-center py-2 px-4">Type</TableHead>
+              <TableHead className="text-center py-2 px-4">Status</TableHead>
+              <TableHead className="text-center py-2 px-4">Edit</TableHead>
+              <TableHead className="text-center py-2 px-4">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {leaveManagement && leaveManagement.map((leave) => (
+              <TableRow key={leave.id} className="border-t border-gray-200">
+                <TableCell className="text-center py-2 px-4">{leave.staff_name}</TableCell>
+                <TableCell className="text-center py-2 px-4">{new Date(leave.start_date).toLocaleDateString()}</TableCell>
+                <TableCell className="text-center py-2 px-4">{new Date(leave.end_date).toLocaleDateString()}</TableCell>
+                <TableCell className="text-center py-2 px-4">{leave.reason}</TableCell>
+                <TableCell className="text-center py-2 px-4">{leave.type}</TableCell>
+                <TableCell className="text-center py-2 px-4">
+                    {leave.status !== "Pending" ? (
+                      leave.status === "Approved" ? (
+                        <span className="w-24 inline-block font-bold text-green-500 text-center px-2 py-1">
+                          {leave.status}
+                        </span>
+                      ) : (
+                        <span className="w-24 inline-block font-bold text-red-500 text-center px-2 py-1">
+                          {leave.status}
+                        </span>
+                      )
+                    ) : (
+                      <span className="w-24 inline-block font-bold text-yellow-500 text-center px-2 py-1">
+                        {leave.status}
+                      </span>
+                    )}
+                </TableCell>
 
 
-        <TableCell className="flex justify-center ml-3 text-center py-2 px-4">
-          <Button
-            variant="outline"
-            onClick={() => openUpdateDialog(leave)}
-            className="mr-3"
-          >
-            <FiEdit className="mr-2" />
-            Update
-          </Button>
-        </TableCell>
-        <TableCell className="text-center py-2 px-4">
-          <Button
-            onClick={() => handleLeave(leave.id,"approve")}
-            className="mr-3 bg-success font-bold text-success-foreground hover:bg-success-hover"
-          >
-            <FiCheck className="mr-2" />
-            Approve
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => handleLeave(leave.id,"reject")}
-            className="mr-3 font-bold"
-          >
-            <FiX className="mr-2" />
-            Reject
-          </Button>
-        </TableCell>
-      </TableRow>
-    ))}
-  </TableBody> 
-</Table>
+                <TableCell className="flex justify-center ml-3 text-center py-2 px-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => openUpdateDialog(leave)}
+                    className="mr-3"
+                  >
+                    <FiEdit className="mr-2" />
+                    Update
+                  </Button>
+                </TableCell>
+                <TableCell className="text-center py-2 px-4">
+                  <Button
+                    onClick={() => handleLeave(leave.id,"approve")}
+                    className="mr-3 bg-success font-bold text-success-foreground hover:bg-success-hover"
+                  >
+                    <FiCheck className="mr-2" />
+                    Approve
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleLeave(leave.id,"reject")}
+                    className="mr-3 font-bold"
+                  >
+                    <FiX className="mr-2" />
+                    Reject
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody> 
+        </Table>
 
         ) : (
           <p>No Leaves Found</p>
