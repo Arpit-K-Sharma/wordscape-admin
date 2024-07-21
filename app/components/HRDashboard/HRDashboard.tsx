@@ -119,7 +119,7 @@ const HROverview: React.FC = () => {
                           </TableCell>
                           <TableCell>{employee.position}</TableCell>
                           <TableCell>
-                            {new Date(employee.created_at).toLocaleDateString()}
+                            {employee.created_at}
                           </TableCell>
                         </TableRow>
                       ))}

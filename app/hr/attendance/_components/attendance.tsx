@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { format, parse } from "date-fns";
+import { format, parse, isToday } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import HRSidebar from "@/app/components/HRSidebar/hrsidebar";
+import HRSidebar from '@/app/components/HRSidebar/hrsidebar';
 import { attendanceService } from '@/app/services/hrServices/attendanceService';
 
 export interface Staff {
@@ -47,7 +47,7 @@ export interface AttendanceStaff {
   remarks: string;
 }
 
-export interface AttendanceData { 
+export interface AttendanceData {
   date: string;
   staffs: AttendanceStaff[];
 }
@@ -60,30 +60,29 @@ export interface AttendanceSubmission {
 const AttendanceForm: React.FC = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [attendanceData, setAttendanceData] = useState<AttendanceData | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const formattedDate = format(date, "dd-MM-yyyy");
-        const existingAttendance = await attendanceService.getAttendanceByDate(formattedDate);
   
-        if (existingAttendance && existingAttendance.staffs.length > 0) {
-          setAttendanceData(existingAttendance);
-        } else {
-          setAttendanceData(null);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
+  const fetchAttendanceData = async (selectedDate: Date) => {
+    try {
+      const formattedDate = format(selectedDate, "dd-MM-yyyy");
+      const existingAttendance = await attendanceService.getAttendanceByDate(formattedDate);
+
+      if (existingAttendance && existingAttendance.staffs.length > 0) {
+        setAttendanceData(existingAttendance);
+      } else {
         setAttendanceData(null);
       }
-    };
-  
-    fetchData(); 
-  
-  }, []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setAttendanceData(null);
+    }
+  };
+
+  useEffect(() => {
+    fetchAttendanceData(date);
+  }, [date]);
 
   const handleChange = (index: number, name: keyof AttendanceStaff, value: string) => {
-    if (attendanceData) {
+    if (attendanceData && isToday(date)) {
       const newStaffs = attendanceData.staffs.map((staff, i) => {
         if (i === index) {
           return { ...staff, [name]: value };
@@ -96,7 +95,7 @@ const AttendanceForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!attendanceData) return;
+    if (!attendanceData || !isToday(date)) return;
 
     try {
       const dataToSend: AttendanceSubmission = {
@@ -112,6 +111,8 @@ const AttendanceForm: React.FC = () => {
       alert("Error submitting attendance. Please try again.");
     }
   };
+
+  const isEditable = isToday(date);
 
   return (
     <div className='flex font-archivo '>
@@ -140,6 +141,11 @@ const AttendanceForm: React.FC = () => {
                     <Calendar
                       mode="single"
                       selected={date}
+                      onSelect={(newDate) => {
+                        if (newDate) {
+                          setDate(newDate);
+                        }
+                      }}
                       initialFocus
                     />
                   </PopoverContent>
@@ -166,6 +172,7 @@ const AttendanceForm: React.FC = () => {
                             value={staff.check_in}
                             onChange={(e) => handleChange(index, 'check_in', e.target.value)}
                             className='max-w-[130px]'
+                            disabled={!isEditable}
                           />
                         </TableCell>
                         <TableCell>
@@ -173,13 +180,15 @@ const AttendanceForm: React.FC = () => {
                             type="time"
                             value={staff.check_out}
                             onChange={(e) => handleChange(index, 'check_out', e.target.value)}
-                            className='max-w-[130px]' 
+                            className='max-w-[130px]'
+                            disabled={!isEditable}
                           />
                         </TableCell>
                         <TableCell>
                           <Select
                             value={staff.status}
                             onValueChange={(value) => handleChange(index, 'status', value as 'Present' | 'Absent')}
+                            disabled={!isEditable}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select status" />
@@ -199,6 +208,7 @@ const AttendanceForm: React.FC = () => {
                             onChange={(e) => handleChange(index, 'remarks', e.target.value)}
                             className="w-full"
                             placeholder='Reason for leave, if any'
+                            disabled={!isEditable}
                           />
                         </TableCell>
                       </TableRow>
@@ -210,7 +220,7 @@ const AttendanceForm: React.FC = () => {
               )}
               {attendanceData && attendanceData.staffs.length > 0 && (
                 <div className="flex justify-end">
-                  <Button type="submit">
+                  <Button type="submit" disabled={!isEditable}>
                     Submit Attendance
                   </Button>
                 </div>

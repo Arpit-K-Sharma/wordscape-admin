@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,17 +10,24 @@ import {
   ListRestart,
   Warehouse,
   UserRound,
+  ChevronDown,
+  ChevronRight,
+  Package,
+  ShoppingCart,
+  PackagePlus,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LogoOnly from "../../../public/images/LogoOnly.png";
 
 const InventorySidebar: React.FC = () => {
   const router = useRouter();
+  const [stockLevelOpen, setStockLevelOpen] = useState(false);
+  const [purchaseOrderOpen, setPurchaseOrderOpen] = useState(false);
 
   return (
-    <aside className="w-56 bg-white shadow-md  font-archivo">
+    <aside className="w-56 bg-white font-archivo">
       <div className="p-3 flex flex-col mt-2">
-        <div className="flex items-center mb-4">
+        <div className="flex items-center mb-4 max-sm:ml-[50px]">
           <Image
             src={LogoOnly}
             alt="WordScape Logo"
@@ -28,7 +35,7 @@ const InventorySidebar: React.FC = () => {
             height={40}
             className="mr-2"
           />
-          <h2 className="text-xl font-light">WordScape INV</h2>
+          <h2 className="text-xl font-light">WordScape</h2>
         </div>
 
         <nav className="flex-grow overflow-y-auto">
@@ -40,14 +47,43 @@ const InventorySidebar: React.FC = () => {
             <LayoutDashboard className="mr-2 h-4 w-4" />
             Overview
           </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/inventory/stocks")}
-          >
-            <Warehouse className="mr-2 h-4 w-4" />
-            Stock Level
-          </Button>
+
+          <div>
+            <Button
+              variant="ghost"
+              className="w-full justify-start mb-2 text-sm"
+              onClick={() => setStockLevelOpen(!stockLevelOpen)}
+            >
+              <Warehouse className="mr-2 h-4 w-4" />
+              Stock Level
+              {stockLevelOpen ? (
+                <ChevronDown className="ml-auto h-4 w-4" />
+              ) : (
+                <ChevronRight className="ml-auto h-4 w-4" />
+              )}
+            </Button>
+            {stockLevelOpen && (
+              <>
+              <Button
+                variant="ghost"
+                className="w-full justify-start mb-2 text-sm pl-8 "
+                onClick={() => router.push("/inventory/stocks")}
+              >
+                <Package className="mr-2 h-4 w-4" />
+                Stock
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start mb-2 text-sm pl-8 "
+                onClick={() => router.push("/inventory/leftover")}
+              >
+                <PackagePlus className="mr-2 h-4 w-4" />
+                Leftovers
+              </Button>
+              </>
+            )}
+          </div>
+
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
@@ -56,30 +92,43 @@ const InventorySidebar: React.FC = () => {
             <Printer className="mr-2 h-4 w-4" />
             Vendors
           </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/inventory/entry")}
-          >
-            <ScrollText className="mr-2 h-4 w-4" />
-            Entry Form
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/inventory/entries")}
-          >
-            <ArchiveRestore className="mr-2 h-4 w-4" />
-            PO with Entries
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/inventory/no-entries")}
-          >
-            <ArchiveX className="mr-2 h-4 w-4" />
-            PO w/o Entries
-          </Button>
+
+          <div>
+            <Button
+              variant="ghost"
+              className="w-full justify-start mb-2 text-sm"
+              onClick={() => setPurchaseOrderOpen(!purchaseOrderOpen)}
+            >
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              Purchase Order
+              {purchaseOrderOpen ? (
+                <ChevronDown className="ml-auto h-4 w-4" />
+              ) : (
+                <ChevronRight className="ml-auto h-4 w-4" />
+              )}
+            </Button>
+            {purchaseOrderOpen && (
+              <>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start mb-2 text-sm pl-8 "
+                  onClick={() => router.push("/inventory/no-entries")}
+                >
+                  <ArchiveX className="mr-2 h-4 w-4" />
+                  Pending Entries
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start mb-2 text-sm pl-8 "
+                  onClick={() => router.push("/inventory/entries")}
+                >
+                  <ArchiveRestore className="mr-2 h-4 w-4" />
+                  Completed Entries
+                </Button>
+              </>
+            )}
+          </div>
+
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
