@@ -254,7 +254,6 @@ const Dashboard = () => {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Lamination in Stock
-                Lamination in Stock
               </CardTitle>
               <Printer className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -273,7 +272,6 @@ const Dashboard = () => {
               <ClipboardList className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{approvedOrders.length}</div>
               <div className="text-2xl font-bold">{approvedOrders.length}</div>
               <p className="text-xs text-muted-foreground">
                 2 pending approval
@@ -336,7 +334,7 @@ const Dashboard = () => {
                         <Sheet>
                           <SheetTrigger>
                             <Button
-                              className="px-[15px] font-semibold"
+                              className="px-[15px] font-semibold bg-blue-800 hover:bg-[#172447]"
                               type="button"
                             >
                               Order Details
@@ -445,7 +443,7 @@ const Dashboard = () => {
                       </TableCell>
                       <TableCell className="px-6 py-[20px]">
                         <Button
-                          className="px-[15px] font-semibold"
+                          className="px-[15px] font-semibold bg-[#264255] hover:bg-[#172447]"
                           type="button"
                           onClick={() => handleRequestPO(order._id)}
                           disabled={poStatus[order._id] === 'created'}

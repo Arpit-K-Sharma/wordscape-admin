@@ -347,7 +347,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
   return (
     <div className="flex font-archivo bg-[#f7f7f9]">
       <InventorySidebar />
-      <div className="print flex-1 p-5">
+      <div className="print flex-1 p-5 h-screen">
         <Card className="w-full max-w-2xl justify-center items-center mx-auto">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
@@ -363,15 +363,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel htmlFor="orderId">Order ID</FormLabel>
-                      <FormLabel htmlFor="orderId">Order ID</FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          type="text"
-                          id="orderId"
-                          disabled
-                          className="text-[15px] font-semibold"
-                        />
                         <Input
                           {...field}
                           type="text"

@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Eye, Upload, RefreshCw, Send, Info, FolderDown, PackagePlus } from "lucide-react";
+import { Eye, Upload, RefreshCw, Send, Info, FolderDown, PackagePlus, PackageCheck } from "lucide-react";
 import { CheckCircle, CalendarDays } from "lucide-react";
 import toast, { Toaster } from 'react-hot-toast';
 import purchaseService from "@/app/services/purchaseOrderService";
@@ -140,7 +140,7 @@ const PurchaseSlip: React.FC<{
         </tbody>
       </table>
       <div className="text-center mt-6">
-        <p className="text-sm text-gray-600">Thank you for your business!</p>
+        <p className="text-sm text-gray-600">Thank you for doing business with us!</p>
       </div>
     </div>
   );
@@ -432,7 +432,21 @@ const PurchaseEntryList: React.FC = () => {
                     {entry.orderId}
                   </span>
                   <span className="text-sm font-medium text-gray-500">
-                    {entry.isCompleted ? "Completed" :
+                    {entry.isCompleted ?
+                      <HoverCard>
+                        <HoverCardTrigger><PackageCheck size={22} className="hover:cursor-pointer hover:text-green-800" /></HoverCardTrigger>
+                        <HoverCardContent className="w-[300px] rounded-[20px]">
+                          <div className="p-[10px] items-center justify-center font-archivo">
+                            <h1 className="ml-[20px] font-semibold mb-[10px] text-[15px] text-gray-700">
+                              Order Completed
+                            </h1>
+                            <p className=" ml-[20px] text-left text-gray-600 text-[15px]">
+                              This order has been completed.
+                            </p>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard> 
+                      :
                       <HoverCard>
                         <HoverCardTrigger><LiaHourglassStartSolid size={22} className="hover:cursor-pointer hover:text-yellow-600" /></HoverCardTrigger>
                         <HoverCardContent className="w-[300px] rounded-[20px]">
@@ -524,6 +538,7 @@ const PurchaseEntryList: React.FC = () => {
                         </>
                       )}
                   </div>
+                  {/* <h2>Bill</h2> */}
                   <div className="text-sm text-gray-600 p-4 shadow-sm border border-gray-200 rounded-md space-y-2">
                     <p className="flex justify-between">
                       <span>Grand Total:</span>
