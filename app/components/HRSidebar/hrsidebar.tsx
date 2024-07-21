@@ -63,6 +63,14 @@ const HRSidebar: React.FC = () => {
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/hr/attendance")}
+          >
+            <Users className="mr-2 h-4 w-4" />
+            Attendance
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
             onClick={() => router.push("/hr/payroll")}
           >
             <FileText className="mr-2 h-4 w-4" />
