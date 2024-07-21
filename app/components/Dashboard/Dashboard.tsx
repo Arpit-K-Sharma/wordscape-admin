@@ -166,12 +166,6 @@ const Dashboard = () => {
   }, []);
 
   const handleRequestPO = (orderId: string) => {
-    const newStatus: Record<string, POStatus> = { ...poStatus, [orderId]: 'requested' };
-    setPoStatus(newStatus);
-
-    // Store the updated state in localStorage
-    localStorage.setItem('poStatus', JSON.stringify(newStatus));
-
     router.push(`/inventory/entry/${orderId}`);
   };
 
@@ -415,9 +409,9 @@ const Dashboard = () => {
                           className="px-[15px] font-semibold"
                           type="button"
                           onClick={() => handleRequestPO(order._id)}
-                          disabled={poRequested[order._id]}
+                          disabled={poStatus[order._id] === 'created'}
                         >
-                          {poRequested[order._id] ? 'PO Created' : 'Request PO'}
+                          {poStatus[order._id] === 'created' ? 'PO Created' : 'Request PO'}
                         </Button>
                       </TableCell>
                     </TableRow>

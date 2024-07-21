@@ -249,6 +249,15 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
             loading: 'Creating reorder...',
             success: (response) => {
               console.log("Reorder created:", response.data);
+              // Update the PO status in localStorage
+              const storedStatus = localStorage.getItem('poStatus');
+              const currentStatus = storedStatus ? JSON.parse(storedStatus) : {};
+              const newStatus = { ...currentStatus, [orderId]: 'created' };
+
+              localStorage.setItem('poStatus', JSON.stringify(newStatus));
+
+              localStorage.removeItem(`formData_${orderId}`);
+
               return "Reorder Placed Successfully";
             },
             error: "Error creating reorder",
@@ -286,6 +295,53 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
       setIsSubmitting(false);
     }
   };
+
+  const saveFormDataToLocalStorage = (data: z.infer<typeof formSchema>) => {
+    try {
+      localStorage.setItem(`formData_${orderId}`, JSON.stringify(data));
+    } catch (error) {
+      console.error("Error saving form data to localStorage:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const vendors = await vendorService.getVendors();
+        setVendors(vendors);
+        
+        const response = await purchaseEntryService.getItems();
+        setInventory(response);
+        
+        const orders = await dashboardService.fetch_approved_orders();
+        setApprovedOrders(orders);
+  
+        // Load form data from localStorage
+        const storedFormData = localStorage.getItem(`formData_${orderId}`);
+        if (storedFormData) {
+          const parsedData = JSON.parse(storedFormData);
+          form.reset(parsedData);
+        } else if (orderId) {
+          form.setValue("orderId", orderId);
+        }
+  
+        if (isReorder) {
+          fetchReorderData();
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData();
+  }, [orderId, form, isReorder]);
+
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      saveFormDataToLocalStorage(value as z.infer<typeof formSchema>);
+    });
+    return () => subscription.unsubscribe();
+  }, [form, orderId]);
 
 
   return (
@@ -329,13 +385,13 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                     <div className="flex justify-end h-[0px] ">
                       {!isReorder && (
                         <Label
-                        className=" w-[110px] hover:text-[red] mt-[8px]"
-                        onClick={() => removePurchaseEntry(index)}
-                      >
-                        - Remove Vendor
-                      </Label>
+                          className=" w-[110px] hover:text-[red] mt-[8px]"
+                          onClick={() => removePurchaseEntry(index)}
+                        >
+                          - Remove Vendor
+                        </Label>
                       )}
-                      
+
                     </div>
                     <FormField
                       control={form.control}
@@ -479,13 +535,13 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                             )}
                             {!isReorder && (
                               <Label
-                              className="hover:text-[red]"
-                              onClick={() => removeItem(index, itemIndex)}
-                            >
-                              - Remove Item
-                            </Label>
+                                className="hover:text-[red]"
+                                onClick={() => removeItem(index, itemIndex)}
+                              >
+                                - Remove Item
+                              </Label>
                             )}
-                            
+
                           </div>
                         </div>
                       ))}

@@ -9,9 +9,11 @@ import {
   ArchiveX,
   ListRestart,
   Warehouse,
+  PackagePlus,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LogoOnly from "../../../public/images/LogoOnly.png";
+import { LiaHourglassStartSolid } from "react-icons/lia";
 
 const InventorySidebar: React.FC = () => {
   const router = useRouter();
@@ -76,7 +78,7 @@ const InventorySidebar: React.FC = () => {
             Reorders
           </Button>
           <Button variant="ghost" className="w-full justify-start mb-2 text-sm" onClick={() => router.push("/inventory/leftover")}>
-            <ListRestart className="mr-2 h-4 w-4" />
+            <PackagePlus className="mr-2 h-4 w-4" />
             Leftovers
           </Button>
         </nav>

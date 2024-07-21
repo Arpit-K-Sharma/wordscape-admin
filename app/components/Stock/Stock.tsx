@@ -437,210 +437,131 @@ const StocksPage: React.FC = () => {
             ) : error ? (
               <p className="text-center text-lg text-red-500">{error}</p>
             ) : (
-              <div className="space-y-8 overflow-y-auto h-full custom-scrollbar">
-                <div className="">
-                  {inventoryData && inventoryData.map((inventoryType) => (
-                    <div key={inventoryType._id} className="shadow-sm rounded-md p-[20px]">
-                      <div className="flex flex-row justify-between">
-                        <div>
-                          <h2 className="text-2xl font-bold mb-4 text-black">
-                            {inventoryType.type}
-                          </h2>
-                        </div>
-                        <div>
-                          <Dialog
-                            open={isDeleteDialogOpen}
-                            onOpenChange={setIsDeleteDialogOpen}
-                          >
-                            <DialogTrigger>
-                              <Button
-                                className="bg-transparent hover:bg-transparent transition-colors shadow-none"
-                                onClick={() => {
-                                  console.log('item._id:', inventoryType._id);
-                                  openDeleteDialog(inventoryType)
-                                }}
-                              >
-                                <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Delete Category from Inventory</DialogTitle>
-                                <DialogDescription>
-                                  Are you sure you want to delete this? This action
-                                  cannot be undone.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <DialogFooter>
-                                <Button variant="destructive" onClick={() => handleTypeDelete()}>
-                                  <FiTrash2 className="mr-2" />
-                                  Delete
-                                </Button>
-                                <Button variant="secondary" onClick={closeDeleteDialog}>
-                                  <FiX className="mr-2" />
-                                  Cancel
-                                </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
-
-                          <Dialog
-                          open={isItemDialogOpen}
-                          onOpenChange={setIsItemDialogOpen}>
-                            <DialogTrigger>
-                              <Button
-                                disabled={isSubmitting}
-                                className="font-semibold text-[15px]"
-                                onClick={() => {
-                                  openItemDialog()
-                                }}
-                              >
-                                <GrAddCircle className="font-semibold text-[15px] w-[20px] h-[20px] p-0 flex items-center justify-center" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Add Item to Inventory</DialogTitle>
-                                <DialogDescription>
-                                  <Form {...itemform}>
-                                    <form
-                                      onSubmit={handleItemSubmit((data) => {
-                                        onSubmitAdd(data, inventoryType._id);
-                                        itemform.reset(); // Optionally reset form after submission
-                                      })}
-                                      className="space-y-4"
-                                    >
-                                      {itemFields.map((item, index) => (
-                                        <div
-                                          key={item.id}
-                                          className="bg-white rounded-md shadow-lg p-4 space-y-4"
-                                        >
-                                          <FormField
-                                            control={itemControl}
-                                            name={`items.${index}.itemName`}
-                                            render={({ field }) => (
-                                              <FormItem>
-                                                <FormLabel>Item Name</FormLabel>
-                                                <FormLabel className="ml-[300px]">
-                                                  <Button
-                                                    type="button"
-                                                    className="bg-transparent hover:bg-transparent transition-colors shadow-none"
-                                                    onClick={() => removeItem(index)}
-                                                  >
-                                                    <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
-                                                  </Button>
-                                                </FormLabel>
-                                                <FormControl>
-                                                  <Input placeholder="Insert the item name" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                              </FormItem>
-                                            )}
-                                          />
-                                          {/* <FormField
-                                            control={itemControl}
-                                            name={`items.${index}.availability`}
-                                            render={({ field }) => (
-                                              <FormItem>
-                                                <FormLabel>Availability</FormLabel>
-                                                <FormControl>
-                                                  <Input
-                                                    placeholder="Insert the availability of the item"
-                                                    {...field}
-                                                  />
-                                                </FormControl>
-                                                <FormMessage />
-                                              </FormItem>
-                                            )}
-                                          /> */}
-                                        </div>
-                                      ))}
-                                      <Button type="button" onClick={addItem} className="">
-                                        Add Item
-                                      </Button>
-                                      <Button type="submit" className="w-full" disabled={isSubmitting}
-                                      onClick={closeItemDialog}>
-                                        Add Item to {inventoryType.type}
-                                      </Button>
-                                    </form>
-                                  </Form>
-                                </DialogDescription>
-                              </DialogHeader>
-                            </DialogContent>
-                          </Dialog>
-
-                        </div>
-                      </div>
-
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-archivo">
-                        {inventoryType && inventoryType.item.map((item) => (
-                          <Card
-                            key={item._id}
-                            className="bg-white shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200"
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex flex-row justify-between">
-                                <div>
-                                  <h3 className="font-semibold text-lg text-gray-800 mb-2 truncate">
-                                    {/* {inventoryType._id} */}
-                                    {item.itemName}
-                                  </h3>
-                                </div>
-                                <div>
-                                  <Dialog
-                                    open={isItemDeleteDialogOpen}
-                                    onOpenChange={setIsItemDeleteDialogOpen}
-                                  >
-                                    <DialogTrigger>
-                                      <Button
-                                        key={item._id}
-                                        className="bg-transparent hover:bg-transparent transition-colors shadow-none"
-                                        onClick={() => {
-                                          console.log('item._id:', item._id);
-                                          setSelectedItemId(item._id);
-                                          openDeleteItemDialog(inventoryType)
-                                        }}
-                                      > 
-                                        <FiTrash2 className="mr-1 text-gray-600 text-[20px] hover:text-red-600" />
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <DialogHeader>
-                                        <DialogTitle>Delete {item.itemName} From {inventoryType.type}</DialogTitle>
-                                        <DialogDescription>
-                                          Are you sure you want to delete this? This action
-                                          cannot be undone.
-                                        </DialogDescription>
-                                      </DialogHeader>
-                                      <DialogFooter>
-                                        <Button variant="destructive" onClick={() => handleItemDelete(selectedItemId)}>
-                                          <FiTrash2 className="mr-2" />
-                                          Delete
-                                        </Button>
-                                        <Button variant="secondary" onClick={closeDeleteItemDialog}>
-                                          <FiX className="mr-2" />
-                                          Cancel
-                                        </Button>
-                                      </DialogFooter>
-                                    </DialogContent>
-                                  </Dialog>
-                                </div>
-                              </div>
-                              <div className="flex justify-between items-center mt-2">
-                                <span className="text-sm text-gray-500">Available</span>
-                                <span className="text-lg font-medium text-blue-600">
-                                  {item.availability}
-                                </span>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
+              <div className="space-y-8 overflow-y-auto h-full custom-scrollbar p-6">
+              {inventoryData && inventoryData.map((inventoryType) => (
+                <div key={inventoryType._id} className="shadow-sm rounded-md p-6 bg-white border border-gray-200">
+                  <div className="flex justify-between mb-4">
+                    <h2 className="text-2xl font-bold text-gray-900">{inventoryType.type}</h2>
+                    <div className="flex space-x-2">
+                      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                        <DialogTrigger>
+                          {}
+                          <Button className="bg-transparent hover:bg-red-600 text-gray-400 hover:text-white transition-colors shadow-none p-2 rounded-full" onClick={() => openDeleteDialog(inventoryType)}>
+                            <FiTrash2 className="text-xl" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Delete Category from Inventory</DialogTitle>
+                            <DialogDescription>
+                              Are you sure you want to delete this? This action cannot be undone.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <Button variant="destructive" onClick={() => handleTypeDelete()}>
+                              <FiTrash2 className="mr-2" />
+                              Delete
+                            </Button>
+                            <Button variant="secondary" onClick={closeDeleteDialog}>
+                              <FiX className="mr-2" />
+                              Cancel
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                      <Dialog open={isItemDialogOpen} onOpenChange={setIsItemDialogOpen}>
+                        <DialogTrigger>
+                          <Button className="bg-black hover:bg-gray-800 text-white transition-colors p-2 " onClick={openItemDialog}>
+                            <GrAddCircle className="text-xl" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Add Item to Inventory</DialogTitle>
+                            <DialogDescription>
+                              <Form {...itemform}>
+                                <form
+                                  onSubmit={handleItemSubmit((data) => {
+                                    onSubmitAdd(data, inventoryType._id);
+                                    itemform.reset();
+                                  })}
+                                  className="space-y-4"
+                                >
+                                  {itemFields.map((item, index) => (
+                                    <div key={item.id} className="rounded-md shadow-md p-4 space-y-4">
+                                      <FormField control={itemControl} name={`items.${index}.itemName`} render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Item Name</FormLabel>
+                                          <FormLabel className="ml-[320px]">
+                                            <Button type="button" className="bg-transparent hover:bg-red-600 text-gray-400 hover:text-white transition-colors shadow-none p-2 rounded-full" onClick={() => removeItem(index)}>
+                                              <FiTrash2 className="text-xl" />
+                                            </Button>
+                                          </FormLabel>
+                                          <FormControl>
+                                            <Input placeholder="Insert the item name" {...field} />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )} />
+                                    </div>
+                                  ))}
+                                  <Button type="button" onClick={addItem} className="text-white">
+                                    Add Item
+                                  </Button>
+                                  <Button type="submit" className=" text-white w-full" disabled={isSubmitting} onClick={closeItemDialog}>
+                                    Add Item
+                                  </Button>
+                                </form>
+                              </Form>
+                            </DialogDescription>
+                          </DialogHeader>
+                        </DialogContent>
+                      </Dialog>
                     </div>
-                  ))}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {inventoryType.item.map((item) => (
+                      <Card key={item._id} className="bg-white shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between mb-2">
+                            <h3 className="font-semibold text-lg text-gray-800 truncate">{item.itemName}</h3>
+                            <Dialog open={isItemDeleteDialogOpen} onOpenChange={setIsItemDeleteDialogOpen}>
+                              <DialogTrigger>
+                                <Button className="bg-transparent hover:bg-red-600 text-gray-400 hover:text-white transition-colors shadow-none p-2 rounded-full" onClick={() => { setSelectedItemId(item._id); openDeleteItemDialog(inventoryType) }}>
+                                  <FiTrash2 className="text-xl" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Delete {item.itemName} from {inventoryType.type}</DialogTitle>
+                                  <DialogDescription>
+                                    Are you sure you want to delete this? This action cannot be undone.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                  <Button variant="destructive" onClick={() => handleItemDelete(selectedItemId)}>
+                                    <FiTrash2 className="mr-2" />
+                                    Delete
+                                  </Button>
+                                  <Button variant="secondary" onClick={closeDeleteItemDialog}>
+                                    <FiX className="mr-2" />
+                                    Cancel
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500">Available</span>
+                            <span className="text-lg font-medium text-blue-600">{item.availability}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ))}
+            </div>
             )}
           </CardContent>
         </Card>

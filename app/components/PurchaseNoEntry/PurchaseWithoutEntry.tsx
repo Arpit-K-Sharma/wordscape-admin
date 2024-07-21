@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Eye, Upload, RefreshCw, Send } from "lucide-react";
+import { Eye, Upload, RefreshCw, Send, Info, FolderDown, PackagePlus } from "lucide-react";
 import { CheckCircle, CalendarDays } from "lucide-react";
 import toast, { Toaster } from 'react-hot-toast';
 import purchaseService from "@/app/services/purchaseOrderService";
@@ -35,6 +35,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { LiaHourglassStartSolid } from "react-icons/lia";
 
 interface PurchaseEntryItem {
   itemId: string;
@@ -101,40 +102,46 @@ const PurchaseSlip: React.FC<{
   getItemDetails: (itemId: string) => Item | null;
 }> = ({ vendorDetails, purchase, getItemDetails }) => {
   return (
-    <div className="p-8 bg-white ml-[200px] w-[500px]" id="purchase-slip">
-      <div className="flex flex-col items-center mb-4">
+    <div className="p-8 bg-white ml-[200px] w-[500px] border border-gray-300 rounded shadow-md" id="purchase-slip">
+      <div className="flex flex-col items-center mb-6">
         <div>
-          <img src={Logo.src} className="w-16 h-16 mr-4" />
+          <img src={Logo.src} className="w-16 h-16 mb-4" alt="Company Logo" />
         </div>
-        <div>
-          <h1 className="text-2xl font-bold mb-[20px]">WordScape Printing Company</h1>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-1">WordScape Printing Company</h1>
+          <p className="text-sm text-gray-600"> Lalitpur</p>
+          <p className="text-sm text-gray-600">Phone: (+977) 9841000033</p>
         </div>
       </div>
-      <h2 className="text-2xl font-bold mb-4">Purchase Order Slip</h2>
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold">{vendorDetails?.vendorName || 'Unknown Vendor'}</h2>
-        <p>{vendorDetails?.vendorAddress || 'N/A'}</p>
-        <p>VAT: {vendorDetails?.vendorVAT || 'N/A'}</p>
-        <p>Phone: {vendorDetails?.vendorPhone || 'N/A'}</p>
+      <h2 className="text-xl font-bold mb-6 text-center">Purchase Order Slip</h2>
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold">{vendorDetails?.vendorName || 'Unknown Vendor'}</h3>
+        <p className="text-sm text-gray-700">{vendorDetails?.vendorAddress || 'N/A'}</p>
+        <p className="text-sm text-gray-700">VAT: {vendorDetails?.vendorVAT || 'N/A'}</p>
+        <p className="text-sm text-gray-700">Phone: {vendorDetails?.vendorPhone || 'N/A'}</p>
       </div>
-      <Table className="w-full mb-4">
-        <th>
-          <tr>
-            <th className="text-left">Item</th>
-            <th className="text-right">Quantity</th>
+      <table className="w-full mb-6 border-collapse">
+        <thead>
+          <tr className="border-b border-gray-300">
+            <th className="text-left p-2">Item</th>
+            <th className="text-right p-2">Quantity</th>
           </tr>
-        </th>
+        </thead>
         <tbody>
           {purchase.items.map((item, index) => {
             const itemDetails = getItemDetails(item.itemId);
             return (
-              <tr key={index}>
-                <td>{itemDetails?.itemName || 'Unknown Item'}: {item.quantityFromVendor} </td>
+              <tr key={index} className="border-b border-gray-200">
+                <td className="p-2">{itemDetails?.itemName || 'Unknown Item'}</td>
+                <td className="p-2 text-right">{item.quantityFromVendor}</td>
               </tr>
             );
           })}
         </tbody>
-      </Table>
+      </table>
+      <div className="text-center mt-6">
+        <p className="text-sm text-gray-600">Thank you for your business!</p>
+      </div>
     </div>
   );
 };
@@ -390,17 +397,34 @@ const PurchaseEntryList: React.FC = () => {
     <div className="flex h-screen bg-gray-100 font-archivo">
       <InventorySidebar />
       <div className="flex-1 p-8 overflow-auto">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">
-          Purchase Orders
-          <span className="text-2xl font-normal text-gray-600 ml-2">
-            (Items yet to be received from Vendor)
-          </span>
-        </h1>
+        <div className="flex flex-row">
+          <div className="text-3xl font-bold mb-6 text-gray-800">
+            <h1>Purchase Orders</h1>
+          </div>
+          <div className="mt-[-25px] ml-[10px]">
+            <span className="text-2xl font-normal text-gray-600 ml-2">
+              <HoverCard>
+                <HoverCardTrigger><Info className="hover:cursor-pointer hover:text-blue-900" /></HoverCardTrigger>
+                <HoverCardContent className="w-[300px] rounded-[20px]">
+                  <div className="p-[10px] items-center justify-center font-archivo">
+                    <h1 className="ml-[20px] font-semibold mb-[10px] text-[15px] text-gray-700">
+                      Information
+                    </h1>
+                    <p className=" ml-[20px] text-left text-gray-600 text-[15px]">
+                      This page allows you to view all purchase orders that have been created without entires.
+                    </p>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
+            </span>
+          </div>
+        </div>
+
         <div className="grid grid-flow-cols grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-6 p-6">
           {purchaseEntries.map((entry) => (
             <Card
               key={entry._id}
-              className="shadow-lg hover:shadow-xl transition-shadow duration-300 mr-[-20px]"
+              className="shadow-lg hover:shadow-xl transition-shadow duration-300 mr-[5px]"
             >
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
@@ -408,7 +432,21 @@ const PurchaseEntryList: React.FC = () => {
                     {entry.orderId}
                   </span>
                   <span className="text-sm font-medium text-gray-500">
-                    {entry.isCompleted ? "Completed" : "Pending"}
+                    {entry.isCompleted ? "Completed" :
+                      <HoverCard>
+                        <HoverCardTrigger><LiaHourglassStartSolid size={22} className="hover:cursor-pointer hover:text-yellow-600" /></HoverCardTrigger>
+                        <HoverCardContent className="w-[300px] rounded-[20px]">
+                          <div className="p-[10px] items-center justify-center font-archivo">
+                            <h1 className="ml-[20px] font-semibold mb-[10px] text-[15px] text-gray-700">
+                              Order Pending
+                            </h1>
+                            <p className=" ml-[20px] text-left text-gray-600 text-[15px]">
+                              This order is pending.
+                            </p>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    }
                   </span>
                 </CardTitle>
               </CardHeader>
@@ -480,44 +518,48 @@ const PurchaseEntryList: React.FC = () => {
                             onClick={() => handleleftOverClick(entry.orderId)}
                             className="flex items-center ml-2"
                           >
-                            <CheckCircle className="mr-2 h-4 w-4" />
+                            <PackagePlus className="mr-2 h-4 w-4" />
                             Left Overs
                           </Button>
                         </>
                       )}
                   </div>
-                  <div className="text-sm text-gray-600">
-                    <p>
-                      Grand Total: Rs.{" "}
-                      {entry.purchaseEntry
-                        .reduce(
-                          (total, purchase) =>
-                            total + (purchase.grandTotal || 0),
-                          0
-                        )
-                        .toFixed(2)}
+                  <div className="text-sm text-gray-600 p-4 shadow-sm border border-gray-200 rounded-md space-y-2">
+                    <p className="flex justify-between">
+                      <span>Grand Total:</span>
+                      <span className="font-semibold">Rs.{" "}
+                        {entry.purchaseEntry
+                          .reduce((total, purchase) => total + (purchase.grandTotal || 0), 0)
+                          .toFixed(2)}
+                      </span>
                     </p>
-                    <p>
-                      Invoice No:{" "}
-                      {entry.purchaseEntry
-                        .map((purchase) => purchase.invoiceNo)
-                        .filter(Boolean)
-                        .join(", ") || "N/A"}
+                    <p className="flex justify-between">
+                      <span>Invoice No:</span>
+                      <span className="font-semibold">
+                        {entry.purchaseEntry
+                          .map((purchase) => purchase.invoiceNo)
+                          .filter(Boolean)
+                          .join(", ") || "N/A"}
+                      </span>
                     </p>
-                    <p>
-                      Invoice Date:{" "}
-                      {entry.purchaseEntry
-                        .map((purchase) => purchase.invoiceDate)
-                        .filter(Boolean)
-                        .join(", ") || "N/A"}
+                    <p className="flex justify-between">
+                      <span>Invoice Date:</span>
+                      <span className="font-semibold">
+                        {entry.purchaseEntry
+                          .map((purchase) => purchase.invoiceDate)
+                          .filter(Boolean)
+                          .join(", ") || "N/A"}
+                      </span>
                     </p>
                     {entry.purchaseEntry.some((purchase) => purchase.tag) && (
-                      <p>
-                        Tags:{" "}
-                        {entry.purchaseEntry
-                          .map((purchase) => purchase.tag)
-                          .filter(Boolean)
-                          .join(", ")}
+                      <p className="flex justify-between">
+                        <span>Tags:</span>
+                        <span className="font-semibold">
+                          {entry.purchaseEntry
+                            .map((purchase) => purchase.tag)
+                            .filter(Boolean)
+                            .join(", ")}
+                        </span>
                       </p>
                     )}
                   </div>
@@ -525,7 +567,7 @@ const PurchaseEntryList: React.FC = () => {
                 {entry.purchaseEntry.some(
                   (purchase) => purchase.tag === "reorder"
                 ) && (
-                    <div className="flex justify-end">
+                    <div className="flex justify-end mt-[10px]">
                       <Button
                         className="text-sm font-medium bg-transparent hover:bg-transparent text-orange-500"
                         onClick={() => handleReorderClick(entry.orderId)}
@@ -835,11 +877,18 @@ const PurchaseEntryList: React.FC = () => {
                         </div>
                       </Button>
                       <Button
-                        variant="outline"
                         onClick={() => handleDownload(purchase)}
-                        className="flex items-center"
+                        className="bg-black text-white flex items-center hover:bg-gray-800"
                       >
-                        Download Purchase Slip
+                        <div className="flex flex-row">
+                          <div>
+                            <FolderDown size={18} />
+                          </div>
+                          <div className="ml-[10px]">
+                            Download
+                          </div>
+                        </div>
+
                       </Button>
                     </div>
 
