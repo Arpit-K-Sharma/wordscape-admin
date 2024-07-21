@@ -41,6 +41,10 @@ interface Item {
 
 interface InventoryItem {
   _id: string;
+}
+
+interface InventoryItem {
+  _id: string;
   type: string;
   item: Item[];
 }

@@ -34,7 +34,44 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { dashboardService } from "@/app/services/dashboardService";
+import {
+  Cover,
+  dashboardService,
+} from "@/app/services/inventoryServices/dashboardService";
+
+interface ApprovedOrders {
+  _id: string;
+  date: string;
+  customer: string;
+  estimatedAmount: string;
+  deadline: string;
+  paperSize: string;
+  pages: string;
+  quantity: string;
+  binding: string;
+  coverTreatment: string;
+  innerPaper: string;
+  innerPaperThickness: string;
+  outerPaper: string;
+  outerPaperThickness: string;
+  innerLamination: string;
+  outerLamination: string;
+  inkType: string;
+  deliveryOption: string;
+  status: string;
+}
+
+interface User {
+  fullName: string;
+}
+
+interface CoverTreatment {
+  coverTreatmentType: string;
+}
+
+interface Paper {
+  paperType: string;
+}
 
 interface ApprovedOrders {
   _id: string;
@@ -217,6 +254,7 @@ const Dashboard = () => {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Lamination in Stock
+                Lamination in Stock
               </CardTitle>
               <Printer className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -235,6 +273,7 @@ const Dashboard = () => {
               <ClipboardList className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
+              <div className="text-2xl font-bold">{approvedOrders.length}</div>
               <div className="text-2xl font-bold">{approvedOrders.length}</div>
               <p className="text-xs text-muted-foreground">
                 2 pending approval

@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React from "react";
 import VendorForm from "./VendorForm";
 import {
   Dialog,
@@ -8,7 +7,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FiEdit2, FiTrash2, FiX } from "react-icons/fi";
+import { FiEdit2, FiX } from "react-icons/fi";
+import { vendorService } from "../../services/inventoryServices/vendorsService";
 
 interface Vendor {
   _id: string;
@@ -22,52 +22,23 @@ interface UpdateVendorDialogProps {
   isOpen: boolean;
   closeModal: () => void;
   vendor: Vendor;
+  onVendorUpdated: () => void;
 }
 
 function UpdateVendorDialog({
   isOpen,
   closeModal,
   vendor,
+  onVendorUpdated,
 }: UpdateVendorDialogProps) {
-  const [vendors, setVendors] = useState<Vendor[]>([]);
-
-  const fetchVendors = async () => {
-    try {
-      const response = await axios.get<{ status: string; data: Vendor[] }>(
-        "http://localhost:8000/vendors"
-      );
-      if (
-        response.data.status === "success" &&
-        Array.isArray(response.data.data)
-      ) {
-        setVendors(response.data.data);
-      } else {
-        console.error("Unexpected response format:", response.data);
-        setVendors([]);
-      }
-    } catch (error) {
-      console.error("Error fetching vendors:", error);
-      setVendors([]);
-    }
-  };
-
   const onSubmit = async (data: Omit<Vendor, "_id">) => {
-    console.log("vendor: " + JSON.stringify(vendor));
-    const url = `http://localhost:8000/vendor/${vendor._id}`;
     try {
-      const response = await axios.put<{ status: string; data: Vendor }>(
-        url,
-        data
-      );
-      if (response.data.status === "success") {
-        console.log("Vendor updated", response.data.data);
-        closeModal();
-        fetchVendors();
-      } else {
-        console.error("Unexpected response format:", response.data);
-      }
+      await vendorService.updateVendor(vendor._id, data);
+      onVendorUpdated?.();
+      closeModal();
+      vendorService.getVendors();
     } catch (error) {
-      console.error("Error occurred while updating the vendor:", error);
+      console.error("Error updating vendor:", error);
     }
   };
 

@@ -363,7 +363,15 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel htmlFor="orderId">Order ID</FormLabel>
+                      <FormLabel htmlFor="orderId">Order ID</FormLabel>
                       <FormControl>
+                        <Input
+                          {...field}
+                          type="text"
+                          id="orderId"
+                          disabled
+                          className="text-[15px] font-semibold"
+                        />
                         <Input
                           {...field}
                           type="text"

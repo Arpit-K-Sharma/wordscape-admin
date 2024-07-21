@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import {
   Table,
   TableBody,
@@ -19,11 +18,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import VendorForm from "./VendorForm";
 import UpdateVendorDialog from "./UpdateVendorDialog";
-import { FiEdit2, FiTrash2, FiPlus, FiX } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiX } from "react-icons/fi";
 import InventorySidebar from "../Sidebar/InventorySidebar";
 import { vendorService } from "@/app/services/vendorService";
 
@@ -59,10 +57,8 @@ function Vendors() {
 
   const onSubmit = async (data: Omit<Vendor, "_id">) => {
     try {
-      const url = "http://localhost:8000/vendor";
-      const response = await axios.post<Vendor>(url, data);
-      console.log("Vendor created", response.data);
-      setVendors([...vendors, response.data]);
+      const newVendor = await vendorService.createVendor(data);
+      setVendors([...vendors, newVendor]);
       setIsAddDialogOpen(false);
       await fetchVendors();
     } catch (error) {
@@ -94,16 +90,10 @@ function Vendors() {
   const handleVendorDelete = async () => {
     if (!selectedVendor) return;
     try {
-      const url = `http://127.0.0.1:8000/vendor/${selectedVendor._id}`;
-      const response = await axios.delete<{ status: string }>(url);
-      if (response.data.status === "success") {
-        console.log("Vendor deleted", response.data);
-        setVendors(vendors.filter((v) => v._id !== selectedVendor._id));
-        closeDeleteDialog();
-        fetchVendors();
-      } else {
-        console.error("Unexpected response format:", response.data);
-      }
+      await vendorService.deleteVendor(selectedVendor._id);
+      setVendors(vendors.filter((v) => v._id !== selectedVendor._id));
+      closeDeleteDialog();
+      await fetchVendors();
     } catch (error) {
       console.error("Error occurred while deleting the vendor:", error);
     }
@@ -208,6 +198,7 @@ function Vendors() {
               isOpen={isUpdateDialogOpen}
               closeModal={closeUpdateDialog}
               vendor={selectedVendor}
+              updateVendor={vendorService.updateVendor}
             />
           )}
 
