@@ -172,9 +172,9 @@ const Payrolls: React.FC = () => {
                     <TableCell className="text-center py-2 px-4">{payroll.holidays}</TableCell>
                     <TableCell className="text-center py-2 px-4">{payroll.weekends}</TableCell>
                     <TableCell className="text-center py-2 px-4">{payroll.daily_wage}</TableCell>
-                    <TableCell className="text-center py-2 px-4">{payroll.sub_total}</TableCell>
-                    <TableCell className="text-center py-2 px-4">{payroll.tax}</TableCell>
-                    <TableCell className="text-center py-2 px-4">{payroll.net_salary}</TableCell>
+                    <TableCell className="text-center py-2 px-4">Rs. {payroll.sub_total}</TableCell>
+                    <TableCell className="text-center py-2 px-4">Rs. {payroll.tax}</TableCell>
+                    <TableCell className="text-center py-2 px-4">Rs. {payroll.net_salary}</TableCell>
                     <TableCell>
                       <Button
                       variant="destructive"

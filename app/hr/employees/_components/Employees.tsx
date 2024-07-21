@@ -514,41 +514,14 @@ const EmployeesPage: React.FC = () => {
                                     ? {
                                         ...prev,
                                         dailyWage: Number(e.target.value),
-                                      }
+                                      }   
                                     : null
                                 )
                               }
                               className="col-span-3"
                             />
                           </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label
-                              htmlFor="updateStatus"
-                              className="text-right"
-                            >
-                              Status
-                            </Label>
-                            <Select
-                              onValueChange={(value) =>
-                                setEditingEmployee((prev) =>
-                                  prev
-                                    ? { ...prev, status: value === "true" }
-                                    : null
-                                )
-                              }
-                              defaultValue={
-                                editingEmployee?.status ? "true" : "false"
-                              }
-                            >
-                              <SelectTrigger className="col-span-3">
-                                <SelectValue placeholder="Select status" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="true">Active</SelectItem>
-                                <SelectItem value="false">Inactive</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+    
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="departments" className="text-right">
                               Departments
