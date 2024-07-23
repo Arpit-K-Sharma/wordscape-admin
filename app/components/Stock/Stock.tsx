@@ -433,7 +433,7 @@ const StocksPage: React.FC = () => {
               </div>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6 pb-8 h-[calc(100vh-200px)]">
+          <CardContent className="pt-6 pb-8 h-[calc(100vh-200px)] bg-[#F6F3F3] rounded-[40px] m-[40px]">
             {isLoading ? (
               <p className="text-center text-lg text-black">
                 Loading inventory data...

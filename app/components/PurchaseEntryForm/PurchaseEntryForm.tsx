@@ -22,6 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -30,6 +35,10 @@ import toast, { Toaster } from "react-hot-toast";
 import { purchaseEntryService } from "@/app/services/purchaseEntryFormService";
 import { vendorService } from "@/app/services/vendorService";
 import { dashboardService } from "@/app/services/dashboardService";
+import { FiTrash2 } from "react-icons/fi";
+import { MdOutlineAddHomeWork, } from "react-icons/md";
+import { RiStickyNoteAddLine } from "react-icons/ri";
+import { Send } from "lucide-react";
 
 
 const itemSchema = z.object({
@@ -309,13 +318,13 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
       try {
         const vendors = await vendorService.getVendors();
         setVendors(vendors);
-        
+
         const response = await purchaseEntryService.getItems();
         setInventory(response);
-        
+
         const orders = await dashboardService.fetch_approved_orders();
         setApprovedOrders(orders);
-  
+
         // Load form data from localStorage
         const storedFormData = localStorage.getItem(`formData_${orderId}`);
         if (storedFormData) {
@@ -324,7 +333,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
         } else if (orderId) {
           form.setValue("orderId", orderId);
         }
-  
+
         if (isReorder) {
           fetchReorderData();
         }
@@ -332,7 +341,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
         console.error("Error fetching data:", error);
       }
     };
-  
+
     fetchData();
   }, [orderId, form, isReorder]);
 
@@ -343,12 +352,21 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
     return () => subscription.unsubscribe();
   }, [form, orderId]);
 
+  const getTotalItems = () => {
+    return purchaseEntryFields.reduce((total, entry, index) => {
+      return total + form.watch(`purchaseEntry.${index}.items`).length;
+    }, 0);
+  };
+
 
   return (
     <div className="flex font-archivo bg-[#f7f7f9]">
       <InventorySidebar />
       <div className="print flex-1 p-5 h-screen">
-        <Card className="w-full max-w-2xl justify-center items-center mx-auto">
+        <Card className={`w-full ${getTotalItems() === 1 ? 'max-w-3xl' :
+          getTotalItems() === 2 ? 'max-w-5xl' :
+            'max-w-6xl'
+          } justify-center items-center mx-auto transition-all duration-400 ease-in-out`}>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
               {isReorder ? "Reorder Slip" : "Purchase Order Slip"}
@@ -362,7 +380,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                   name="orderId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel htmlFor="orderId">Order ID</FormLabel>
+                      <FormLabel htmlFor="orderId" className="font-semibold">Order ID</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -385,10 +403,17 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                     <div className="flex justify-end h-[0px] ">
                       {!isReorder && (
                         <Label
-                          className=" w-[110px] hover:text-[red] mt-[8px]"
+                          className=" w-[110px] text-gray-400 cursor-pointer hover:text-[red] mt-[8px] mr-[-70px] transition-colors duration-100"
                           onClick={() => removePurchaseEntry(index)}
                         >
-                          - Remove Vendor
+                          <HoverCard>
+                            <HoverCardTrigger>
+                              <FiTrash2 className="text-xl cursor-pointer" />
+                            </HoverCardTrigger>
+                            <HoverCardContent>
+                              <p className="font-semibold text-gray-500">Remove the selected vendor?</p>
+                            </HoverCardContent>
+                          </HoverCard>
                         </Label>
                       )}
 
@@ -398,7 +423,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                       name={`purchaseEntry.${index}.vendorId`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Vendor</FormLabel>
+                          <FormLabel className="font-semibold">Vendor</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
@@ -421,141 +446,164 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                       )}
                     />
 
-                    {form
-                      .watch(`purchaseEntry.${index}.items`)
-                      .map((item, itemIndex) => (
-                        <div key={itemIndex} className="space-y-4">
-                          <FormField
-                            control={form.control}
-                            name={`purchaseEntry.${index}.items.${itemIndex}.itemId`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Item</FormLabel>
-                                <Select
-                                  onValueChange={(value) => {
-                                    const selectedInventory = inventory.find(inv =>
-                                      inv.item.some(item => item._id === value)
-                                    );
-                                    if (selectedInventory) {
-                                      field.onChange(value);
-                                      form.setValue(`purchaseEntry.${index}.items.${itemIndex}.inventoryId`, selectedInventory._id);
-                                    }
-                                  }}
-                                  value={field.value}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select an item" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {inventory.flatMap(inv =>
-                                      inv.item.map(item => (
-                                        <SelectItem key={item._id} value={item._id}>
-                                          {item.itemName}
-                                        </SelectItem>
-                                      ))
-                                    )}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`purchaseEntry.${index}.items.${itemIndex}.quantityFromVendor`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Quantity from Vendor</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="number"
-                                    value={field.value || ""}
-                                    onChange={(e) =>
-                                      field.onChange(Number(e.target.value))
-                                    }
-                                    className="w-full"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name={`purchaseEntry.${index}.items.${itemIndex}.quantityFromStock`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Quantity from Stock</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="number"
-                                    value={field.value || ""}
-                                    onChange={(e) =>
-                                      field.onChange(Number(e.target.value))
-                                    }
-                                    className="w-full"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          {isReorder && (
+                    <div className={`grid ${form.watch(`purchaseEntry.${index}.items`).length === 1 ? 'grid-cols-1' :
+                      form.watch(`purchaseEntry.${index}.items`).length === 2 ? 'grid-cols-2' :
+                        'grid-cols-3'
+                      } gap-6`}>
+                      {form
+                        .watch(`purchaseEntry.${index}.items`)
+                        .map((item, itemIndex) => (
+                          <div key={itemIndex} className="space-y-4 border border-gray-200 rounded-[10px] p-[10px]">
                             <FormField
                               control={form.control}
-                              name="remarks"
+                              name={`purchaseEntry.${index}.items.${itemIndex}.itemId`}
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Remarks</FormLabel>
+                                  <div className="flex flex-row justify-between pr-[10px]">
+                                    <div>
+                                      <FormLabel className="font-semibold">Item</FormLabel>
+                                    </div>
+                                    <div>
+                                      <FormLabel>
+                                        {!isReorder && (
+                                          <Label
+                                            className="text-gray-400 hover:text-[red] mt-[10px]"
+                                            onClick={() => removeItem(index, itemIndex)}
+                                          >
+                                            <HoverCard>
+                                              <HoverCardTrigger>
+                                                <FiTrash2 className="text-xl cursor-pointer" />
+                                              </HoverCardTrigger>
+                                              <HoverCardContent>
+                                                <p className="font-semibold text-gray-500">Remove the selected item?</p>
+                                              </HoverCardContent>
+                                            </HoverCard>
+
+
+                                          </Label>
+                                        )}
+                                      </FormLabel>
+                                    </div>
+                                  </div>
+
+
+                                  <Select
+                                    onValueChange={(value) => {
+                                      const selectedInventory = inventory.find(inv =>
+                                        inv.item.some(item => item._id === value)
+                                      );
+                                      if (selectedInventory) {
+                                        field.onChange(value);
+                                        form.setValue(`purchaseEntry.${index}.items.${itemIndex}.inventoryId`, selectedInventory._id);
+                                      }
+                                    }}
+                                    value={field.value}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select an item" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {inventory.flatMap(inv =>
+                                        inv.item.map(item => (
+                                          <SelectItem key={item._id} value={item._id}>
+                                            {item.itemName}
+                                          </SelectItem>
+                                        ))
+                                      )}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={`purchaseEntry.${index}.items.${itemIndex}.quantityFromVendor`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="font-semibold">Quantity from Vendor</FormLabel>
                                   <FormControl>
                                     <Input
                                       {...field}
-                                      type="text"
-                                      placeholder="Enter remarks for reorder"
+                                      type="number"
+                                      value={field.value || ""}
+                                      onChange={(e) =>
+                                        field.onChange(Number(e.target.value))
+                                      }
+                                      className="w-full"
                                     />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
                             />
-                          )}
-                          <div className="flex justify-between">
-                            {!isReorder && (
-                              <Button
-                                type="button"
-                                onClick={() => addItem(index)}
-                              >
-                                + Add Item
-                              </Button>
-                            )}
-                            {!isReorder && (
-                              <Label
-                                className="hover:text-[red]"
-                                onClick={() => removeItem(index, itemIndex)}
-                              >
-                                - Remove Item
-                              </Label>
-                            )}
 
+                            <FormField
+                              control={form.control}
+                              name={`purchaseEntry.${index}.items.${itemIndex}.quantityFromStock`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="font-semibold">Quantity from Stock</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="number"
+                                      value={field.value || ""}
+                                      onChange={(e) =>
+                                        field.onChange(Number(e.target.value))
+                                      }
+                                      className="w-full"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            {isReorder && (
+                              <FormField
+                                control={form.control}
+                                name="remarks"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="font-semibold">Remarks</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        type="text"
+                                        placeholder="Enter remarks for reorder"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            )}
+                            <div className="flex justify-end">
+                              {!isReorder && (
+                                <Button
+                                  type="button"
+                                  className="font-semibold bg-transparent text-gray-400 shadow-none hover:bg-transparent hover:text-black"
+                                  onClick={() => addItem(index)}
+                                >
+                                  <RiStickyNoteAddLine size={25} className="mr-[10px]" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                    </div>
                   </div>
                 ))}
                 {!isReorder && (
-                  <Button type="button" onClick={addVendor}>
-                    + Add Vendor
+                  <Button type="button" className="font-semibold" onClick={addVendor}>
+                    <MdOutlineAddHomeWork size={18} className="mr-[10px]" /> Add Vendor
                   </Button>
                 )}
-
-
-                <Button type="submit" className="w-full"
+                <Button type="submit" className="w-full  font-semibold"
                   isSubmitting={isSubmitting}>
+                  <Send size={18} className="mr-[10px]" />
                   {isReorder ? "Submit Reorder" : "Submit Purchase Order"}
                 </Button>
               </form>

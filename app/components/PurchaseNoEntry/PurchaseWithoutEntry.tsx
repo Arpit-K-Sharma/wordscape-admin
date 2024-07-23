@@ -36,6 +36,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { LiaHourglassStartSolid } from "react-icons/lia";
+import jsPDF from "jspdf";
 
 interface PurchaseEntryItem {
   itemId: string;
@@ -102,7 +103,7 @@ const PurchaseSlip: React.FC<{
   getItemDetails: (itemId: string) => Item | null;
 }> = ({ vendorDetails, purchase, getItemDetails }) => {
   return (
-    <div className="p-8 bg-white ml-[200px] w-[500px] border border-gray-300 rounded shadow-md" id="purchase-slip">
+    <div className="p-8 bg-white ml-[200px] w-[500px]" id="purchase-slip">
       <div className="flex flex-col items-center mb-6">
         <div>
           <img src={Logo.src} className="w-16 h-16 mb-4" alt="Company Logo" />
@@ -369,22 +370,38 @@ const PurchaseEntryList: React.FC = () => {
 
     try {
       // Convert the rendered component to canvas
-      const canvas = await html2canvas(tempDiv.firstChild as HTMLElement);
-
-      // Convert canvas to blob
-      const blob = await new Promise<Blob>((resolve) =>
-        canvas.toBlob((blob) => resolve(blob as Blob))
+      const canvas = await html2canvas(tempDiv.firstChild as HTMLElement,
+        {
+          scale: 3,
+        }
       );
-
-      // Create download link
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `purchase_slip_${purchase.vendorId}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+    
+      // Create a new jsPDF instance
+      const pdf = new jsPDF('p', 'mm', 'a4');
+    
+      // Calculate the width and height of the PDF page
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+    
+      // Calculate the scaling factor to fit the canvas to the PDF page
+      const widthRatio = pdfWidth / canvas.width;
+      const heightRatio = pdfHeight / canvas.height;
+      const ratio = Math.min(widthRatio, heightRatio);
+    
+      // Calculate the centered position of the image
+    
+      // Add the canvas image to the PDF
+      pdf.addImage(
+        canvas.toDataURL('image/png'),
+        'PNG',
+        0,
+        0,
+        canvas.width * ratio,
+        canvas.height * ratio
+      );
+    
+      // Save the PDF
+      pdf.save(`purchase_slip_${purchase.vendorId}.pdf`);
     } catch (error) {
       console.error('Error generating purchase slip:', error);
     } finally {

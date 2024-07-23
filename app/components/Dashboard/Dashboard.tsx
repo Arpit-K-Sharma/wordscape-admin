@@ -334,7 +334,7 @@ const Dashboard = () => {
                         <Sheet>
                           <SheetTrigger>
                             <Button
-                              className="px-[15px] font-semibold bg-blue-800 hover:bg-[#172447]"
+                              className="px-[15px] font-semibold bg-[#6A9BD1] hover:bg-[#172447]"
                               type="button"
                             >
                               Order Details
@@ -443,7 +443,7 @@ const Dashboard = () => {
                       </TableCell>
                       <TableCell className="px-6 py-[20px]">
                         <Button
-                          className="px-[15px] font-semibold bg-[#264255] hover:bg-[#172447]"
+                          className="px-[15px] font-semibold bg-[#36454F] hover:bg-[#172447]"
                           type="button"
                           onClick={() => handleRequestPO(order._id)}
                           disabled={poStatus[order._id] === 'created'}

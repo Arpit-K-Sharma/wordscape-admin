@@ -151,7 +151,7 @@ const HROverview: React.FC = () => {
                 </p>
               ))}
               <Button
-                className="mt-4 bg-green-700 text-white hover:bg-slate-800"
+                className="mt-4 bg-green-700 text-white font-bold hover:bg-slate-800"
                 onClick={() => router.push("/hr/holidays")}
               >
                 View All Holidays
