@@ -375,21 +375,21 @@ const PurchaseEntryList: React.FC = () => {
           scale: 3,
         }
       );
-    
+
       // Create a new jsPDF instance
       const pdf = new jsPDF('p', 'mm', 'a4');
-    
+
       // Calculate the width and height of the PDF page
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-    
+
       // Calculate the scaling factor to fit the canvas to the PDF page
       const widthRatio = pdfWidth / canvas.width;
       const heightRatio = pdfHeight / canvas.height;
       const ratio = Math.min(widthRatio, heightRatio);
-    
+
       // Calculate the centered position of the image
-    
+
       // Add the canvas image to the PDF
       pdf.addImage(
         canvas.toDataURL('image/png'),
@@ -399,7 +399,7 @@ const PurchaseEntryList: React.FC = () => {
         canvas.width * ratio,
         canvas.height * ratio
       );
-    
+
       // Save the PDF
       pdf.save(`purchase_slip_${purchase.vendorId}.pdf`);
     } catch (error) {
@@ -462,7 +462,7 @@ const PurchaseEntryList: React.FC = () => {
                             </p>
                           </div>
                         </HoverCardContent>
-                      </HoverCard> 
+                      </HoverCard>
                       :
                       <HoverCard>
                         <HoverCardTrigger><LiaHourglassStartSolid size={22} className="hover:cursor-pointer hover:text-yellow-600" /></HoverCardTrigger>
@@ -587,9 +587,16 @@ const PurchaseEntryList: React.FC = () => {
                       <p className="flex justify-between">
                         <span>Tags:</span>
                         <span className="font-semibold">
-                          {entry.purchaseEntry
-                            .map((purchase) => purchase.tag)
-                            .filter(Boolean)
+                          {Object.entries(
+                            entry.purchaseEntry
+                              .map((purchase) => purchase.tag)
+                              .filter((tag): tag is string => Boolean(tag))
+                              .reduce<Record<string, number>>((acc, tag) => {
+                                acc[tag] = (acc[tag] || 0) + 1;
+                                return acc;
+                              }, {})
+                          )
+                            .map(([tag, count]) => `${tag}${count > 1 ? ` (${count})` : ''}`)
                             .join(", ")}
                         </span>
                       </p>
