@@ -72,7 +72,7 @@ const LeftoversPage = () => {
     );
 
     const filteredItems = flattenedItems.filter(item =>
-        item.order_id.toLowerCase().includes(searchTerm.toLowerCase())
+        item.itemName.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const truncateOrderId = (orderId: string) => {
@@ -88,7 +88,7 @@ const LeftoversPage = () => {
                         <Search className="mr-2 text-gray-500" />
                         <Input
                             type="text"
-                            placeholder="Search by Order ID"
+                            placeholder="Search by Item Name"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-[300px] h-[40px]"

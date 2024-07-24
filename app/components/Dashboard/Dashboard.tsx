@@ -345,16 +345,16 @@ const Dashboard = () => {
                               <SheetTitle className="font-bold text-[20px] text-center mb-[10px]">
                                 Order Details
                               </SheetTitle>
-                              <SheetDescription className="font-bold text-[15px] shadow-lg border-black p-[10px] rounded-md">
+                              <SheetDescription className="font-bold text-[15px] shadow-sm border-black p-[10px] rounded-md">
                                 <Table>
                                   <TableRow>
-                                    <TableHead className="p-[10px] text-gray-600">
+                                    <TableHead className="p-[10px] font-semibold text-gray-600">
                                       Order Id
                                     </TableHead>
                                     <TableHead>{order._id}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead className="p-[10px] text-gray-600">
+                                    <TableHead className="p-[10px] font-semibold  text-gray-600">
                                       Customer Name
                                     </TableHead>
                                     <TableHead>
@@ -362,37 +362,37 @@ const Dashboard = () => {
                                     </TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead className="p-[10px] text-gray-600">
+                                    <TableHead className="p-[10px] font-semibold  text-gray-600">
                                       Date
                                     </TableHead>
                                     <TableHead>{order.date}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead className="p-[10px] text-gray-600">
+                                    <TableHead className="p-[10px] font-semibold  text-gray-600">
                                       Paper Size
                                     </TableHead>
                                     <TableHead>{order.paperSize}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead className="p-[10px] text-gray-600">
+                                    <TableHead className="p-[10px] font-semibold  text-gray-600">
                                       Pages
                                     </TableHead>
                                     <TableHead>{order.pages}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead className="p-[10px] text-gray-600">
+                                    <TableHead className="p-[10px] font-semibold  text-gray-600">
                                       Quantity
                                     </TableHead>
                                     <TableHead>{order.quantity}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead className="p-[10px] text-gray-600">
+                                    <TableHead className="p-[10px] font-semibold  text-gray-600">
                                       Binding
                                     </TableHead>
                                     <TableHead>{order.binding}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead className="p-[10px] text-gray-600">
+                                    <TableHead className="p-[10px] font-semibold  text-gray-600">
                                       Cover Treatment
                                     </TableHead>
                                     <TableHead>
@@ -400,7 +400,7 @@ const Dashboard = () => {
                                     </TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead className="p-[10px] text-gray-600">
+                                    <TableHead className="p-[10px] font-semibold  text-gray-600">
                                       Inner Paper
                                     </TableHead>
                                     <TableHead>
@@ -408,7 +408,7 @@ const Dashboard = () => {
                                     </TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead className="p-[10px] text-gray-600">
+                                    <TableHead className="p-[10px] font-semibold  text-gray-600">
                                       Outer Paper
                                     </TableHead>
                                     <TableHead>
@@ -416,13 +416,13 @@ const Dashboard = () => {
                                     </TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead className="p-[10px] text-gray-600">
+                                    <TableHead className="p-[10px] font-semibold  text-gray-600">
                                       Ink Type
                                     </TableHead>
                                     <TableHead>{order.inkType}</TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead className="p-[10px] text-gray-600">
+                                    <TableHead className="p-[10px] font-semibold  text-gray-600">
                                       Delivery Option
                                     </TableHead>
                                     <TableHead>
@@ -430,7 +430,7 @@ const Dashboard = () => {
                                     </TableHead>
                                   </TableRow>
                                   <TableRow>
-                                    <TableHead className="p-[10px] text-gray-600">
+                                    <TableHead className="p-[10px] font-semibold text-gray-600">
                                       Status
                                     </TableHead>
                                     <TableHead>{order.status}</TableHead>

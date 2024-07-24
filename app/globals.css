@@ -97,4 +97,12 @@
     scrollbar-width: thin;
     scrollbar-color: theme('colors.gray.300') theme('colors.gray.100');
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
 }

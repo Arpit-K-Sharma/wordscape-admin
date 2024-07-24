@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Eye, RefreshCw, CheckCircle, CalendarDays } from "lucide-react";
+import { Eye, RefreshCw, CheckCircle, CalendarDays, Info } from "lucide-react";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import Logo from '../../images/LogoBG.webp';
@@ -265,12 +265,28 @@ const PurchaseWithEntry: React.FC = () => {
     <div className="flex h-screen bg-gray-100 font-archivo">
       <InventorySidebar />
       <div className="flex-1 p-8 overflow-auto">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">
-          Purchase Orders
-          <span className="text-2xl font-normal text-gray-600 ml-2">
-            (Items received from Vendors)
-          </span>
-        </h1>
+        <div className="flex flex-row">
+          <div className="text-3xl font-bold mb-6 text-gray-800">
+            <h1>Purchase Orders</h1>
+          </div>
+          <div className="mt-[-25px] ml-[10px]">
+            <span className="text-2xl font-normal text-gray-600 ml-2">
+              <HoverCard>
+                <HoverCardTrigger><Info className="hover:cursor-pointer hover:text-blue-900" /></HoverCardTrigger>
+                <HoverCardContent className="w-[300px] rounded-[20px]">
+                  <div className="p-[10px] items-center justify-center font-archivo">
+                    <h1 className="ml-[20px] font-semibold mb-[10px] text-[15px] text-gray-700">
+                      Information
+                    </h1>
+                    <p className=" ml-[20px] text-left text-gray-600 text-[15px]">
+                      This page allows you to view all purchase orders that have been created with entires.
+                    </p>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
+            </span>
+          </div>
+        </div>
         <div className="grid grid-flow-cols grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-6 p-6">
           {Array.isArray(purchaseOrders) && purchaseOrders.length > 0 ? (
             <div>

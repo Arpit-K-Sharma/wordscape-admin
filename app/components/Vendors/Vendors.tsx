@@ -104,74 +104,59 @@ function Vendors() {
       <InventorySidebar />
       <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-5 py-8 font-archivo">
-          <h1 className="flex items-center justify-center text-5xl font-bold text-gray-900 mb-8 mx-auto">
-            Vendors
-          </h1>
-          <div className="flex justify-between items-center mb-4">
-            <Button
-              onClick={() => setIsAddDialogOpen(true)}
-              className="flex items-center justify-center"
-            >
-              Add Vendor
-            </Button>
-          </div>
-
+        <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">
+        Vendors
+      </h1>
+      <div className="flex justify-start mb-4">
+        <Button
+          onClick={() => setIsAddDialogOpen(true)}
+          className="bg-gray-800 text-white hover:bg-gray-700 transition-colors"
+        >
+          Add Vendor
+        </Button>
+      </div>
+          <div className="bg-white shadow-md rounded-lg overflow-hidden">
           <Table className="w-full">
-            <TableCaption>A list of WordScape's vendors.</TableCaption>
-            <TableHeader>
-              <TableRow className="bg-gray-800 hover:bg-gray-800">
-                <TableHead className="font-bold text-white text-center">
-                  Name
-                </TableHead>
-                <TableHead className="font-bold text-white text-center">
-                  Address
-                </TableHead>
-                <TableHead className="font-bold text-white text-center">
-                  VAT
-                </TableHead>
-                <TableHead className="font-bold text-white text-center">
-                  Phone
-                </TableHead>
-                <TableHead className="text-center text-white">
-                  Actions
-                </TableHead>
+          <TableCaption className="caption-bottom text-sm text-gray-500 mt-4">
+            A list of WordScape's vendors.
+          </TableCaption>
+          <TableHeader>
+            <TableRow className="bg-gray-800 hover:bg-gray-800">
+              <TableHead className="font-semibold text-white text-left py-3 px-4">Name</TableHead>
+              <TableHead className="font-semibold text-white text-left py-3 px-4">Address</TableHead>
+              <TableHead className="font-semibold text-white text-left py-3 px-4">VAT</TableHead>
+              <TableHead className="font-semibold text-white text-left py-3 px-4">Phone</TableHead>
+              <TableHead className="font-semibold text-white text-left py-3 px-4">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {vendors.map((vendor) => (
+              <TableRow key={vendor._id} className="border-b border-gray-200 hover:bg-gray-50">
+                <TableCell className="py-3 px-4">{vendor.vendorName}</TableCell>
+                <TableCell className="py-3 px-4">{vendor.vendorAddress}</TableCell>
+                <TableCell className="py-3 px-4">{vendor.vendorVAT}</TableCell>
+                <TableCell className="py-3 px-4">{vendor.vendorPhone}</TableCell>
+                <TableCell className="py-3 px-4">
+                  <Button
+                    variant="outline"
+                    className="mr-2 text-gray-600 hover:text-white hover:bg-gray-600 transition-colors"
+                    onClick={() => openUpdateDialog(vendor)}
+                  >
+                    <FiEdit2 className="mr-1" /> Update
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="bg-red-600 hover:bg-red-700 transition-colors"
+                    onClick={() => openDeleteDialog(vendor)}
+                  >
+                    <FiTrash2 className="mr-1" /> Delete
+                  </Button>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {vendors.map((vendor) => (
-                <TableRow key={vendor._id}>
-                  <TableCell className="text-center">
-                    {vendor.vendorName}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {vendor.vendorAddress}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {vendor.vendorVAT}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {vendor.vendorPhone}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Button
-                      variant="outline"
-                      className="mr-4 text-blue-600 hover:text-white hover:bg-blue-600 transition-colors"
-                      onClick={() => openUpdateDialog(vendor)}
-                    >
-                      <FiEdit2 className="mr-1" /> Update
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      className="bg-red-600 hover:bg-red-700 transition-colors"
-                      onClick={() => openDeleteDialog(vendor)}
-                    >
-                      <FiTrash2 className="mr-1" /> Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+            ))}
+          </TableBody>
+        </Table>
+        </div>
 
           {/* Add Vendor Dialog */}
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ import { dashboardService } from "@/app/services/dashboardService";
 import { FiTrash2 } from "react-icons/fi";
 import { MdOutlineAddHomeWork, } from "react-icons/md";
 import { RiStickyNoteAddLine } from "react-icons/ri";
-import { Send } from "lucide-react";
+import { Send, Plus } from "lucide-react";
 
 
 const itemSchema = z.object({
@@ -353,19 +353,28 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
   }, [form, orderId]);
 
   const getTotalItems = () => {
-    return purchaseEntryFields.reduce((total, entry, index) => {
-      return total + form.watch(`purchaseEntry.${index}.items`).length;
-    }, 0);
+    if (purchaseEntryFields.length === 0) return 0;
+    return form.watch(`purchaseEntry.0.items`).length;
   };
+
+  const initialWidth = useMemo(() => {
+    const totalItems = getTotalItems();
+    if (totalItems === 1) return 'max-w-3xl';
+    if (totalItems === 2) return 'max-w-5xl';
+    return 'max-w-6xl';
+  }, []);
 
 
   return (
-    <div className="flex font-archivo bg-[#f7f7f9]">
-      <InventorySidebar />
-      <div className="print flex-1 p-5 h-screen">
-        <Card className={`w-full ${getTotalItems() === 1 ? 'max-w-3xl' :
-          getTotalItems() === 2 ? 'max-w-5xl' :
-            'max-w-6xl'
+    <div className="flex flex-cols font-archivo min-h-full bg-[#f7f7f9]">
+      <div className="bg-white">
+        <InventorySidebar />
+      </div>
+      <div className="print flex-1 p-5 h-screen pt-[60px]">
+        <Card className={`w-full ${getTotalItems() <= 1 ? 'max-w-3xl' :
+          getTotalItems() == 2 ? 'max-w-4xl' :
+            getTotalItems() == 3 ? 'max-w-6xl' :
+              'max-w-6xl'
           } justify-center items-center mx-auto transition-all duration-400 ease-in-out`}>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
@@ -395,20 +404,22 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                   )}
                 />
 
+                <div className="h-[440px] overflow-y-auto">
+
                 {purchaseEntryFields && purchaseEntryFields.map((entry, index) => (
                   <div
                     key={entry.id}
-                    className="space-y-4 p-4 border rounded-lg"
+                    className="space-y-4 p-4 border rounded-lg mb-[20px]"
                   >
-                    <div className="flex justify-end h-[0px] ">
+                    <div className="flex justify-end h-[0px]">
                       {!isReorder && (
                         <Label
                           className=" w-[110px] text-gray-400 cursor-pointer hover:text-[red] mt-[8px] mr-[-70px] transition-colors duration-100"
                           onClick={() => removePurchaseEntry(index)}
                         >
                           <HoverCard>
-                            <HoverCardTrigger>
-                              <FiTrash2 className="text-xl cursor-pointer" />
+                            <HoverCardTrigger className="ml-[-110px] mb-[15px]">
+
                             </HoverCardTrigger>
                             <HoverCardContent>
                               <p className="font-semibold text-gray-500">Remove the selected vendor?</p>
@@ -416,8 +427,33 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                           </HoverCard>
                         </Label>
                       )}
+                      {!isReorder &&
+                        <Button
+                          type="button"
+                          className="font-semibold bg-transparent text-red-500 bg-white shadow-none hover:bg-red-500 hover:text-white border mr-[10px]"
+                          onClick={() => removePurchaseEntry(index)}
+                        >
+                          <FiTrash2 className=" hover:text-white mr-1" />
+                          Delete Vendor
+
+                        </Button>
+                      }
+
+                      {!isReorder &&
+                        <Button
+                          type="button"
+                          className="font-semibold bg-transparent text-black bg-white shadow-none hover:bg-gray-800 hover:text-white border"
+                          onClick={() => addItem(index)}
+                        >
+                          <Plus className=" hover:text-white mr-1" />
+                          Add Item
+
+                        </Button>
+                      }
+
 
                     </div>
+                    <div className="">
                     <FormField
                       control={form.control}
                       name={`purchaseEntry.${index}.vendorId`}
@@ -445,7 +481,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                         </FormItem>
                       )}
                     />
-
+                    <div className="h-[320px] overflow-y-auto scrollbar-hide p-4">
                     <div className={`grid ${form.watch(`purchaseEntry.${index}.items`).length === 1 ? 'grid-cols-1' :
                       form.watch(`purchaseEntry.${index}.items`).length === 2 ? 'grid-cols-2' :
                         'grid-cols-3'
@@ -472,6 +508,8 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                           >
                                             <HoverCard>
                                               <HoverCardTrigger>
+
+
                                                 <FiTrash2 className="text-xl cursor-pointer" />
                                               </HoverCardTrigger>
                                               <HoverCardContent>
@@ -561,6 +599,9 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                 </FormItem>
                               )}
                             />
+                            <div className="flex justify-end">
+
+                            </div>
                             {isReorder && (
                               <FormField
                                 control={form.control}
@@ -580,33 +621,31 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                 )}
                               />
                             )}
-                            <div className="flex justify-end">
-                              {!isReorder && (
-                                <Button
-                                  type="button"
-                                  className="font-semibold bg-transparent text-gray-400 shadow-none hover:bg-transparent hover:text-black"
-                                  onClick={() => addItem(index)}
-                                >
-                                  <RiStickyNoteAddLine size={25} className="mr-[10px]" />
-                                </Button>
-                              )}
-                            </div>
+
                           </div>
                         ))}
                     </div>
+                    </div>
+                    </div>
                   </div>
                 ))}
+                  
+                </div>
+
+
                 {!isReorder && (
                   <Button type="button" className="font-semibold" onClick={addVendor}>
                     <MdOutlineAddHomeWork size={18} className="mr-[10px]" /> Add Vendor
                   </Button>
                 )}
+
                 <Button type="submit" className="w-full  font-semibold"
                   isSubmitting={isSubmitting}>
                   <Send size={18} className="mr-[10px]" />
                   {isReorder ? "Submit Reorder" : "Submit Purchase Order"}
                 </Button>
               </form>
+
             </Form>
           </CardContent>
         </Card>
