@@ -12,7 +12,10 @@ import {
   UserRound,
   Boxes,
   ArrowLeft,
+  CheckCircle,
   CalendarPlus,
+  DollarSign,
+  ClipboardList
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LogoOnly from "../../../public/images/LogoOnly.png";
@@ -65,7 +68,7 @@ const HRSidebar: React.FC = () => {
             className="w-full justify-start mb-2 text-sm"
             onClick={() => router.push("/hr/attendance")}
           >
-            <Users className="mr-2 h-4 w-4" />
+            <CheckCircle className="mr-2 h-4 w-4" />
             Attendance
           </Button>
           <Button
@@ -73,7 +76,7 @@ const HRSidebar: React.FC = () => {
             className="w-full justify-start mb-2 text-sm"
             onClick={() => router.push("/hr/payroll")}
           >
-            <FileText className="mr-2 h-4 w-4" />
+            <DollarSign className="mr-2 h-4 w-4" />
             Payroll
           </Button>
           <Button
@@ -81,7 +84,7 @@ const HRSidebar: React.FC = () => {
             className="w-full justify-start mb-2 text-sm"
             onClick={() => router.push("/hr/leave-management")}
           >
-            <Calendar className="mr-2 h-4 w-4" />
+            <ClipboardList className="mr-2 h-4 w-4" />
             Leave Management
           </Button>
 

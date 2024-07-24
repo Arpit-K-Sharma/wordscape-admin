@@ -78,10 +78,15 @@ const Leaves: React.FC = () => {
   
   const addLeave = async() => {
     if (selectedEmployee && startDate && endDate && leaveType && leaveReason) {
+
       const newLeave = {
         staff_id: selectedEmployee.id,
-        start_date: startDate.toISOString(),
-        end_date: endDate.toISOString(),
+        start_date: new Date(startDate.getTime() + 86400000)
+          .toISOString()
+          .split("T")[0],
+        end_date: new Date(endDate.getTime() + 86400000)
+        .toISOString()
+        .split("T")[0],
         reason: leaveReason,
         type: leaveType,
         status: leaveStatus, // Ensure status is a string
@@ -95,6 +100,7 @@ const Leaves: React.FC = () => {
         setLeaveReason("");
         setLeaveType(undefined);
         fetchLeaveData();
+        
       } catch (error) {
         console.error("Error adding leave", error);
       }
@@ -156,8 +162,8 @@ const handleClose= async() =>{
     setSelectedLeaveId(leave.id);
     setLeaveToUpdate(leave);
     handleChange(leave.staff_id);
-    setStartDate(new Date(leave.start_date));
-    setEndDate(new Date(leave.end_date));
+    setStartDate(leave.start_date);
+    setEndDate(leave.end_date);
     setLeaveReason(leave.reason);
     setLeaveType(leave.type);
     setLeaveStatus(leave.status);
@@ -172,7 +178,7 @@ const handleClose= async() =>{
     setStartDate(undefined);
     setStartDate(undefined);
     setLeaveReason("");
-    setLeaveType("");
+    setLeaveType(undefined);
   };
 
   const handleUpdateLeave = async () => {
@@ -180,8 +186,12 @@ const handleClose= async() =>{
       const updatedLeave = {
         staff_id: selectedEmployee.id,
         staff_name: selectedEmployee.fullName,
-        start_date: startDate.toISOString(),
-        end_date: endDate.toISOString(),
+        start_date: new Date(startDate.getTime() + 86400000)
+        .toISOString()
+        .split("T")[0],
+        end_date: new Date(endDate.getTime() + 86400000)
+        .toISOString()
+        .split("T")[0],
         reason: leaveReason,
         type: leaveType,
       };
@@ -241,7 +251,7 @@ const handleClose= async() =>{
                 </Label>
                 <Input
                   id="startDate"
-                  value={startDate? new Date(startDate).toLocaleDateString() : "Select date"}
+                  value={startDate? startDate : "Select date"}
                   onClick={() => handleDateClick('start')}
                   readOnly
                   className="col-span-3"
@@ -253,7 +263,7 @@ const handleClose= async() =>{
                 </Label>
                 <Input
                   id="endDate"
-                  value={endDate? new Date(endDate).toLocaleDateString() : "Select date"}
+                  value={endDate? endDate : "Select date"}
                   onClick={() => handleDateClick('end')}
                   readOnly
                   className="col-span-3"
@@ -268,17 +278,6 @@ const handleClose= async() =>{
                   value={leaveReason}
                   onChange={(e) => setLeaveReason(e.target.value)}
                   className="col-span-3"
-                />
-              </div>
-              <div className='grid grid-cols-4 items-center gap-4'>
-                <Label htmlFor='status' className='text-right'>
-                  Status
-                </Label>
-                <Input
-                  id='leaveStatus'
-                  value={leaveStatus}
-                  readOnly
-                  className='col-span-3'
                 />
               </div>
               <div className='grid grid-cols-4 items-center gap-4'>
@@ -326,7 +325,7 @@ const handleClose= async() =>{
         </Dialog>
 
 
-        {leaveManagement.length > 0 ?(
+        {leaveManagement && leaveManagement.length > 0 ?(
           <Table className="w-full bg-white border border-gray-200 rounded-lg shadow-sm">
           <TableHeader className="bg-gray-100">
             <TableRow>
@@ -344,8 +343,8 @@ const handleClose= async() =>{
             {leaveManagement && leaveManagement.map((leave) => (
               <TableRow key={leave.id} className="border-t border-gray-200">
                 <TableCell className="text-center py-2 px-4">{leave.staff_name}</TableCell>
-                <TableCell className="text-center py-2 px-4">{new Date(leave.start_date).toLocaleDateString()}</TableCell>
-                <TableCell className="text-center py-2 px-4">{new Date(leave.end_date).toLocaleDateString()}</TableCell>
+                <TableCell className="text-center py-2 px-4">{leave.start_date}</TableCell>
+                <TableCell className="text-center py-2 px-4">{leave.end_date}</TableCell>
                 <TableCell className="text-center py-2 px-4">{leave.reason}</TableCell>
                 <TableCell className="text-center py-2 px-4">{leave.type}</TableCell>
                 <TableCell className="text-center py-2 px-4">
@@ -407,7 +406,30 @@ const handleClose= async() =>{
         <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Update Leave</DialogTitle>
+              <DialogTitle className='flex items-center'>
+              <p className="flex-1">Update Leave</p>
+              {leaveStatus && (
+                <>
+                  {leaveStatus === "Pending" && (
+                    <p className="mr-3 border-2 border-yellow-500 text-yellow-600 px-2 py-1 rounded">
+                      {leaveStatus}
+                    </p>
+                  )}
+                  {leaveStatus === "Approved" && (
+                    <p className="mr-3 border-2 border-green-500 text-green-600 px-2 py-1 rounded">
+                      {leaveStatus}
+                    </p>
+                  )}
+                  {leaveStatus === "Rejected" && (
+                    <p className="mr-3 border-2 border-red-500 text-red-600 px-2 py-1 rounded">
+                      {leaveStatus}
+                    </p>
+                  )}
+                </>
+              )}
+
+              </DialogTitle>
+              
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
@@ -437,7 +459,7 @@ const handleClose= async() =>{
                 </Label>
                 <Input
                   id="startDate"
-                  value={startDate? new Date(startDate).toLocaleDateString() : "Select date"}
+                  value={startDate? startDate : "Select date"}
                   onClick={() => handleDateClick('start')}
                   readOnly
                   className="col-span-3"
@@ -449,7 +471,7 @@ const handleClose= async() =>{
                 </Label>
                 <Input
                   id="endDate"
-                  value={endDate? new Date(endDate).toLocaleDateString() : "Select date"}
+                  value={endDate? endDate : "Select date"}
                   onClick={() => handleDateClick('end')}
                   readOnly
                   className="col-span-3"
@@ -464,17 +486,6 @@ const handleClose= async() =>{
                   value={leaveReason}
                   onChange={(e) => setLeaveReason(e.target.value)}
                   className="col-span-3"
-                />
-              </div>
-              <div className='grid grid-cols-4 items-center gap-4'>
-                <Label htmlFor='status' className='text-right'>
-                  Status
-                </Label>
-                <Input
-                  id='leaveStatus'
-                  value={leaveStatus}
-                  readOnly
-                  className='col-span-3'
                 />
               </div>
               <div className='grid grid-cols-4 items-center gap-4'>

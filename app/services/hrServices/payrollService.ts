@@ -70,5 +70,16 @@ export const PayrollService = {
         console.error("Error fetching payroll by month:", error);
         throw error;
       }
+    },
+
+    getPayrollForStaff: async(staffId:string): Promise<Payroll[]> =>{
+      try{
+        const response = await axios.get<Payroll[]>(`${API_URL}/payroll/staff/${staffId}`);
+        return response.data.data;
+      }
+      catch(error){
+        console.error("Error fetching payroll for staff:", error);
+        throw error;
+      }
     }
   };

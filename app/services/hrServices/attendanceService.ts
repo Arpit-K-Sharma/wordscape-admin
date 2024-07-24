@@ -2,9 +2,22 @@
 
 import axios from 'axios';
 import { format } from 'date-fns';
-import { Staff, AttendanceSubmission, AttendanceData } from '@/app/components/Attendance/AttendanceForm';
+import { Staff } from './staffService';
+import { AttendanceData, AttendanceSubmission } from '@/app/hr/attendance/_components/attendance';
 
 const API_BASE_URL = 'http://127.0.0.1:8000';
+
+export interface AttendanceEntry {
+  date: string;
+  staffs: [{
+    staff_id: string;
+    staff_name: string;
+    check_in: string;
+    check_out: string;
+    status: string;
+    remarks: string;
+  }];
+}
 
 export const attendanceService = {
   async getStaffList(): Promise<Staff[]> {
@@ -36,5 +49,10 @@ export const attendanceService = {
       console.error('Error fetching attendance data:', error);
       throw error;
     }
+  },
+  
+  getAttendanceByMonth: async (staffId: string, year: string, month: string): Promise<AttendanceEntry[]> => {
+    const response = await axios.get(`${API_BASE_URL}/attendance/${staffId}/${year}/${month}`);
+    return response.data.data;
   }
 };

@@ -42,6 +42,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 interface Employee {
   _id: string;
@@ -99,6 +100,9 @@ const EmployeesPage: React.FC = () => {
     dept_ids: [],
   });
 
+  const Router = useRouter();
+
+  
   useEffect(() => {
     fetchEmployees();
     fetchDepartments();
@@ -295,28 +299,11 @@ const EmployeesPage: React.FC = () => {
                                   <CardTitle>Personal Information</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                  <p>
-                                    <strong>Name:</strong>{" "}
-                                    {selectedEmployee?.fullName}
-                                  </p>
-                                  <p>
-                                    <strong>Email:</strong>{" "}
-                                    {selectedEmployee?.email}
-                                  </p>
-                                  <p>
-                                    <strong>Phone:</strong>{" "}
-                                    {selectedEmployee?.phoneNumber}
-                                  </p>
-                                  <p>
-                                    <strong>Address:</strong>{" "}
-                                    {selectedEmployee?.address}
-                                  </p>
-                                  <p>
-                                    <strong>Role:</strong>{" "}
-                                    {selectedEmployee?.role === "ROLE_USER"
-                                      ? "Employee"
-                                      : selectedEmployee?.role}
-                                  </p>
+                                  <p><strong>Name:</strong> {selectedEmployee?.fullName}</p>
+                                  <p><strong>Email:</strong> {selectedEmployee?.email}</p>
+                                  <p><strong>Phone:</strong> {selectedEmployee?.phoneNumber}</p>
+                                  <p><strong>Address:</strong> {selectedEmployee?.address}</p>
+                                  <p><strong>Role:</strong> {selectedEmployee?.role === "ROLE_USER" ? "Employee" : selectedEmployee?.role}</p>
                                 </CardContent>
                               </Card>
                               <Card>
@@ -324,34 +311,35 @@ const EmployeesPage: React.FC = () => {
                                   <CardTitle>Employment Details</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                  <p>
-                                    <strong>Position:</strong>{" "}
-                                    {selectedEmployee?.position}
-                                  </p>
-                                  <p>
-                                    <strong>Daily Wage:</strong> Rs.{" "}
-                                    {selectedEmployee?.dailyWage.toFixed(2)}
-                                  </p>
-                                  <p>
-                                    <strong>Departments:</strong>{" "}
-                                    {selectedEmployee?.departmentNames.join(
-                                      ", "
-                                    )}
-                                  </p>
-                                  <p>
-                                    <strong>Date Joined:</strong>{" "}
-                                    {new Date(
-                                      selectedEmployee?.created_at || ""
-                                    ).toLocaleDateString()}
-                                  </p>
-                                  <p>
-                                    <strong>Status:</strong>{" "}
-                                    {selectedEmployee?.status
-                                      ? "Active"
-                                      : "Inactive"}
-                                  </p>
+                                  <p><strong>Position:</strong> {selectedEmployee?.position}</p>
+                                  <p><strong>Daily Wage:</strong> Rs. {selectedEmployee?.dailyWage.toFixed(2)}</p>
+                                  <p><strong>Departments:</strong> {selectedEmployee?.departmentNames.join(", ")}</p>
+                                  <p><strong>Date Joined:</strong> {new Date(selectedEmployee?.created_at || "").toLocaleDateString()}</p>
+                                  <p><strong>Status:</strong> {selectedEmployee?.status ? "Active" : "Inactive"}</p>
                                 </CardContent>
                               </Card>
+                            </div>
+
+                            <div className="mt-4 flex justify-center space-x-8">
+                              <Button
+                                className="flex items-center justify-center w-40 bg-black text-white rounded px-4 py-2 hover:bg-black-600"
+                                onClick={() =>{Router.push(`leave_history/${selectedEmployee?.id}`)}}
+                              >
+                                Leave History
+                              </Button>
+                              <Button
+                              className="flex items-center justify-center w-40 bg-black text-white rounded px-4 py-2 hover:bg-black-600"
+
+                                onClick={() =>{Router.push(`attendance_history/${selectedEmployee?.id}`)}}
+                              >
+                                Attendance History
+                              </Button>
+                              <Button
+                                className="flex items-center justify-center w-40 bg-black text-white rounded px-4 py-2 hover:bg-black-600"
+                                onClick={() =>{Router.push(`payroll_history/${selectedEmployee?.id}`)}}
+                              >
+                                Payroll History
+                              </Button>
                             </div>
                           </DialogDescription>
                         </DialogHeader>

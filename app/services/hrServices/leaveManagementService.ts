@@ -1,4 +1,5 @@
 import axios from "axios";
+import { error } from "console";
 
 const API_URL = "http://127.0.1:8000";
 
@@ -59,5 +60,19 @@ export const LeaveManagementService = {
             console.error("Error declining leave:", error);
             throw error;
         }
+    },
+
+    getLeaveByStaff: async(staff_id: string): Promise<LeaveManagement[]> =>{
+        try{
+            const response = await axios.get<LeaveManagement[]>(`${API_URL}/leave/staff/${staff_id}`);
+            return response.data.data;
+
+        }
+        catch(error){
+                console.log("Error fetching data",error);
+                return [];
     }
+
+    },
+    
 };

@@ -115,122 +115,120 @@ const AttendanceForm: React.FC = () => {
   const isEditable = isToday(date);
 
   return (
-    <div className='flex font-archivo '>
+    <div className='flex font-archivo h-screen'>
       <HRSidebar />
-      <div className="min-h-screen w-screen bg-[#f7f7f9] flex items-center justify-center p-4">
-        <Card className="w-full max-w-5xl">
-          <CardHeader>
-            <CardTitle className='text-[25px]'>Attendance Form for {format(date, "PPP")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div className="flex justify-start items-center mb-4">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-[240px] justify-start text-left font-normal"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {format(date, "PPP")}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={(newDate) => {
-                        if (newDate) {
-                          setDate(newDate);
-                        }
-                      }}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              {attendanceData && attendanceData.staffs.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow className='bg-gray-100'>
-                      <TableHead className="w-[200px]">Staff Name</TableHead>
-                      <TableHead>Check-in</TableHead>
-                      <TableHead>Check-out</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="w-[300px]">Remarks</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {attendanceData.staffs.map((staff, index) => (
-                      <TableRow key={staff.staff_id}>
-                        <TableCell>{staff.staff_name}</TableCell>
-                        <TableCell>
-                          <Input
-                            type="time"
-                            value={staff.check_in}
-                            onChange={(e) => handleChange(index, 'check_in', e.target.value)}
-                            className='max-w-[130px]'
-                            disabled={!isEditable}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="time"
-                            value={staff.check_out}
-                            onChange={(e) => handleChange(index, 'check_out', e.target.value)}
-                            className='max-w-[130px]'
-                            disabled={!isEditable}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={staff.status}
-                            onValueChange={(value) => handleChange(index, 'status', value as 'Present' | 'Absent')}
-                            disabled={!isEditable}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Present">Present</SelectItem>
-                              <SelectItem value="Absent">Absent</SelectItem>
-                              <SelectItem value="Paid">Paid</SelectItem>
-                              <SelectItem value="Unpaid">Unpaid</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="text"
-                            value={staff.remarks}
-                            onChange={(e) => handleChange(index, 'remarks', e.target.value)}
-                            className="w-full"
-                            placeholder='Reason for leave, if any'
-                            disabled={!isEditable}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="text-center py-4">No attendance available for this date.</div>
-              )}
-              {attendanceData && attendanceData.staffs.length > 0 && (
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={!isEditable}>
-                    Submit Attendance
+      <div className="flex-1 min-h-screen mt-[-80px] flex items-center justify-center">
+        <div className="w-full max-w-[100%] bg-white px-8">
+          <h2 className='text-[25px] font-bold mb-6'>Attendance Form for {format(date, "PPP")}</h2>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="flex justify-start items-center mb-4">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[240px] justify-start text-left font-normal"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(date, "PPP")}
                   </Button>
-                </div>
-              )}
-            </form>
-          </CardContent>
-        </Card>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={(newDate) => {
+                      if (newDate) {
+                        setDate(newDate);
+                      }
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            {attendanceData && attendanceData.staffs.length > 0 ? (
+              <Table className="w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+                <TableHeader className="bg-gray-100">
+                  <TableRow className='bg-gray-100'>
+                    <TableHead className="w-[200px]">Staff Name</TableHead>
+                    <TableHead className='text-center'>Check-in</TableHead>
+                    <TableHead className='text-center'>Check-out</TableHead>
+                    <TableHead className='text-center'>Status</TableHead>
+                    <TableHead className="w-[300px] text-center">Remarks</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {attendanceData.staffs.map((staff, index) => (
+                    <TableRow key={staff.staff_id} className="border-t border-gray-200">
+                      <TableCell>{staff.staff_name}</TableCell>
+                      <TableCell>
+                        <Input
+                          type="time"
+                          value={staff.check_in}
+                          onChange={(e) => handleChange(index, 'check_in', e.target.value)}
+                          className='flex item-center justify-center'
+                          disabled={!isEditable}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="time"
+                          value={staff.check_out}
+                          onChange={(e) => handleChange(index, 'check_out', e.target.value)}
+                          className='flex item-center justify-center'
+                          disabled={!isEditable}
+                  
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={staff.status}
+                          onValueChange={(value) => handleChange(index, 'status', value as 'Present' | 'Absent')}
+                          disabled={!isEditable}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Present">Present</SelectItem>
+                            <SelectItem value="Absent">Absent</SelectItem>
+                            <SelectItem value="Paid">Paid</SelectItem>
+                            <SelectItem value="Unpaid">Unpaid</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="text"
+                          value={staff.remarks}
+                          onChange={(e) => handleChange(index, 'remarks', e.target.value)}
+                          className="w-full"
+                          placeholder='Reason for leave, if any'
+                          disabled={!isEditable}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-4">No attendance available for this date.</div>
+            )}
+            {attendanceData && attendanceData.staffs.length > 0 && (
+              <div className="flex justify-end">
+                <Button type="submit" disabled={!isEditable}>
+                  Submit Attendance
+                </Button>
+              </div>
+            )}
+          </form>
+        </div>
       </div>
     </div>
   );
 };
+
 
 export default AttendanceForm;
