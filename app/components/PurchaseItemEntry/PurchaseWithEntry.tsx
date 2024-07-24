@@ -290,7 +290,7 @@ const PurchaseWithEntry: React.FC = () => {
         <div className="grid grid-flow-cols grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-6 p-6">
           {Array.isArray(purchaseOrders) && purchaseOrders.length > 0 ? (
             <div>
-              {purchaseOrders.map((order) => (
+              {purchaseOrders && purchaseOrders.map((order) => (
                 <Card
                   key={order._id}
                   className="shadow-lg hover:shadow-xl transition-shadow duration-300 mb-[20px] mr-[-20px] "

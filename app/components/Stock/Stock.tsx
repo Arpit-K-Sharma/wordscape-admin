@@ -526,7 +526,7 @@ const StocksPage: React.FC = () => {
                         </Dialog>
                       </div>
                     </div>
-                    <div className="h-[calc(100%-60px)] overflow-y-auto scrollbar-hide">
+                    <div className="h-[calc(100%-60px)] overflow-y-auto scrollbar-hide mb-[10px]">
                       <div className="grid grid-cols-4 md:grid-cols-2 lg:grid-cols-5 gap-3">
                         {inventoryType.item.map((item) => (
                           <Card key={item._id} className="bg-[#EAE9E9] shadow-sm hover:shadow-md transition-shadow duration-300 hover:bg-[#b3b2b2] w-[200px] max-h-[200px] rounded-[20px]">
