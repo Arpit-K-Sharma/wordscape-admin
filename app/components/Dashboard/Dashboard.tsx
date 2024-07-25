@@ -187,14 +187,10 @@ const Dashboard = () => {
     fetch_outer_paper();
   }, [approvedOrders]);
 
-  // const router = useRouter();
-  // const handleRequestPO = (orderId: string) => {
-  //   router.push(`/inventory/entry/${orderId}`);
-  // };
+
   const [poStatus, setPoStatus] = useState<Record<string, POStatus>>({});
   const router = useRouter();
 
-  // Load state from localStorage on component mount
   useEffect(() => {
     const storedPoStatus = localStorage.getItem('poStatus');
     if (storedPoStatus) {

@@ -5,6 +5,7 @@ import InventorySidebar from "../Sidebar/InventorySidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from 'next/navigation';
+import toast, { Toaster } from 'react-hot-toast';
 import {
   Dialog,
   DialogContent,
@@ -98,6 +99,7 @@ const PurchaseWithEntry: React.FC = () => {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loader, setLoader] = useState(false);
   const [isIssuing, setIsIssuing] = useState(false);
+  const [reload, setReload] = useState(0)
   const [issueError, setIssueError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -117,7 +119,7 @@ const PurchaseWithEntry: React.FC = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [reload]);
 
   const handleDetailsClick = (order: PurchaseOrder) => {
     setSelectedOrder(order);
@@ -232,8 +234,20 @@ const PurchaseWithEntry: React.FC = () => {
     };
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/issued_item", payload);
-      alert("Items issued successfully:");
+      await toast.promise(
+        axios.post("http://127.0.0.1:8000/issued_item", payload),
+        {
+          loading: 'Issuing Items',
+          success: (response) => {
+            return "Item Issued Successfully";
+          },
+          error: "Error Issuing Item",
+        },
+        {
+          duration: 3000,
+        }
+      );
+      setReload(reload + 1)
     } catch (error) {
       console.error("Error issuing items:", error);
       setIssueError("Failed to issue items. Please try again.");

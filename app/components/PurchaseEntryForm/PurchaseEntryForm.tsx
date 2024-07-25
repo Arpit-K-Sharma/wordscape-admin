@@ -390,18 +390,18 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
   }
 
   return (
-    <div className="flex flex-cols font-archivo h-screen bg-gray-200 overflow-hidden">
+    <div className="flex flex-cols font-archivo h-screen bg-gray-200 overflow-hidden ">
       <div className="bg-white">
         <InventorySidebar />
       </div>
-      <div className="flex-1  w-1/2 ">
+      <div className="flex-1  w-1/2  mt-[7px]">
         <Card className={`w-full ${getTotalItems() <= 1 ? 'max-w-4xl' :
           getTotalItems() == 2 ? 'max-w-6xl' :
             getTotalItems() == 3 ? 'max-w-7xl' :
               'max-w-7xl'
           } justify-center items-center mx-auto transition-all duration-400 ease-in-out`}>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">
+            <CardTitle className="text-2xl font-bold text-center mb-[-20px]">
               {isReorder ? "Reorder Slip" : "Purchase Order Slip"}
             </CardTitle>
           </CardHeader>
@@ -428,7 +428,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                   )}
                 />
 
-                <div className="max-h-[340px] overflow-y-auto overflow-x-hidden">
+                <div className={`${isReorder? "max-h-[68vh]" : " max-h-[60.5vh]"} overflow-y-auto overflow-x-hidden`} >
 
                   {purchaseEntryFields && purchaseEntryFields.map((entry, index) => (
                     <div
@@ -660,9 +660,6 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                       </FormItem>
                                     )}
                                   />
-                                  <div className="flex justify-end">
-
-                                  </div>
                                   {isReorder && (
                                     <FormField
                                       control={form.control}
@@ -682,6 +679,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                       )}
                                     />
                                   )}
+                                  
 
                                 </div>
                               ))}

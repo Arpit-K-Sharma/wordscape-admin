@@ -160,7 +160,7 @@ export function ReorderTable() {
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-[#e7e7e7]">
+              <TableRow className="bg-gray-200">
                 <TableHead className="font-semibold text-gray-700 px-6 py-4">Vendor</TableHead>
                 <TableHead className="font-semibold text-gray-700 px-6 py-4">Order ID</TableHead>
                 <TableHead className="font-semibold text-gray-700 px-6 py-4">Items</TableHead>
@@ -194,7 +194,7 @@ export function ReorderTable() {
                         <TableCell className="px-6 py-4">{entry.grandTotal ?? "N/A"}
                         </TableCell>
                         <TableCell className="px-6 py-4">
-                          <Button onClick={() => openRemarks()}>
+                          <Button onClick={() => openRemarks()} className="bg-[#eeeeee] text-[#4f4f4f] font-semibold hover:bg-[white]">
                             View Remarks
                           </Button>
                           <Dialog open={dialogOpen}

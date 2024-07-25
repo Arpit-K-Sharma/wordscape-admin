@@ -158,8 +158,9 @@ const PurchaseEntryList: React.FC = () => {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [isIssuing, setIsIssuing] = useState(false);
   const [issueError, setIssueError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0)
   const [vendorInputs, setVendorInputs] = useState<{
-    [vendorId: string]: {
+    [purchaseEntryId: string]: {
       invoiceNo: string;
       invoiceDate: string;
       grandTotal: string;
@@ -182,16 +183,7 @@ const PurchaseEntryList: React.FC = () => {
             purchaseEntryService.getVendors(),
           ]);
 
-        const filteredPurchaseEntries = (purchaseEntriesResponse as PurchaseEntry[])
-          .map((entry: PurchaseEntry) => ({
-            ...entry,
-            purchaseEntry: entry.purchaseEntry.filter(
-              (purchase) => !purchase.isCompleted
-            ),
-          }))
-          .filter((entry: PurchaseEntry) => entry.purchaseEntry.length > 0);
-
-        setPurchaseEntries(filteredPurchaseEntries);
+        setPurchaseEntries(purchaseEntriesResponse);
         setInventoryItems(inventoryResponse as InventoryItem[]);
         setVendors(vendorsResponse);
       } catch (error) {
@@ -200,7 +192,7 @@ const PurchaseEntryList: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [reload]);
 
   const handleDetailsClick = (entry: PurchaseEntry) => {
     setOrderId(entry.orderId);
@@ -208,7 +200,7 @@ const PurchaseEntryList: React.FC = () => {
     setIsDetailsDialogOpen(true);
 
     const newVendorInputs = entry.purchaseEntry.reduce((acc, purchase) => {
-      acc[purchase.vendorId] = {
+      acc[purchase._id] = {
         invoiceNo: "",
         invoiceDate: "",
         grandTotal: "",
@@ -238,7 +230,8 @@ const PurchaseEntryList: React.FC = () => {
   };
 
   const handleFileUpload = async (
-    vendorId: string,
+
+    purchaseEntryId: string,
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
@@ -260,8 +253,8 @@ const PurchaseEntryList: React.FC = () => {
       if (response.data && response.data.filename) {
         setVendorInputs((prevInputs) => ({
           ...prevInputs,
-          [vendorId]: {
-            ...prevInputs[vendorId],
+          [purchaseEntryId]: {
+            ...prevInputs[purchaseEntryId],
             image: response.data.filename,
           },
         }));
@@ -270,16 +263,15 @@ const PurchaseEntryList: React.FC = () => {
       console.error("Error uploading file:", error);
     }
   };
-
-  const handleSubmit = async (vendorId: string) => {
+  const handleSubmit = async (purchaseEntryId: string) => {
     if (!selectedEntry) return;
 
     const vendorPurchaseEntry = selectedEntry.purchaseEntry.find(
-      (p) => p.vendorId === vendorId
+      (p) => p._id === purchaseEntryId
     );
     if (!vendorPurchaseEntry) return;
 
-    const vendorInput = vendorInputs[vendorId];
+    const vendorInput = vendorInputs[purchaseEntryId];
     if (!vendorInput) return;
 
     const data = {
@@ -318,6 +310,8 @@ const PurchaseEntryList: React.FC = () => {
       }
     );
     setIsDetailsDialogOpen(false);
+    setReload(reload + 1)
+
   };
 
   const handleIssueItems = async (orderId: string) => {
@@ -330,8 +324,20 @@ const PurchaseEntryList: React.FC = () => {
     };
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/issued_item", payload);
-      alert("Items issued successfully:");
+      await toast.promise(
+        axios.post("http://127.0.0.1:8000/issued_item", payload),
+        {
+          loading: 'Issuing Items',
+          success: (response) => {
+            return "Item Issued Successfully";
+          },
+          error: "Error Issuing Item",
+        },
+        {
+          duration: 3000,
+        }
+      );
+      setReload(reload + 1)
     } catch (error) {
       console.error("Error issuing items:", error);
       setIssueError("Failed to issue items. Please try again.");
@@ -438,7 +444,7 @@ const PurchaseEntryList: React.FC = () => {
         </div>
 
         <div className="grid grid-flow-cols grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-6 p-6">
-          {purchaseEntries.map((entry) => (
+          {purchaseEntries && purchaseEntries.map((entry) => (
             <Card
               key={entry._id}
               className="shadow-lg hover:shadow-xl transition-shadow duration-300 mr-[5px]"
@@ -504,7 +510,7 @@ const PurchaseEntryList: React.FC = () => {
                                 size="sm"
                                 onClick={() => handleIssueItems(entry.orderId)}
                                 className="flex items-center ml-2"
-                                disabled={isIssuing || entry.purchaseEntry.every(entry => entry.is_issued)}
+                                disabled={isIssuing || entry.purchaseEntry.every(entry => entry.is_issued || entry.isCompleted === false)}
                               >
                                 {isIssuing ? (
                                   <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -527,7 +533,7 @@ const PurchaseEntryList: React.FC = () => {
                                     </TableHeader>
                                     <TableBody>
                                       {entry.purchaseEntry.map((entry, index) =>
-                                        entry.is_issued === null && entry.items.map((item, itemIndex) => (
+                                        entry.is_issued === null && entry.isCompleted === true && entry.items.map((item, itemIndex) => (
                                           <TableRow key={`${index}-${itemIndex}`}>
                                             <TableCell className="font-medium">{getItemDetails(item.itemId)?.itemName}</TableCell>
                                             <TableCell>{item.quantityFromVendor}</TableCell>
@@ -633,306 +639,304 @@ const PurchaseEntryList: React.FC = () => {
             </DialogHeader>
             <ScrollArea className="h-[60vh]">
               {selectedEntry?.purchaseEntry.map((purchase) => {
+
                 const vendorDetails = getVendorDetails(purchase.vendorId);
                 return (
-                  <div
-                    key={purchase._id}
-                    className="mb-8 pb-8 border border-gray-200 rounded-lg p-4 last:mb-0"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-2xl font-black text-zinc-900 underline-offset-1">
-                        {vendorDetails?.vendorName || "Unknown Vendor"}
-                      </h3>
-                      <div>
-                        <Label
-                          htmlFor={`file-${selectedEntry._id}-${purchase.vendorId}`}
-                          className="cursor-pointer"
-                        >
-                          <div className="flex items-center justify-center mr-[10px] border-2 border-dashed border-gray-300 rounded-md p-2 hover:border-blue-500 transition-colors duration-300">
-                            <Upload className="h-4 w-4 text-gray-400 mr-2" />
-                            <span className="text-sm text-gray-600">
-                              Proof of Payment
-                            </span>
-                          </div>
-                        </Label>
-                        <Input
-                          id={`file-${selectedEntry._id}-${purchase.vendorId}`}
-                          type="file"
-                          className="hidden"
-                          onChange={(e) =>
-                            handleFileUpload(purchase.vendorId, e)
-                          }
-                          multiple
-                        />
-                      </div>
-                    </div>
-                    <div className="md:grid-cols-2 gap-4 mb-4">
-                      <div className="grid gap-[5px] mt-[15px]">
-                        <p>
-                          <span className="font-medium">Address:</span>{" "}
-                          {vendorDetails?.vendorAddress}
-                        </p>
-                        <p>
-                          <span className="font-medium">VAT:</span>{" "}
-                          {vendorDetails?.vendorVAT}
-                        </p>
-                        <p>
-                          <span className="font-medium">Phone:</span>{" "}
-                          {vendorDetails?.vendorPhone}
-                        </p>
-                      </div>
-                      <div className="flex flex-col gap-[10px]">
-                        <div className="grid gap-[10px] shadow-md p-[20px]">
-                          <Label>Image Url</Label>
-                          <Input
-                            type="text"
-                            placeholder="Image URL"
-                            value={vendorInputs[purchase.vendorId]?.image || ""}
-                            onChange={(e) =>
-                              setVendorInputs((prev) => ({
-                                ...prev,
-                                [purchase.vendorId]: {
-                                  ...prev[purchase.vendorId],
-                                  image: e.target.value,
-                                },
-                              }))
-                            }
-                          />
-                          <Label>Invoice No</Label>
-                          <Input
-                            placeholder="Invoice No"
-                            value={
-                              vendorInputs[purchase.vendorId]?.invoiceNo || ""
-                            }
-                            onChange={(e) =>
-                              setVendorInputs((prev) => ({
-                                ...prev,
-                                [purchase.vendorId]: {
-                                  ...prev[purchase.vendorId],
-                                  invoiceNo: e.target.value,
-                                },
-                              }))
-                            }
-                          />
-                          <Label>Date</Label>
-                          <Input
-                            className=""
-                            type="date"
-                            placeholder="Invoice Date"
-                            value={
-                              vendorInputs[purchase.vendorId]?.invoiceDate || ""
-                            }
-                            onChange={(e) =>
-                              setVendorInputs((prev) => ({
-                                ...prev,
-                                [purchase.vendorId]: {
-                                  ...prev[purchase.vendorId],
-                                  invoiceDate: e.target.value,
-                                },
-                              }))
-                            }
-                          />
-                          <div className="grid gap-[10px]">
-                            <Label>VAT</Label>
-                            <Input
-                              type="number"
-                              placeholder="VAT"
-                              value={vendorInputs[purchase.vendorId]?.vat || ""}
-                              onChange={(e) =>
-                                setVendorInputs((prev) => ({
-                                  ...prev,
-                                  [purchase.vendorId]: {
-                                    ...prev[purchase.vendorId],
-                                    vat: e.target.value,
-                                  },
-                                }))
-                              }
-                            />
-                            <Label>Discount</Label>
-                            <Input
-                              type="number"
-                              placeholder="Discount"
-                              value={
-                                vendorInputs[purchase.vendorId]?.discount || ""
-                              }
-                              onChange={(e) =>
-                                setVendorInputs((prev) => ({
-                                  ...prev,
-                                  [purchase.vendorId]: {
-                                    ...prev[purchase.vendorId],
-                                    discount: e.target.value,
-                                  },
-                                }))
-                              }
-                            />
-                            <Label>Grand Total</Label>
-                            <Input
-                              type="number"
-                              placeholder="Grand Total"
-                              value={
-                                vendorInputs[purchase.vendorId]?.grandTotal || ""
-                              }
-                              onChange={(e) =>
-                                setVendorInputs((prev) => ({
-                                  ...prev,
-                                  [purchase.vendorId]: {
-                                    ...prev[purchase.vendorId],
-                                    grandTotal: e.target.value,
-                                  },
-                                }))
-                              }
-                            />
-                          </div>
-                        </div>
-
-                      </div>
-                    </div>
-                    <h4 className="text-lg font-bold mb-2 text-zinc-800">
-                      Items
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {purchase.items.map((item, index) => {
-                        const itemDetails = getItemDetails(item.itemId);
-                        return (
-                          <div
-                            key={item.itemId}
-                            className="bg-white p-4 rounded-md shadow-sm border border-gray-200"
+                  purchase.isCompleted === false ? (
+                    <div
+                      key={purchase._id}
+                      className="mb-8 pb-8 border border-gray-200 rounded-lg p-4 last:mb-0"
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-2xl font-black text-zinc-900 underline-offset-1">
+                          {vendorDetails?.vendorName || "Unknown Vendor"}
+                        </h3>
+                        <div>
+                          <Label
+                            htmlFor={`file-${selectedEntry._id}-${purchase.vendorId}`}
+                            className="cursor-pointer"
                           >
-                            <h5 className="font-semibold mb-2 flex justify-between items-center">
-                              <span>
-                                {itemDetails?.itemName || "Unknown Item"}
+                            <div className="flex items-center justify-center mr-[10px] border-2 border-dashed border-gray-300 rounded-md p-2 hover:border-blue-500 transition-colors duration-300">
+                              <Upload className="h-4 w-4 text-gray-400 mr-2" />
+                              <span className="text-sm text-gray-600">
+                                Proof of Payment
                               </span>
-                              {purchase.tag === "reorder" && (
-                                <span className="text-xs font-medium text-orange-500 flex items-center">
-                                  <RefreshCw className="mr-1 h-3 w-3" />
-                                  Reordered
-                                </span>
-                              )}
-                            </h5>
-                            <div className="text-sm grid gap-[10px]">
-                              <p>
-                                <span className="font-medium">
-                                  Quantity (Vendor):
-                                </span>{" "}
-                                {item.quantityFromVendor}
-                              </p>
-                              <p>
-                                <span className="font-medium">
-                                  Quantity (Stock):
-                                </span>{" "}
-                                {item.quantityFromStock}
-                              </p>
-                              <div className="grid gap-[10px]">
-                                <Input
-                                  placeholder="Item Rate"
-                                  value={
-                                    vendorInputs[purchase.vendorId]?.items[
-                                      index
-                                    ]?.rate || ""
-                                  }
-                                  onChange={(e) =>
-                                    setVendorInputs((prev) => ({
-                                      ...prev,
-                                      [purchase.vendorId]: {
-                                        ...prev[purchase.vendorId],
-                                        items: prev[
-                                          purchase.vendorId
-                                        ].items.map((item, i) =>
-                                          i === index
-                                            ? { ...item, rate: e.target.value }
-                                            : item
-                                        ),
-                                      },
-                                    }))
-                                  }
-                                />
-                                <Input
-                                  placeholder="Item Code"
-                                  value={
-                                    vendorInputs[purchase.vendorId]?.items[
-                                      index
-                                    ]?.code || ""
-                                  }
-                                  onChange={(e) =>
-                                    setVendorInputs((prev) => ({
-                                      ...prev,
-                                      [purchase.vendorId]: {
-                                        ...prev[purchase.vendorId],
-                                        items: prev[
-                                          purchase.vendorId
-                                        ].items.map((item, i) =>
-                                          i === index
-                                            ? { ...item, code: e.target.value }
-                                            : item
-                                        ),
-                                      },
-                                    }))
-                                  }
-                                />
-                                <Input
-                                  placeholder="Amount"
-                                  value={
-                                    vendorInputs[purchase.vendorId]?.items[
-                                      index
-                                    ]?.amount || ""
-                                  }
-                                  onChange={(e) =>
-                                    setVendorInputs((prev) => ({
-                                      ...prev,
-                                      [purchase.vendorId]: {
-                                        ...prev[purchase.vendorId],
-                                        items: prev[
-                                          purchase.vendorId
-                                        ].items.map((item, i) =>
-                                          i === index
-                                            ? {
-                                              ...item,
-                                              amount: e.target.value,
-                                            }
-                                            : item
-                                        ),
-                                      },
-                                    }))
-                                  }
-                                />
-                              </div>
+                            </div>
+                          </Label>
+                          <Input
+                            id={`file-${selectedEntry._id}-${purchase._id}`}
+                            type="file"
+                            className="hidden"
+                            onChange={(e) => handleFileUpload(purchase._id, e)}
+                            multiple
+                          />
+                        </div>
+                      </div>
+                      <div className="md:grid-cols-2 gap-4 mb-4">
+                        <div className="grid gap-[5px] mt-[15px]">
+                          <p>
+                            <span className="font-medium">Address:</span>{" "}
+                            {vendorDetails?.vendorAddress}
+                          </p>
+                          <p>
+                            <span className="font-medium">VAT:</span>{" "}
+                            {vendorDetails?.vendorVAT}
+                          </p>
+                          <p>
+                            <span className="font-medium">Phone:</span>{" "}
+                            {vendorDetails?.vendorPhone}
+                          </p>
+                        </div>
+                        <div className="flex flex-col gap-[10px]">
+                          <div className="grid gap-[10px] shadow-md p-[20px]">
+                            <Label>Image Url</Label>
+                            <Input
+                              type="text"
+                              placeholder="Image URL"
+                              value={vendorInputs[purchase._id]?.image || ""}
+                              onChange={(e) =>
+                                setVendorInputs((prev) => ({
+                                  ...prev,
+                                  [purchase._id]: {
+                                    ...prev[purchase._id],
+                                    image: e.target.value,
+                                  },
+                                }))
+                              }
+                            />
+                            <Label>Invoice No</Label>
+                            <Input
+                              placeholder="Invoice No"
+                              value={vendorInputs[purchase._id]?.invoiceNo || ""}
+                              onChange={(e) =>
+                                setVendorInputs((prev) => ({
+                                  ...prev,
+                                  [purchase._id]: {
+                                    ...prev[purchase._id],
+                                    invoiceNo: e.target.value,
+                                  },
+                                }))
+                              }
+                            />
+                            <Label>Date</Label>
+                            <Input
+                              className=""
+                              type="date"
+                              placeholder="Invoice Date"
+                              value={
+                                vendorInputs[purchase._id]?.invoiceDate || ""
+                              }
+                              onChange={(e) =>
+                                setVendorInputs((prev) => ({
+                                  ...prev,
+                                  [purchase._id]: {
+                                    ...prev[purchase._id],
+                                    invoiceDate: e.target.value,
+                                  },
+                                }))
+                              }
+                            />
+                            <div className="grid gap-[10px]">
+                              <Label>VAT</Label>
+                              <Input
+                                type="number"
+                                placeholder="VAT"
+                                value={vendorInputs[purchase._id]?.vat || ""}
+                                onChange={(e) =>
+                                  setVendorInputs((prev) => ({
+                                    ...prev,
+                                    [purchase._id]: {
+                                      ...prev[purchase._id],
+                                      vat: e.target.value,
+                                    },
+                                  }))
+                                }
+                              />
+                              <Label>Discount</Label>
+                              <Input
+                                type="number"
+                                placeholder="Discount"
+                                value={
+                                  vendorInputs[purchase._id]?.discount || ""
+                                }
+                                onChange={(e) =>
+                                  setVendorInputs((prev) => ({
+                                    ...prev,
+                                    [purchase._id]: {
+                                      ...prev[purchase._id],
+                                      discount: e.target.value,
+                                    },
+                                  }))
+                                }
+                              />
+                              <Label>Grand Total</Label>
+                              <Input
+                                type="number"
+                                placeholder="Grand Total"
+                                value={
+                                  vendorInputs[purchase._id]?.grandTotal || ""
+                                }
+                                onChange={(e) =>
+                                  setVendorInputs((prev) => ({
+                                    ...prev,
+                                    [purchase._id]: {
+                                      ...prev[purchase._id],
+                                      grandTotal: e.target.value,
+                                    },
+                                  }))
+                                }
+                              />
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
 
-                    <div className="flex items-center mt-[20px]">
-                      <Button
-                        type="submit"
-                        onClick={() => handleSubmit(purchase.vendorId)}
-                        className="flex items-center mr-3"
-                      >
-                        <div className="mr-[10px]">
-                          <Send size={15} />
                         </div>
-                        <div>
-                          Submit
-                        </div>
-                      </Button>
-                      <Button
-                        onClick={() => handleDownload(purchase)}
-                        className="bg-black text-white flex items-center hover:bg-gray-800"
-                      >
-                        <div className="flex flex-row">
+                      </div>
+                      <h4 className="text-lg font-bold mb-2 text-zinc-800">
+                        Items
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {purchase.items.map((item, index) => {
+                          const itemDetails = getItemDetails(item.itemId);
+                          return (
+                            <div
+                              key={item.itemId}
+                              className="bg-white p-4 rounded-md shadow-sm border border-gray-200"
+                            >
+                              <h5 className="font-semibold mb-2 flex justify-between items-center">
+                                <span>
+                                  {itemDetails?.itemName || "Unknown Item"}
+                                </span>
+                                {purchase.tag === "reorder" && (
+                                  <span className="text-xs font-medium text-orange-500 flex items-center">
+                                    <RefreshCw className="mr-1 h-3 w-3" />
+                                    Reordered
+                                  </span>
+                                )}
+                              </h5>
+                              <div className="text-sm grid gap-[10px]">
+                                <p>
+                                  <span className="font-medium">
+                                    Quantity (Vendor):
+                                  </span>{" "}
+                                  {item.quantityFromVendor}
+                                </p>
+                                <p>
+                                  <span className="font-medium">
+                                    Quantity (Stock):
+                                  </span>{" "}
+                                  {item.quantityFromStock}
+                                </p>
+                                <div className="grid gap-[10px]">
+                                  <Input
+                                    placeholder="Item Rate"
+                                    value={
+                                      vendorInputs[purchase._id]?.items[
+                                        index
+                                      ]?.rate || ""
+                                    }
+                                    onChange={(e) =>
+                                      setVendorInputs((prev) => ({
+                                        ...prev,
+                                        [purchase._id]: {
+                                          ...prev[purchase._id],
+                                          items: prev[
+                                            purchase._id
+                                          ].items.map((item, i) =>
+                                            i === index
+                                              ? { ...item, rate: e.target.value }
+                                              : item
+                                          ),
+                                        },
+                                      }))
+                                    }
+                                  />
+                                  <Input
+                                    placeholder="Item Code"
+                                    value={
+                                      vendorInputs[purchase._id]?.items[
+                                        index
+                                      ]?.code || ""
+                                    }
+                                    onChange={(e) =>
+                                      setVendorInputs((prev) => ({
+                                        ...prev,
+                                        [purchase._id]: {
+                                          ...prev[purchase._id],
+                                          items: prev[
+                                            purchase._id
+                                          ].items.map((item, i) =>
+                                            i === index
+                                              ? { ...item, code: e.target.value }
+                                              : item
+                                          ),
+                                        },
+                                      }))
+                                    }
+                                  />
+                                  <Input
+                                    placeholder="Amount"
+                                    value={
+                                      vendorInputs[purchase._id]?.items[
+                                        index
+                                      ]?.amount || ""
+                                    }
+                                    onChange={(e) =>
+                                      setVendorInputs((prev) => ({
+                                        ...prev,
+                                        [purchase._id]: {
+                                          ...prev[purchase._id],
+                                          items: prev[
+                                            purchase._id
+                                          ].items.map((item, i) =>
+                                            i === index
+                                              ? {
+                                                ...item,
+                                                amount: e.target.value,
+                                              }
+                                              : item
+                                          ),
+                                        },
+                                      }))
+                                    }
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="flex items-center mt-[20px]">
+                        <Button
+                          type="submit"
+                          onClick={() => handleSubmit(purchase._id)}
+                          className="flex items-center mr-3"
+                        >
+                          <div className="mr-[10px]">
+                            <Send size={15} />
+                          </div>
                           <div>
-                            <FolderDown size={18} />
+                            Submit
                           </div>
-                          <div className="ml-[10px]">
-                            Download
+                        </Button>
+                        <Button
+                          onClick={() => handleDownload(purchase)}
+                          className="bg-black text-white flex items-center hover:bg-gray-800"
+                        >
+                          <div className="flex flex-row">
+                            <div>
+                              <FolderDown size={18} />
+                            </div>
+                            <div className="ml-[10px]">
+                              Download
+                            </div>
                           </div>
-                        </div>
 
-                      </Button>
+                        </Button>
+                      </div>
+
                     </div>
-
-                  </div>
-                );
+                  ) : null);
               })}
             </ScrollArea>
           </DialogContent>
