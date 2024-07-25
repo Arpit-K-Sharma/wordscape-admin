@@ -18,16 +18,7 @@ export interface Payroll {
 }
 
 export const PayrollService = {
-    generatePayroll: async (): Promise<void> => {
-      try {
-        const response = await axios.post(`${API_URL}/payroll`);
-        return response.data;
-      } catch (error) {
-        console.error("Error creating payroll:", error);
-        throw error;
-      }
-    },
-  
+
     getPayroll: async (payrollId: string): Promise<Payroll> => {
       try {
         const response = await axios.get<Payroll>(`${API_URL}/payroll/${payrollId}`);
@@ -51,7 +42,7 @@ export const PayrollService = {
       try {
         const response = await axios.get<Payroll[]>(`${API_URL}/payroll`);
         // Map _id to id
-        const payrolls = response.data.map((payroll: any) => ({
+        const payrolls = response.data.data.map((payroll: any) => ({
           ...payroll,
           id: payroll._id,
         }));

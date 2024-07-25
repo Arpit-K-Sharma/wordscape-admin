@@ -85,7 +85,7 @@ const PayrollHistory: React.FC<StaffPayrollCardProps>= ({staffId}) =>{
                 </div>
               </div>
     
-              <Table className="min-w-full bg-white">
+<Table className="min-w-full bg-white">
   <TableHeader>
     <TableRow className="border-t border-gray-200">
       <TableHead className="py-2 px-4 text-center">Year</TableHead>

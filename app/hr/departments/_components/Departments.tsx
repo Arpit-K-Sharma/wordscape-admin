@@ -140,28 +140,27 @@ function Departments() {
       <HRSidebar />
       <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-5 py-8 font-archivo">
-          <h1 className="flex items-center justify-center text-5xl font-bold text-gray-900 mb-8 mx-auto">
+          <h1 className="text-2xl font-bold mb-6">
             Departments
           </h1>
           <div className="flex justify-between items-center mb-4">
             <Button onClick={openAddDialog}>Add Department</Button>
           </div>
 
-          <Table>
-            <TableCaption>A list of departments.</TableCaption>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Actions</TableHead>
+        <Table className="w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+        <TableHeader className="bg-gray-100">
+        <TableRow className='bg-gray-100'>
+                <TableHead className='text-center'>Name</TableHead>
+                <TableHead className='text-center'>Description</TableHead>
+                <TableHead className='text-center'>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {departments.map((department) => (
-                <TableRow key={department._id}>
-                  <TableCell>{department.department_name}</TableCell>
-                  <TableCell>{department.description}</TableCell>
-                  <TableCell>
+                <TableRow key={department._id} className="border-t border-gray-200">
+                  <TableCell className='text-center'>{department.department_name}</TableCell>
+                  <TableCell className='text-center'>{department.description}</TableCell>
+                  <TableCell className='text-center'>
                     <Button
                       variant="outline"
                       className="mr-2"

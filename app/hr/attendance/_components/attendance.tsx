@@ -119,7 +119,7 @@ const AttendanceForm: React.FC = () => {
       <HRSidebar />
       <div className="flex-1 min-h-screen mt-[-80px] flex items-center justify-center">
         <div className="w-full max-w-[100%] bg-white px-8">
-          <h2 className='text-[25px] font-bold mb-6'>Attendance Form for {format(date, "PPP")}</h2>
+          <h2 className='text-[25px] font-bold mb-6 mt-[-3rem]'>Attendance Form for {format(date, "PPP")}</h2>
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="flex justify-start items-center mb-4">
               <Popover>

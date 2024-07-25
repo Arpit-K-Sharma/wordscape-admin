@@ -251,22 +251,22 @@ const HolidaysPage: React.FC = () => {
         </Dialog>
 
         {displayedHolidays.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Actions</TableHead>
+          <Table  className="w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+            <TableHeader className="bg-gray-100">
+              <TableRow className="bg-gray-100">
+                <TableHead className='text-center'>Name</TableHead>
+                <TableHead className='text-center'>Date</TableHead>
+                <TableHead className='text-center'>Description</TableHead>
+                <TableHead className='text-center'>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {displayedHolidays.map((holiday) => (
-                <TableRow key={holiday.holiday_id}>
-                  <TableCell>{holiday.name}</TableCell>
-                  <TableCell>{holiday.date}</TableCell>
-                  <TableCell>{holiday.description}</TableCell>
-                  <TableCell>
+                <TableRow key={holiday.holiday_id} className="border-t border-gray-200">
+                  <TableCell className='text-center'>{holiday.name}</TableCell>
+                  <TableCell className='text-center'>{holiday.date}</TableCell>
+                  <TableCell className='text-center'>{holiday.description}</TableCell>
+                  <TableCell className='text-center'>
                     <Button
                       variant="outline"
                       onClick={() => openUpdateDialog(holiday)}

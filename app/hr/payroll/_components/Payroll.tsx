@@ -67,15 +67,6 @@ const Payrolls: React.FC = () => {
     }
   }
 
-  const generatePayroll = async () => {
-    try {
-      await PayrollService.generatePayroll();
-      fetchPayrollData(); // Refresh the data after generating new payroll
-    }
-    catch (error) {
-      console.log("Error generating payroll data", error);
-    }
-  }
 
   const handleMonthChange = (value: string) => {
     setSelectedMonth(value);
@@ -138,9 +129,6 @@ const Payrolls: React.FC = () => {
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={generatePayroll}>
-            Generate Payroll
-          </Button>
         </div>
         {payrollManagement.length > 0 ? (
           <>

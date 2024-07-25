@@ -11,6 +11,9 @@ import {
   Trash2,
   Pencil,
   Plus,
+  CheckCircle,
+  CalendarPlus,
+  DollarSign,
 } from "lucide-react";
 import {
   Table,
@@ -102,7 +105,7 @@ const EmployeesPage: React.FC = () => {
 
   const Router = useRouter();
 
-  
+
   useEffect(() => {
     fetchEmployees();
     fetchDepartments();
@@ -242,9 +245,9 @@ const EmployeesPage: React.FC = () => {
           <Plus className="mr-1 h-4 w-4" />
           Add Staff
         </Button>
-        <Table>
-          <TableHeader>
-            <TableRow>
+        <Table className="w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+          <TableHeader className="bg-gray-100">
+            <TableRow className='bg-gray-100'>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
@@ -257,7 +260,7 @@ const EmployeesPage: React.FC = () => {
           </TableHeader>
           <TableBody>
             {employees.map((employee) => (
-              <TableRow key={employee._id}>
+              <TableRow key={employee._id} className="border-t border-gray-200">
                 <TableCell>{employee.fullName}</TableCell>
                 <TableCell>{employee.email}</TableCell>
                 <TableCell>{employee.phoneNumber}</TableCell>
@@ -322,25 +325,28 @@ const EmployeesPage: React.FC = () => {
 
                             <div className="mt-4 flex justify-center space-x-8">
                               <Button
-                                className="flex items-center justify-center w-40 bg-black text-white rounded px-4 py-2 hover:bg-black-600"
-                                onClick={() =>{Router.push(`leave_history/${selectedEmployee?.id}`)}}
+                                className="flex items-center justify-center w-50 bg-blue-800 text-white rounded px-4 py-2 hover:bg-blue-700"
+                                onClick={() => { Router.push(`leave_history/${selectedEmployee?.id}`); }}
                               >
+                                <CalendarPlus className="mr-2 h-4 w-4" />
                                 Leave History
                               </Button>
                               <Button
-                              className="flex items-center justify-center w-40 bg-black text-white rounded px-4 py-2 hover:bg-black-600"
-
-                                onClick={() =>{Router.push(`attendance_history/${selectedEmployee?.id}`)}}
+                                className="flex items-center justify-center w-50 bg-green-800 text-white rounded px-4 py-2 hover:bg-green-700"
+                                onClick={() => { Router.push(`attendance_history/${selectedEmployee?.id}`); }}
                               >
+                                <CheckCircle className="mr-2 h-4 w-4" />
                                 Attendance History
                               </Button>
                               <Button
-                                className="flex items-center justify-center w-40 bg-black text-white rounded px-4 py-2 hover:bg-black-600"
-                                onClick={() =>{Router.push(`payroll_history/${selectedEmployee?.id}`)}}
+                                className="flex items-center justify-center w-50 bg-yellow-600 text-white rounded px-4 py-2 hover:bg-yellow-700"
+                                onClick={() => { Router.push(`payroll_history/${selectedEmployee?.id}`); }}
                               >
+                                <DollarSign className="mr-2 h-4 w-4" />
                                 Payroll History
                               </Button>
                             </div>
+
                           </DialogDescription>
                         </DialogHeader>
                       </DialogContent>
@@ -500,16 +506,16 @@ const EmployeesPage: React.FC = () => {
                                 setEditingEmployee((prev) =>
                                   prev
                                     ? {
-                                        ...prev,
-                                        dailyWage: Number(e.target.value),
-                                      }   
+                                      ...prev,
+                                      dailyWage: Number(e.target.value),
+                                    }
                                     : null
                                 )
                               }
                               className="col-span-3"
                             />
                           </div>
-    
+
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="departments" className="text-right">
                               Departments
@@ -531,8 +537,8 @@ const EmployeesPage: React.FC = () => {
                                         const newDeptIds = checked
                                           ? [...(prev.dept_ids || []), dept.id]
                                           : (prev.dept_ids || []).filter(
-                                              (id) => id !== dept.id
-                                            );
+                                            (id) => id !== dept.id
+                                          );
                                         return {
                                           ...prev,
                                           dept_ids: newDeptIds,

@@ -104,14 +104,7 @@ const HRSidebar: React.FC = () => {
             <CalendarPlus className="mr-2 h-4 w-4" />
             Holidays
           </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/hr/settings")}
-          >
-            <Settings className="mr-2 h-4 w-4" />
-            HR Settings
-          </Button>
+        
         </nav>
       </div>
     </aside>
