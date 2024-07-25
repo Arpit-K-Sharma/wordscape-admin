@@ -267,7 +267,7 @@ const LeftoverPage: React.FC<{ orderId: string }> = ({ orderId }) => {
                 <InventorySidebar />
 
                 <div className="container mx-auto p-4 ml-[20px] mr-[20px]">
-                    <h1 className="text-2xl font-bold mb-4 mt-[20px]">Leftovers for Order {orderId}</h1>
+                    <h1 className="text-2xl font-bold mb-4 mt-[20px]"><a className='flex justify-between'>Leftovers Items <a className='flex justify-end text-[20px]'> #{orderId}</a></a></h1>
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
                             <Button

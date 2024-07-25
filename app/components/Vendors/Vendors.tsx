@@ -98,9 +98,8 @@ function Vendors() {
       console.error("Error occurred while deleting the vendor:", error);
     }
   };
-
   return (
-    <div className="flex h-screen bg-white-50">
+    <div className="flex h-screen bg-gray-100">
       <InventorySidebar />
       <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-5 py-8 font-archivo">

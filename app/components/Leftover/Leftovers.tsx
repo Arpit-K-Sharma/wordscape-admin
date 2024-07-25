@@ -81,42 +81,42 @@ const LeftoversPage = () => {
     return (
         <div className='flex h-screen bg-gray-100'>
             <InventorySidebar />
-            <div className="flex-1 p-10 overflow-auto">
-                <div className="bg-[white] rounded-lg shadow-lg p-8">
-                    <h1 className="text-3xl font-bold mb-6 text-gray-800">Items Added to Inventory</h1>
-                    <div className="flex items-center mb-6 rounded-lg p-2">
+            <div className="flex-1 p-4 overflow-auto">
+
+                    <h1 className="text-3xl text-center font-bold mt-[30px] mb-3 mr-[80px] text-gray-800">Leftover Items </h1>
+                    <div className="flex items-center mb-3 rounded-lg p-2">
                         <Search className="mr-2 text-gray-500" />
                         <Input
                             type="text"
                             placeholder="Search by Item Name"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-[300px] h-[40px]"
+                            className="w-[315px] h-[40px] bg-white"
                         />
                     </div>
                     <div className="overflow-x-auto rounded-lg shadow">
                         <Table className="w-full">
                             <TableHeader>
-                                <TableRow className="bg-gray-200">
-                                    <TableHead className="font-semibold text-gray-700 px-6 py-4">
+                                <TableRow className="bg-gray-800 hover:bg-gray-800">
+                                    <TableHead className="font-semibold text-white px-6 py-3">
                                         <div className="flex items-center">
                                             <ShoppingCart className="mr-2" size={18} />
                                             Order ID
                                         </div>
                                     </TableHead>
-                                    <TableHead className="font-semibold text-gray-700 px-6 py-4">
+                                    <TableHead className="font-semibold text-white px-6 py-3">
                                         <div className="flex items-center">
                                             <Package className="mr-2" size={18} />
                                             Item Name
                                         </div>
                                     </TableHead>
-                                    <TableHead className="font-semibold text-gray-700 px-6 py-4">
+                                    <TableHead className="font-semibold text-white px-6 py-3">
                                         <div className="flex items-center">
                                             <BarChart2 className="mr-2" size={18} />
                                             Quantity
                                         </div>
                                     </TableHead>
-                                    <TableHead className="font-semibold text-gray-700 px-6 py-4">
+                                    <TableHead className="font-semibold text-white px-6 py-3">
                                         <div className="flex items-center">
                                             <AlertCircle className="mr-2" size={18} />
                                             Reason
@@ -126,7 +126,7 @@ const LeftoversPage = () => {
                             </TableHeader>
                             <TableBody>
                                 {filteredItems.map((item, index) => (
-                                    <TableRow key={`${item.order_id}-${item.item_id}-${index}`} className="hover:bg-gray-50 transition-colors">
+                                    <TableRow key={`${item.order_id}-${item.item_id}-${index}`} className="hover:bg-gray-50 bg-white transition-colors">
                                         <TableCell className="px-6 py-4 text-gray-600">{truncateOrderId(item.order_id)}</TableCell>
                                         <TableCell className="px-6 py-4 text-gray-600">{item.itemName}</TableCell>
                                         <TableCell className="px-6 py-4 text-gray-600">{item.quantity}</TableCell>
@@ -136,7 +136,7 @@ const LeftoversPage = () => {
                             </TableBody>
                         </Table>
                     </div>
-                </div>
+                
             </div>
         </div>
     );

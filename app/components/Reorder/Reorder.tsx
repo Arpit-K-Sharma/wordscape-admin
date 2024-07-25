@@ -146,7 +146,7 @@ export function ReorderTable() {
       <InventorySidebar />
       <div className="container mx-auto py-10 px-4">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-4">Reordered Items (Item that are reordered)</h1>
+          <h1 className="text-3xl font-bold mb-4 text-center mr-[80px]">Reordered Items </h1>
           <div className="relative ">
             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <Input
@@ -160,13 +160,13 @@ export function ReorderTable() {
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-gray-200">
-                <TableHead className="font-semibold text-gray-700 px-6 py-4">Vendor</TableHead>
-                <TableHead className="font-semibold text-gray-700 px-6 py-4">Order ID</TableHead>
-                <TableHead className="font-semibold text-gray-700 px-6 py-4">Items</TableHead>
-                <TableHead className="font-semibold text-gray-700 px-6 py-4">Status</TableHead>
-                <TableHead className="font-semibold text-gray-700 px-6 py-4">Total reorder</TableHead>
-                <TableHead className="font-semibold text-gray-700 px-6 py-4">Remarks</TableHead>
+              <TableRow className="bg-gray-800 hover:bg-gray-800">
+                <TableHead className="font-semibold text-white px-6 py-3">Vendor</TableHead>
+                <TableHead className="font-semibold text-white px-6 py-3">Order ID</TableHead>
+                <TableHead className="font-semibold text-white px-6 py-3">Items</TableHead>
+                <TableHead className="font-semibold text-white px-6 py-3">Status</TableHead>
+                <TableHead className="font-semibold text-white px-6 py-3">Total reorder</TableHead>
+                <TableHead className="font-semibold text-white px-6 py-3">Remarks</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -221,7 +221,7 @@ export function ReorderTable() {
                 )
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={5} className=" pl-[150px] text-center py-8 text-gray-500">
                     No reorders available
                   </TableCell>
                 </TableRow>

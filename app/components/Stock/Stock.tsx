@@ -338,7 +338,7 @@ const StocksPage: React.FC = () => {
 
 
   return (
-    <div className="flex h-full bg-gray-100 font-archivo">
+    <div className="flex h-screen overflow-hidden bg-gray-100 font-archivo">
       <InventorySidebar />
       <div className="flex-1 p-10">
         <Card className="w-full mb-6 h-full bg-white shadow-md rounded-lg overflow-hidden">
@@ -446,9 +446,9 @@ const StocksPage: React.FC = () => {
             ) : (
               <div className="overflow-y-auto h-full p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 ml-[10px] gap-y-[30px]">
                 {inventoryData && inventoryData.map((inventoryType) => (
-                  <div key={inventoryType._id} className="p-6 bg-gray-100 rounded-[30px] shadow-md w-full h-[300px]">
+                  <div key={inventoryType._id} className="pr-3 pt-6 pb-6 pl-4 bg-gray-100 rounded-[30px] shadow-md w-full h-[250px]">
                     <div className="flex justify-between mb-4">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-[10px] mt-[25px]">{inventoryType.type}</h2>
+                      <h2 className="text-2xl font-bold text-gray-900 mt-[5px]">{inventoryType.type}</h2>
                       <div className="flex space-x-2">
                         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                           <DialogTrigger>
@@ -526,10 +526,10 @@ const StocksPage: React.FC = () => {
                         </Dialog>
                       </div>
                     </div>
-                    <div className="h-[calc(100%-60px)] overflow-y-auto scrollbar-hide mb-[10px]">
+                    <div className="h-[calc(100%-60px)] overflow-y-auto  mb-[0px]">
                       <div className="grid grid-cols-4 md:grid-cols-2 lg:grid-cols-5 gap-3">
                         {inventoryType.item.map((item) => (
-                          <Card key={item._id} className="bg-[#EAE9E9] shadow-sm hover:shadow-md transition-shadow  duration-300 hover:bg-[#b3b2b2] w-[200px] max-h-[200px] rounded-[20px]">
+                          <Card key={item._id} className="bg-gray-200 shadow-sm hover:shadow-md transition-shadow  duration-300 hover:bg-[white] w-[200px] max-h-[200px] rounded-[20px]">
                             <CardContent className="p-4">
                               <div className="flex flex-row justify-between mb-2">
                                 <div className="w-[90px]">
@@ -544,7 +544,7 @@ const StocksPage: React.FC = () => {
                                     </DialogTrigger>
                                     <DialogContent>
                                       <DialogHeader>
-                                        <DialogTitle>Delete {item.itemName} from {inventoryType.type}</DialogTitle>
+                                        <DialogTitle>Delete from Inventory</DialogTitle>
                                         <DialogDescription>
                                           Are you sure you want to delete this? This action cannot be undone.
                                         </DialogDescription>
