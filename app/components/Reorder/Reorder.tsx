@@ -20,10 +20,11 @@ import {
 } from "@/components/ui/dialog"
 
 import { Input } from "@/components/ui/input"
-import { SearchIcon } from "lucide-react"
+import { Info, SearchIcon } from "lucide-react"
 import InventorySidebar from "../Sidebar/InventorySidebar";
 import { Button } from "@/components/ui/button";
 import reorderService from "@/app/services/reorderService"
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 
 interface Item {
   inventoryId: string
@@ -146,7 +147,26 @@ export function ReorderTable() {
       <InventorySidebar />
       <div className="container mx-auto py-10 px-4">
         <div className="mb-8">
+          <div className="flex">
           <h1 className="text-3xl font-bold mb-4 text-center mr-[80px]">Reordered Items </h1>
+          <div className="mt-[-25px] ml-[-70px]">
+                    <span className="text-2xl font-normal text-gray-600 ml-2">
+                    <HoverCard>
+                      <HoverCardTrigger><Info className="hover:cursor-pointer hover:text-blue-900" /></HoverCardTrigger>
+                      <HoverCardContent className="w-[300px] rounded-[20px]">
+                        <div className="p-[10px] items-center justify-center font-archivo">
+                          <h1 className="ml-[20px] font-semibold mb-[10px] text-[15px] text-gray-700">
+                            Information
+                          </h1>
+                          <p className=" ml-[20px] text-left text-gray-600 text-[15px]">
+                          This page provides an overview of the items that were reordered for specific reasons.
+                          </p>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </span>
+                </div>
+                </div>
           <div className="relative ">
             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <Input
@@ -166,7 +186,7 @@ export function ReorderTable() {
                 <TableHead className="font-semibold text-white px-6 py-3">Items</TableHead>
                 <TableHead className="font-semibold text-white px-6 py-3">Status</TableHead>
                 <TableHead className="font-semibold text-white px-6 py-3">Total reorder</TableHead>
-                <TableHead className="font-semibold text-white px-6 py-3">Remarks</TableHead>
+                <TableHead className="font-semibold text-white px-6 py-3 text-center">Remarks</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -194,9 +214,11 @@ export function ReorderTable() {
                         <TableCell className="px-6 py-4">{entry.grandTotal ?? "N/A"}
                         </TableCell>
                         <TableCell className="px-6 py-4">
+                          <div className="flex justify-center">
                           <Button onClick={() => openRemarks()} className="bg-[#eeeeee] text-[#4f4f4f] font-semibold hover:bg-[white]">
                             View Remarks
                           </Button>
+                          </div>
                           <Dialog open={dialogOpen}
                             onOpenChange={setDialogOpen}>
                             <DialogContent>

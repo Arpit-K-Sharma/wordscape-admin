@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Eye, Upload, RefreshCw, Send, Info, FolderDown, PackagePlus, PackageCheck } from "lucide-react";
+import { Eye, Upload, RefreshCw, Send, Info, FolderDown, PackagePlus, PackageCheck, Package } from "lucide-react";
 import { CheckCircle, CalendarDays } from "lucide-react";
 import toast, { Toaster } from 'react-hot-toast';
 import purchaseService from "@/app/services/purchaseOrderService";
@@ -37,117 +37,10 @@ import {
 } from "@/components/ui/table"
 import { LiaHourglassStartSolid } from "react-icons/lia";
 import jsPDF from "jspdf";
+import { PurchaseEntryItem, PurchaseEntryVendor, PurchaseEntry, Item, InventoryItem, Vendor, IssueItemsPayload} from "../Schema/purchaseWithoutEntry";
+import PurchaseSlip from "./purchaseSlip";
 
-interface PurchaseEntryItem {
-  itemId: string;
-  inventoryId: string;
-  quantityFromVendor: number;
-  quantityFromStock: number;
-  itemCode: string | null;
-  rate: number | null;
-  amount: number | null;
-}
 
-interface PurchaseEntryVendor {
-  _id: string;
-  vendorId: string;
-  isCompleted: boolean;
-  items: PurchaseEntryItem[];
-  tag: string | null;
-  remarks: string | null;
-  image: string | null;
-  discount: number | null;
-  vat: number | null;
-  grandTotal: number | null;
-  invoiceNo: string | null;
-  invoiceDate: string | null;
-  is_issued: boolean | null;
-}
-
-interface PurchaseEntry {
-  _id: string;
-  orderId: string;
-  isCompleted: boolean;
-  purchaseEntry: PurchaseEntryVendor[];
-}
-
-interface Item {
-  _id: string;
-  itemName: string;
-  availability: number;
-}
-
-interface InventoryItem {
-  _id: string;
-  type: string;
-  item: Item[];
-}
-
-interface Vendor {
-  _id: string;
-  vendorName: string;
-  vendorAddress: string;
-  vendorVAT: string;
-  vendorPhone: string;
-}
-
-interface IssueItemsPayload {
-  order_id: string;
-  approved_by: string;
-  issued_date: string;
-}
-
-const PurchaseSlip: React.FC<{
-  vendorDetails: Vendor | undefined;
-  purchase: PurchaseEntryVendor;
-  getItemDetails: (itemId: string) => Item | null;
-}> = ({ vendorDetails, purchase, getItemDetails }) => {
-  return (
-    <div className="p-8 bg-white ml-[200px] w-[500px]" id="purchase-slip">
-      <div className="flex flex-col items-center mb-6">
-        <div>
-          <img src={Logo.src} className="w-16 h-16 mb-4" alt="Company Logo" />
-        </div>
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-1">WordScape Printing Company</h1>
-          <p className="text-sm text-gray-600"> Lalitpur</p>
-          <p className="text-sm text-gray-600">Phone: (+977) 9841000033</p>
-        </div>
-      </div>
-      <h2 className="text-xl font-bold mb-6 text-center">Purchase Order Slip</h2>
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold">{vendorDetails?.vendorName || 'Unknown Vendor'}</h3>
-        <p className="text-sm text-gray-700">{vendorDetails?.vendorAddress || 'N/A'}</p>
-        <p className="text-sm text-gray-700">VAT: {vendorDetails?.vendorVAT || 'N/A'}</p>
-        <p className="text-sm text-gray-700">Phone: {vendorDetails?.vendorPhone || 'N/A'}</p>
-      </div>
-      <table className="w-full mb-6 border-collapse">
-        <thead>
-          <tr className="border-b border-gray-300">
-            <th className="text-left p-2">Item</th>
-            <th className="text-right p-2">Quantity</th>
-          </tr>
-        </thead>
-        <tbody>
-          {purchase.items.map((item, index) => {
-            const itemDetails = getItemDetails(item.itemId);
-            return (
-              <tr key={index} className="border-b border-gray-200">
-                <td className="p-2">{itemDetails?.itemName || 'Unknown Item'}</td>
-                <td className="p-2 text-right">{item.quantityFromVendor}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <div className="text-center mt-6">
-        <p className="text-sm text-gray-600">Thank you for doing business with us!</p>
-      </div>
-    </div>
-  );
-};
-
-// PurchaseEntryList Component
 const PurchaseEntryList: React.FC = () => {
   const [purchaseEntries, setPurchaseEntries] = useState<PurchaseEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<PurchaseEntry | null>(null);
@@ -356,12 +249,8 @@ const PurchaseEntryList: React.FC = () => {
 
   const handleDownload = async (purchase: PurchaseEntryVendor) => {
     const vendorDetails = getVendorDetails(purchase.vendorId);
-
-    // Create a temporary div to render the PurchaseSlip
     const tempDiv = document.createElement('div');
     document.body.appendChild(tempDiv);
-
-    // Render the PurchaseSlip component
     ReactDOM.render(
       <PurchaseSlip
         vendorDetails={vendorDetails}
@@ -370,33 +259,20 @@ const PurchaseEntryList: React.FC = () => {
       />,
       tempDiv
     );
-
-    // Wait for the component to render
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-      // Convert the rendered component to canvas
       const canvas = await html2canvas(tempDiv.firstChild as HTMLElement,
         {
           scale: 3,
         }
       );
-
-      // Create a new jsPDF instance
       const pdf = new jsPDF('p', 'mm', 'a4');
-
-      // Calculate the width and height of the PDF page
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      // Calculate the scaling factor to fit the canvas to the PDF page
       const widthRatio = pdfWidth / canvas.width;
       const heightRatio = pdfHeight / canvas.height;
       const ratio = Math.min(widthRatio, heightRatio);
-
-      // Calculate the centered position of the image
-
-      // Add the canvas image to the PDF
       pdf.addImage(
         canvas.toDataURL('image/png'),
         'PNG',
@@ -405,13 +281,10 @@ const PurchaseEntryList: React.FC = () => {
         canvas.width * ratio,
         canvas.height * ratio
       );
-
-      // Save the PDF
       pdf.save(`purchase_slip_${purchase.vendorId}.pdf`);
     } catch (error) {
       console.error('Error generating purchase slip:', error);
     } finally {
-      // Clean up
       document.body.removeChild(tempDiv);
     }
   };
@@ -447,7 +320,7 @@ const PurchaseEntryList: React.FC = () => {
           {purchaseEntries && purchaseEntries.map((entry) => (
             <Card
               key={entry._id}
-              className="shadow-lg hover:shadow-xl transition-shadow duration-300 mr-[5px]"
+              className="shadow-lg hover:shadow-xl transition-shadow duration-300 mr-[5px] "
             >
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
@@ -488,13 +361,13 @@ const PurchaseEntryList: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
+                <div className="space-y-4 ">
+                  <div className="flex justify-between ml-[-13.5px]">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleDetailsClick(entry)}
-                      className="flex items-center"
+                      className="flex  items-center"
                     >
                       <Eye className="mr-2 h-4 w-4" />
                       View Details
@@ -509,7 +382,7 @@ const PurchaseEntryList: React.FC = () => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleIssueItems(entry.orderId)}
-                                className="flex items-center ml-2"
+                                className="flex  items-center ml-1"
                                 disabled={isIssuing || entry.purchaseEntry.every(entry => entry.is_issued || entry.isCompleted === false)}
                               >
                                 {isIssuing ? (
@@ -553,9 +426,9 @@ const PurchaseEntryList: React.FC = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleleftOverClick(entry.orderId)}
-                            className="flex items-center ml-2"
+                            className="flex items-center ml-1"
                           >
-                            <PackagePlus className="mr-2 h-4 w-4" />
+                            <Package className="mr-2 h-4 w-4" /> 
                             Left Overs
                           </Button>
                         </>

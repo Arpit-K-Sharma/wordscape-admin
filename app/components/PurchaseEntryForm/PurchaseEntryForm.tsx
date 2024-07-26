@@ -40,6 +40,7 @@ import { MdOutlineAddHomeWork, } from "react-icons/md";
 import { RiStickyNoteAddLine } from "react-icons/ri";
 import { Send, Plus } from "lucide-react";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
+import { Textarea } from "@/components/ui/textarea";
 
 
 const itemSchema = z.object({
@@ -271,7 +272,6 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
             loading: 'Creating reorder...',
             success: (response) => {
               console.log("Reorder created:", response.data);
-              // Update the PO status in localStorage
               const storedStatus = localStorage.getItem('poStatus');
               const currentStatus = storedStatus ? JSON.parse(storedStatus) : {};
               const newStatus = { ...currentStatus, [orderId]: 'created' };
@@ -395,7 +395,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
       <div className="bg-white">
         <InventorySidebar />
       </div>
-      <div className="flex-1  w-1/2  mt-[7px]">
+      <div className="flex-1  w-1/2 p-[10px] mt-[7px] ">
         <Card className={`w-full ${getTotalItems() <= 1 ? 'max-w-4xl' :
           getTotalItems() == 2 ? 'max-w-6xl' :
             getTotalItems() == 3 ? 'max-w-7xl' :
@@ -498,7 +498,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                   value={field.value}
                                 >
                                   <FormControl>
-                                    <SelectTrigger className=" ml-[20px] mr-[40px]">
+                                    <SelectTrigger className=" w-[97%] ml-[20px] mr-[40px]">
                                       <SelectValue placeholder="Select a vendor" />
                                     </SelectTrigger>
                                   </FormControl>
@@ -670,10 +670,10 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                           <FormItem>
                                             <FormLabel className="font-semibold">Remarks</FormLabel>
                                             <FormControl>
-                                              <Input
+                                              <Textarea 
                                                 {...field}
-                                                type="text"
                                                 placeholder="Enter remarks for reorder"
+                                                className="h-[70px]"
                                               />
                                             </FormControl>
                                             <FormMessage />

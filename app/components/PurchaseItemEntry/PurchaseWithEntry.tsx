@@ -18,6 +18,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import Logo from '../../images/LogoBG.webp';
 import purchaseService from "@/app/services/purchaseOrderService";
+import { Package } from 'lucide-react';
 import {
   HoverCard,
   HoverCardContent,
@@ -382,7 +383,7 @@ const PurchaseWithEntry: React.FC = () => {
                           onClick={() => handleleftOverClick(order.orderId)}
                           className="flex items-center ml-2"
                         >
-                          <CheckCircle className="mr-2 h-4 w-4" />
+                          <Package className="mr-2 h-4 w-4" />
                           Left Overs
                         </Button>
                       </div>

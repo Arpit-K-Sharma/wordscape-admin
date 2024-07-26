@@ -3,7 +3,8 @@ import {leftoverService} from '@/app/services/leftoverService';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import InventorySidebar from '../Sidebar/InventorySidebar';
 import { Input } from "@/components/ui/input";
-import { Search, ShoppingCart, Package, BarChart2, AlertCircle } from 'lucide-react';
+import { Search, ShoppingCart, Package, BarChart2, AlertCircle, Info } from 'lucide-react';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 
 export interface Item {
     item_id: string;
@@ -82,8 +83,26 @@ const LeftoversPage = () => {
         <div className='flex h-screen bg-gray-100'>
             <InventorySidebar />
             <div className="flex-1 p-4 overflow-auto">
-
-                    <h1 className="text-3xl text-center font-bold mt-[30px] mb-3 mr-[80px] text-gray-800">Leftover Items </h1>
+                     <div className='flex gap-0'>
+                    <h1 className="text-3xl  font-bold mt-[30px] mb-3 mr-[80px] text-gray-800">Leftover Items </h1>
+                    <div className="mt-[5px] ml-[-70px]">
+                    <span className="text-2xl font-normal text-gray-600 ml-2">
+                    <HoverCard>
+                      <HoverCardTrigger><Info className="hover:cursor-pointer hover:text-blue-900" /></HoverCardTrigger>
+                      <HoverCardContent className="w-[300px] rounded-[20px]">
+                        <div className="p-[10px] items-center justify-center font-archivo">
+                          <h1 className="ml-[20px] font-semibold mb-[10px] text-[15px] text-gray-700">
+                            Information
+                          </h1>
+                          <p className=" ml-[20px] text-left text-gray-600 text-[15px]">
+                          This page provides information about the leftover items that were added to the inventory after the work was finished.
+                          </p>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </span>
+                </div>
+                </div>
                     <div className="flex items-center mb-3 rounded-lg p-2">
                         <Search className="mr-2 text-gray-500" />
                         <Input
