@@ -116,7 +116,7 @@ function Vendors() {
           <div className="bg-white shadow-md rounded-lg overflow-hidden">
             <Table className="w-full">
               <TableCaption className="caption-bottom text-sm text-gray-500 mt-4">
-                A list of WordScape's vendors.
+                A list of WordScape&apos;s vendors.
               </TableCaption>
               <TableHeader>
                 <TableRow className="bg-gray-800 hover:bg-gray-800">
