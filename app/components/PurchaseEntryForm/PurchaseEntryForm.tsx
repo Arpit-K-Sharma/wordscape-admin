@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,7 @@ import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@/components/ui/hover-card"
+} from "@/components/ui/hover-card";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import InventorySidebar from "../Sidebar/InventorySidebar";
@@ -38,9 +38,20 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { purchaseEntryService } from "../../services/inventoryServices/purchaseEntryService";
 import { vendorService } from "@/app/services/inventoryServices/vendorsService";
-import { formSchema, FormSchema, Vendor, ApprovedOrders, Inventory, PurchaseEntrySlipProps, Item } from "../../Schema/purchaseEntrySchema";
+import {
+  formSchema,
+  FormSchema,
+  Vendor,
+  ApprovedOrders,
+  Inventory,
+  PurchaseEntrySlipProps,
+  Item,
+} from "../../Schema/purchaseEntrySchema";
 
-export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps) {
+export function PurchaseEntrySlip({
+  orderId,
+  isReorder,
+}: PurchaseEntrySlipProps) {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [inventory, setInventory] = useState<Inventory[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,7 +93,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
 
   const removePurchaseEntry = (index: number) => {
     removeFieldArrayEntry(index);
-    setSelectedVendors(prev => {
+    setSelectedVendors((prev) => {
       const newSelected = [...prev];
       newSelected.splice(index, 1);
       return newSelected;
@@ -119,22 +130,24 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
 
   const fetchReorderData = async () => {
     try {
-      const purchase_order = await purchaseEntryService.getPurchaseEntries()
+      const purchase_order = await purchaseEntryService.getPurchaseEntries();
       const orderData = purchase_order;
 
       form.reset({
         orderId: orderId,
         isCompleted: false,
-        purchaseEntry: [{
-          vendorId: orderData.purchaseEntry[0].vendorId,
-          isCompleted: false,
-          items: orderData.purchaseEntry[0].items.map((item: any) => ({
-            inventoryId: item.inventoryId,
-            itemId: item.itemId,
-            quantityFromVendor: item.quantityFromVendor,
-            quantityFromStock: 0
-          }))
-        }]
+        purchaseEntry: [
+          {
+            vendorId: orderData.purchaseEntry[0].vendorId,
+            isCompleted: false,
+            items: orderData.purchaseEntry[0].items.map((item: any) => ({
+              inventoryId: item.inventoryId,
+              itemId: item.itemId,
+              quantityFromVendor: item.quantityFromVendor,
+              quantityFromStock: 0,
+            })),
+          },
+        ],
       });
     } catch (error) {
       console.error("Error fetching reorder data:", error);
@@ -172,7 +185,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
         },
       ],
     });
-    setSelectedVendors(prev => [...prev, ""]);
+    setSelectedVendors((prev) => [...prev, ""]);
   };
 
   const onSubmit = async (data: FormSchema) => {
@@ -184,25 +197,27 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
           isCompleted: false,
           tag: "reorder",
           remarks: data.remarks || "Reorder",
-          items: data.purchaseEntry[0].items.map(item => ({
+          items: data.purchaseEntry[0].items.map((item) => ({
             inventoryId: item.inventoryId,
             itemId: item.itemId,
             quantityFromVendor: item.quantityFromVendor,
-            quantityFromStock: item.quantityFromStock
-          }))
+            quantityFromStock: item.quantityFromStock,
+          })),
         };
 
         await toast.promise(
           purchaseEntryService.createReorder(orderId, reorderData),
           {
-            loading: 'Creating reorder...',
+            loading: "Creating reorder...",
             success: (response) => {
               console.log("Reorder created:", response);
-              const storedStatus = localStorage.getItem('poStatus');
-              const currentStatus = storedStatus ? JSON.parse(storedStatus) : {};
-              const newStatus = { ...currentStatus, [orderId]: 'created' };
+              const storedStatus = localStorage.getItem("poStatus");
+              const currentStatus = storedStatus
+                ? JSON.parse(storedStatus)
+                : {};
+              const newStatus = { ...currentStatus, [orderId]: "created" };
 
-              localStorage.setItem('poStatus', JSON.stringify(newStatus));
+              localStorage.setItem("poStatus", JSON.stringify(newStatus));
               localStorage.removeItem(`formData_${orderId}`);
 
               return "Reorder Placed Successfully";
@@ -211,28 +226,25 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
           }
         );
       } else {
-        await toast.promise(
-          purchaseEntryService.createPurchaseOrder(data),
-          {
-            loading: 'Creating purchase order...',
-            success: (response) => {
-              const storedStatus = localStorage.getItem('poStatus');
-              const currentStatus = storedStatus ? JSON.parse(storedStatus) : {};
-              const newStatus = { ...currentStatus, [orderId]: 'created' };
+        await toast.promise(purchaseEntryService.createPurchaseOrder(data), {
+          loading: "Creating purchase order...",
+          success: (response) => {
+            const storedStatus = localStorage.getItem("poStatus");
+            const currentStatus = storedStatus ? JSON.parse(storedStatus) : {};
+            const newStatus = { ...currentStatus, [orderId]: "created" };
 
-              console.log("Purchase order created:", response);
+            console.log("Purchase order created:", response);
 
-              localStorage.setItem('poStatus', JSON.stringify(newStatus));
-              localStorage.removeItem(`formData_${orderId}`);
+            localStorage.setItem("poStatus", JSON.stringify(newStatus));
+            localStorage.removeItem(`formData_${orderId}`);
 
-              return "Purchase Order Placed Successfully";
-            },
-            error: "Error creating purchase order",
-          }
-        );
+            return "Purchase Order Placed Successfully";
+          },
+          error: "Error creating purchase order",
+        });
       }
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      router.push('/');
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      router.push("/");
     } catch (error) {
       console.error("Error creating order:", error);
     } finally {
@@ -262,15 +274,15 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
 
   const initialWidth = useMemo(() => {
     const totalItems = getTotalItems();
-    if (totalItems === 1) return 'max-w-3xl';
-    if (totalItems === 2) return 'max-w-5xl';
-    return 'max-w-6xl';
+    if (totalItems === 1) return "max-w-3xl";
+    if (totalItems === 2) return "max-w-5xl";
+    return "max-w-6xl";
   }, []);
 
   const getItems = (value: string) => {
     const selectedInventory = inventory.find((inv) => inv._id === value);
     return selectedInventory ? selectedInventory.item : [];
-  }
+  };
 
   return (
     <div className="flex flex-cols font-archivo h-screen bg-gray-200 overflow-hidden ">
@@ -278,11 +290,17 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
         <InventorySidebar />
       </div>
       <div className="flex-1  w-1/2 p-[10px] mt-[7px] ">
-        <Card className={`w-full ${getTotalItems() <= 1 ? 'max-w-4xl' :
-          getTotalItems() == 2 ? 'max-w-6xl' :
-            getTotalItems() == 3 ? 'max-w-7xl' :
-              'max-w-7xl'
-          } justify-center items-center mx-auto transition-all duration-400 ease-in-out`}>
+        <Card
+          className={`w-full ${
+            getTotalItems() <= 1
+              ? "max-w-4xl"
+              : getTotalItems() == 2
+              ? "max-w-6xl"
+              : getTotalItems() == 3
+              ? "max-w-7xl"
+              : "max-w-7xl"
+          } justify-center items-center mx-auto transition-all duration-400 ease-in-out`}
+        >
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center mb-[-20px]">
               {isReorder ? "Reorder Slip" : "Purchase Order Slip"}
@@ -291,13 +309,18 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
           <CardContent>
             <ScrollArea>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-6"
+                >
                   <FormField
                     control={form.control}
                     name="orderId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel htmlFor="orderId" className="font-semibold">Order ID</FormLabel>
+                        <FormLabel htmlFor="orderId" className="font-semibold">
+                          Order ID
+                        </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -312,7 +335,11 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                     )}
                   />
 
-                  <div className={`${isReorder ? "max-h-[68vh]" : " max-h-[60.5vh]"} overflow-y-auto overflow-x-hidden`} >
+                  <div
+                    className={`${
+                      isReorder ? "max-h-[68vh]" : " max-h-[60.5vh]"
+                    } overflow-y-auto overflow-x-hidden`}
+                  >
                     {purchaseEntryFields.map((entry, index) => (
                       <div
                         key={entry.id}
@@ -325,16 +352,16 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                               onClick={() => removePurchaseEntry(index)}
                             >
                               <HoverCard>
-                                <HoverCardTrigger className="ml-[-110px] mb-[15px]">
-
-                                </HoverCardTrigger>
+                                <HoverCardTrigger className="ml-[-110px] mb-[15px]"></HoverCardTrigger>
                                 <HoverCardContent>
-                                  <p className="font-semibold text-gray-500">Remove the selected vendor?</p>
+                                  <p className="font-semibold text-gray-500">
+                                    Remove the selected vendor?
+                                  </p>
                                 </HoverCardContent>
                               </HoverCard>
                             </Label>
                           )}
-                          {!isReorder &&
+                          {!isReorder && (
                             <Button
                               type="button"
                               className="font-semibold bg-transparent text-red-500 bg-white shadow-none hover:bg-red-500 hover:text-white border mr-[10px]"
@@ -342,11 +369,10 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                             >
                               <FiTrash2 className=" hover:text-white mr-1" />
                               Delete Vendor
-
                             </Button>
-                          }
+                          )}
 
-                          {!isReorder &&
+                          {!isReorder && (
                             <Button
                               type="button"
                               className="font-semibold bg-transparent text-black bg-white shadow-none hover:bg-gray-800 hover:text-white border mr-[20px]"
@@ -354,11 +380,8 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                             >
                               <Plus className=" hover:text-white mr-1" />
                               Add Item
-
                             </Button>
-                          }
-
-
+                          )}
                         </div>
                         <div className="">
                           <FormField
@@ -366,11 +389,13 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                             name={`purchaseEntry.${index}.vendorId`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="font-semibold ml-[25px]">Vendor</FormLabel>
+                                <FormLabel className="font-semibold ml-[25px]">
+                                  Vendor
+                                </FormLabel>
                                 <Select
                                   onValueChange={(value) => {
                                     field.onChange(value);
-                                    setSelectedVendors(prev => {
+                                    setSelectedVendors((prev) => {
                                       const newSelected = [...prev];
                                       newSelected[index] = value;
                                       return newSelected;
@@ -388,7 +413,14 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                       <SelectItem
                                         key={vendor._id}
                                         value={vendor._id}
-                                        disabled={selectedVendors.includes(vendor._id) && selectedVendors.indexOf(vendor._id) !== index}
+                                        disabled={
+                                          selectedVendors.includes(
+                                            vendor._id
+                                          ) &&
+                                          selectedVendors.indexOf(
+                                            vendor._id
+                                          ) !== index
+                                        }
                                       >
                                         {vendor.vendorName}
                                       </SelectItem>
@@ -400,15 +432,24 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                             )}
                           />
                           <div className="h-[400px] overflow-y-auto scrollbar-hide p-4">
-                            <div className={`grid ${form.watch(`purchaseEntry.${index}.items`).length === 1 ? 'grid-cols-1' :
-                              form.watch(`purchaseEntry.${index}.items`).length === 2 ? 'grid-cols-2' :
-                                'grid-cols-3'
-                              } gap-6`}>
+                            <div
+                              className={`grid ${
+                                form.watch(`purchaseEntry.${index}.items`)
+                                  .length === 1
+                                  ? "grid-cols-1"
+                                  : form.watch(`purchaseEntry.${index}.items`)
+                                      .length === 2
+                                  ? "grid-cols-2"
+                                  : "grid-cols-3"
+                              } gap-6`}
+                            >
                               {form
                                 .watch(`purchaseEntry.${index}.items`)
                                 .map((item, itemIndex) => (
-                                  <div key={itemIndex} className="space-y-4 border border-gray-200 rounded-[10px] p-[10px]">
-
+                                  <div
+                                    key={itemIndex}
+                                    className="space-y-4 border border-gray-200 rounded-[10px] p-[10px]"
+                                  >
                                     <FormField
                                       control={form.control}
                                       name={`purchaseEntry.${index}.items.${itemIndex}.inventoryId`}
@@ -416,32 +457,37 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                         <FormItem>
                                           <div className="flex flex-cols justify-between">
                                             <div>
-                                              <FormLabel className="font-semibold">Type</FormLabel>
+                                              <FormLabel className="font-semibold">
+                                                Type
+                                              </FormLabel>
                                             </div>
                                             <div>
                                               <FormLabel>
                                                 {!isReorder && (
                                                   <Label
                                                     className="text-gray-400 hover:text-[red] mt-[10px]"
-                                                    onClick={() => removeItem(index, itemIndex)}
+                                                    onClick={() =>
+                                                      removeItem(
+                                                        index,
+                                                        itemIndex
+                                                      )
+                                                    }
                                                   >
                                                     <HoverCard>
                                                       <HoverCardTrigger>
-
-
                                                         <FiTrash2 className="text-xl cursor-pointer" />
                                                       </HoverCardTrigger>
                                                       <HoverCardContent>
-                                                        <p className="font-semibold text-gray-500">Remove the selected item?</p>
+                                                        <p className="font-semibold text-gray-500">
+                                                          Remove the selected
+                                                          item?
+                                                        </p>
                                                       </HoverCardContent>
                                                     </HoverCard>
-
-
                                                   </Label>
                                                 )}
                                               </FormLabel>
                                             </div>
-
                                           </div>
                                           <Select
                                             onValueChange={(value) => {
@@ -457,7 +503,10 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                             </FormControl>
                                             <SelectContent>
                                               {inventory.map((inv) => (
-                                                <SelectItem key={inv._id} value={inv._id}>
+                                                <SelectItem
+                                                  key={inv._id}
+                                                  value={inv._id}
+                                                >
                                                   {inv.type}
                                                 </SelectItem>
                                               ))}
@@ -467,7 +516,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                         </FormItem>
                                       )}
                                     />
-                                    { }
+                                    {}
                                     <FormField
                                       control={form.control}
                                       name={`purchaseEntry.${index}.items.${itemIndex}.itemId`}
@@ -475,13 +524,19 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                         <FormItem>
                                           <div className="flex flex-row justify-between pr-[10px]">
                                             <div>
-                                              <FormLabel className="font-semibold">Item</FormLabel>
+                                              <FormLabel className="font-semibold">
+                                                Item
+                                              </FormLabel>
                                             </div>
                                           </div>
                                           <Select
                                             onValueChange={field.onChange}
                                             value={field.value}
-                                            disabled={!form.watch(`purchaseEntry.${index}.items.${itemIndex}.inventoryId`)}
+                                            disabled={
+                                              !form.watch(
+                                                `purchaseEntry.${index}.items.${itemIndex}.inventoryId`
+                                              )
+                                            }
                                           >
                                             <FormControl>
                                               <SelectTrigger>
@@ -490,7 +545,10 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                             </FormControl>
                                             <SelectContent>
                                               {selectedItem.map((item) => (
-                                                <SelectItem key={item._id} value={item._id}>
+                                                <SelectItem
+                                                  key={item._id}
+                                                  value={item._id}
+                                                >
                                                   {item.itemName}
                                                 </SelectItem>
                                               ))}
@@ -505,14 +563,18 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                       name={`purchaseEntry.${index}.items.${itemIndex}.quantityFromVendor`}
                                       render={({ field }) => (
                                         <FormItem>
-                                          <FormLabel className="font-semibold">Quantity from Vendor</FormLabel>
+                                          <FormLabel className="font-semibold">
+                                            Quantity from Vendor
+                                          </FormLabel>
                                           <FormControl>
                                             <Input
                                               {...field}
                                               type="number"
                                               value={field.value || ""}
                                               onChange={(e) =>
-                                                field.onChange(Number(e.target.value))
+                                                field.onChange(
+                                                  Number(e.target.value)
+                                                )
                                               }
                                               className="w-full"
                                             />
@@ -527,14 +589,18 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                       name={`purchaseEntry.${index}.items.${itemIndex}.quantityFromStock`}
                                       render={({ field }) => (
                                         <FormItem>
-                                          <FormLabel className="font-semibold">Quantity from Stock</FormLabel>
+                                          <FormLabel className="font-semibold">
+                                            Quantity from Stock
+                                          </FormLabel>
                                           <FormControl>
                                             <Input
                                               {...field}
                                               type="number"
                                               value={field.value || ""}
                                               onChange={(e) =>
-                                                field.onChange(Number(e.target.value))
+                                                field.onChange(
+                                                  Number(e.target.value)
+                                                )
                                               }
                                               className="w-full"
                                             />
@@ -549,7 +615,9 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                         name="remarks"
                                         render={({ field }) => (
                                           <FormItem>
-                                            <FormLabel className="font-semibold">Remarks</FormLabel>
+                                            <FormLabel className="font-semibold">
+                                              Remarks
+                                            </FormLabel>
                                             <FormControl>
                                               <Textarea
                                                 {...field}
@@ -562,8 +630,6 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                         )}
                                       />
                                     )}
-
-
                                   </div>
                                 ))}
                             </div>
@@ -571,17 +637,24 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                         </div>
                       </div>
                     ))}
-
                   </div>
 
-
                   {!isReorder && (
-                    <Button type="button" className="font-semibold" onClick={addVendor}>
-                      <MdOutlineAddHomeWork size={18} className="mr-[10px]" /> Add Vendor
+                    <Button
+                      type="button"
+                      className="font-semibold"
+                      onClick={addVendor}
+                    >
+                      <MdOutlineAddHomeWork size={18} className="mr-[10px]" />{" "}
+                      Add Vendor
                     </Button>
                   )}
 
-                  <Button type="submit" className="w-full font-semibold" disabled={isSubmitting}>
+                  <Button
+                    type="submit"
+                    className="w-full font-semibold"
+                    disabled={isSubmitting}
+                  >
                     <Send size={18} className="mr-[10px]" />
                     {isReorder ? "Submit Reorder" : "Submit Purchase Order"}
                   </Button>

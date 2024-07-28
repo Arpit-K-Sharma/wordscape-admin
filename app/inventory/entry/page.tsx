@@ -1,3 +1,4 @@
+"use client";
 import { PurchaseEntrySlip } from "@/app/components/PurchaseEntryForm/PurchaseEntryForm";
 import React from "react";
 import { usePathname } from "next/navigation";
