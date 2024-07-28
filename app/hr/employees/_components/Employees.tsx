@@ -250,405 +250,285 @@ const EmployeesPage: React.FC = () => {
       <HRSidebar />
       <div className="flex-1 p-6">
         <h1 className="text-2xl font-bold mb-4">Employees</h1>
-        <div className="flex justify-between items-center mb-4">
-          <div className="relative w-64">
-            <Input
-              placeholder="Search employees..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pr-10"
-            />
-            {searchTerm.length > 0 && searchTerm.length < 3 && (
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-400">
-                {3 - searchTerm.length} more...
-              </span>
+        <Button onClick={() => setIsAddStaffDialogOpen(true)} className="mb-4">
+          <Plus className="mr-1 h-4 w-4" />
+          Add Staff
+        </Button>
+        {employees.length > 0 ? (
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Name</TableHead>
+        <TableHead>Email</TableHead>
+        <TableHead>Phone</TableHead>
+        <TableHead>Position</TableHead>
+        <TableHead>Departments</TableHead>
+        <TableHead>Status</TableHead>
+        <TableHead className="text-center">Actions</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {employees.map((employee) => (
+        <TableRow key={employee._id}>
+          <TableCell>{employee.fullName}</TableCell>
+          <TableCell>{employee.email}</TableCell>
+          <TableCell>{employee.phoneNumber}</TableCell>
+          <TableCell>{employee.position}</TableCell>
+          <TableCell>{employee.departmentNames.join(", ")}</TableCell>
+          <TableCell>
+            {employee.status ? (
+              <span style={{ fontWeight: "bold", color: "green" }}>Active</span>
+            ) : (
+              <span style={{ fontWeight: "bold", color: "red" }}>Inactive</span>
             )}
-          </div>
-          <Button onClick={() => setIsAddStaffDialogOpen(true)}>
-            <Plus className="mr-1 h-4 w-4" />
-            Add Staff
-          </Button>
-        </div>
-        <Table className="w-full bg-white border border-black rounded-lg shadow-sm">
-          <TableHeader>
-            <TableRow  style={{ backgroundColor: '#000000' }}>
-              <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Name</TableHead>
-              <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Email</TableHead>
-              <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Phone</TableHead>
-              <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Status</TableHead>
-              <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredEmployees.map((employee) => (
-              <TableRow key={employee._id} className="border-t border-black">
-                <TableCell className="text-center py-2 px-4 font-semibold">{employee.fullName}</TableCell>
-                <TableCell className="text-center py-2 px-4 font-semibold">{employee.email}</TableCell>
-                <TableCell className="text-center py-2 px-4 font-semibold">{employee.phoneNumber}</TableCell>
-
-                <TableCell className="text-center py-2 px-4 font-semibold">
-                  {employee.status ? (
-                    <span style={{ fontWeight: "bold", color: "green" }}>
-                      Active
-                    </span>
-                  ) : (
-                    <span style={{ fontWeight: "bold", color: "red" }}>
-                      Inactive
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-center space-x-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex items-center justify-center pr-[3px]"
-                          onClick={() => handleViewDetails(employee)}
-                        >
-                          <Eye className="mr-2 h-4 w-10 p-0" />
-                          </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[800px]">
-                        <DialogHeader>
-                          <DialogTitle>Employee Details</DialogTitle>
-                          <DialogDescription>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <Card>
-                                <CardHeader>
-                                  <CardTitle>Personal Information</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                  <p><strong>Name:</strong> {selectedEmployee?.fullName}</p>
-                                  <p><strong>Email:</strong> {selectedEmployee?.email}</p>
-                                  <p><strong>Phone:</strong> {selectedEmployee?.phoneNumber}</p>
-                                  <p><strong>Address:</strong> {selectedEmployee?.address}</p>
-                                  <p><strong>Role:</strong> {selectedEmployee?.role === "ROLE_USER" ? "Employee" : selectedEmployee?.role}</p>
-                                </CardContent>
-                              </Card>
-                              <Card>
-                                <CardHeader>
-                                  <CardTitle>Employment Details</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                  <p><strong>Position:</strong> {selectedEmployee?.position}</p>
-                                  <p><strong>Daily Wage:</strong> Rs. {selectedEmployee?.dailyWage.toFixed(2)}</p>
-                                  <p><strong>Departments:</strong> {selectedEmployee?.departmentNames.join(", ")}</p>
-                                  <p><strong>Date Joined:</strong> {new Date(selectedEmployee?.created_at || "").toLocaleDateString()}</p>
-                                  <p><strong>Status:</strong> {selectedEmployee?.status ? "Active" : "Inactive"}</p>
-                                </CardContent>
-                              </Card>
-                            </div>
-
-                            <div className="mt-4 flex justify-center space-x-8">
-                              <Button
-                                className="flex items-center justify-center w-50 bg-blue-800 text-white rounded px-4 py-2 hover:bg-blue-700"
-                                onClick={() => { Router.push(`leave_history/${selectedEmployee?.id}`); }}
-                              >
-                                <CalendarPlus className="mr-2 h-4 w-4" />
-                                Leave History
-                              </Button>
-                              <Button
-                                className="flex items-center justify-center w-50 bg-green-800 text-white rounded px-4 py-2 hover:bg-green-700"
-                                onClick={() => { Router.push(`attendance_history/${selectedEmployee?.id}`); }}
-                              >
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Attendance History
-                              </Button>
-                              <Button
-                                className="flex items-center justify-center w-50 bg-yellow-600 text-white rounded px-4 py-2 hover:bg-yellow-700"
-                                onClick={() => { Router.push(`payroll_history/${selectedEmployee?.id}`); }}
-                              >
-                                <DollarSign className="mr-2 h-4 w-4" />
-                                Payroll History
-                              </Button>
-                            </div>
-
-                          </DialogDescription>
-                        </DialogHeader>
-                      </DialogContent>
-                    </Dialog>
-                    <Button
-                      key={`update-${employee._id}`}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center justify-center pr-[3px]"
-                      onClick={() => {
-                        console.log("Employee being edited:", employee);
-                        setEditingEmployee({ ...employee });
-                        setIsUpdateDialogOpen(true);
-                      }}
-                    >
-                      <Pencil className="mr-2 h-4 w-10 p-0" />
-                    </Button>
-                    <Dialog
-                      open={isUpdateDialogOpen}
-                      onOpenChange={setIsUpdateDialogOpen}
-                    >
-                      <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                          <DialogTitle>Update Employee</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label
-                              htmlFor="updateFullName"
-                              className="text-right"
-                            >
-                              Full Name
-                            </Label>
-                            <Input
-                              id="updateFullName"
-                              value={editingEmployee?.fullName || ""}
-                              onChange={(e) =>
-                                setEditingEmployee((prev) =>
-                                  prev
-                                    ? { ...prev, fullName: e.target.value }
-                                    : null
-                                )
-                              }
-                              className="col-span-3"
+          </TableCell>
+          <TableCell>
+            <div className="flex space-x-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center justify-center w-32"
+                    onClick={() => handleViewDetails(employee)}
+                  >
+                    <ListCollapse className="mr-2 h-4 w-4" />
+                    View Details
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[800px]">
+                  <DialogHeader>
+                    <DialogTitle>Employee Details</DialogTitle>
+                    <DialogDescription>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Personal Information</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p>
+                              <strong>Name:</strong> {selectedEmployee?.fullName}
+                            </p>
+                            <p>
+                              <strong>Email:</strong> {selectedEmployee?.email}
+                            </p>
+                            <p>
+                              <strong>Phone:</strong> {selectedEmployee?.phoneNumber}
+                            </p>
+                            <p>
+                              <strong>Address:</strong> {selectedEmployee?.address}
+                            </p>
+                            <p>
+                              <strong>Role:</strong> {selectedEmployee?.role === "ROLE_USER" ? "Employee" : selectedEmployee?.role}
+                            </p>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Employment Details</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p>
+                              <strong>Position:</strong> {selectedEmployee?.position}
+                            </p>
+                            <p>
+                              <strong>Daily Wage:</strong> Rs. {selectedEmployee?.dailyWage.toFixed(2)}
+                            </p>
+                            <p>
+                              <strong>Departments:</strong> {selectedEmployee?.departmentNames.join(", ")}
+                            </p>
+                            <p>
+                              <strong>Date Joined:</strong> {new Date(selectedEmployee?.created_at || "").toLocaleDateString()}
+                            </p>
+                            <p>
+                              <strong>Status:</strong> {selectedEmployee?.status ? "Active" : "Inactive"}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </DialogDescription>
+                  </DialogHeader>
+                </DialogContent>
+              </Dialog>
+              <Button
+                key={`update-${employee._id}`}
+                variant="outline"
+                size="sm"
+                className="flex items-center justify-center w-32"
+                onClick={() => {
+                  console.log("Employee being edited:", employee);
+                  setEditingEmployee({ ...employee });
+                  setIsUpdateDialogOpen(true);
+                }}
+              >
+                <Pencil className="mr-2 h-4 w-4" /> Update
+              </Button>
+              <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Update Employee</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="updateFullName" className="text-right">Full Name</Label>
+                      <Input
+                        id="updateFullName"
+                        value={editingEmployee?.fullName || ""}
+                        onChange={(e) => setEditingEmployee((prev) => prev ? { ...prev, fullName: e.target.value } : null)}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="updateEmail" className="text-right">Email</Label>
+                      <Input
+                        id="updateEmail"
+                        value={editingEmployee?.email || ""}
+                        onChange={(e) => setEditingEmployee((prev) => prev ? { ...prev, email: e.target.value } : null)}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="updatePassword" className="text-right">Password</Label>
+                      <Input
+                        id="updatePassword"
+                        type="password"
+                        placeholder="Enter new password"
+                        onChange={(e) => setEditingEmployee((prev) => prev ? { ...prev, password: e.target.value } : null)}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="updateAddress" className="text-right">Address</Label>
+                      <Input
+                        id="updateAddress"
+                        value={editingEmployee?.address || ""}
+                        onChange={(e) => setEditingEmployee((prev) => prev ? { ...prev, address: e.target.value } : null)}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="updatePhoneNumber" className="text-right">Phone Number</Label>
+                      <Input
+                        id="updatePhoneNumber"
+                        value={editingEmployee?.phoneNumber || ""}
+                        onChange={(e) => setEditingEmployee((prev) => prev ? { ...prev, phoneNumber: e.target.value } : null)}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="updatePosition" className="text-right">Position</Label>
+                      <Input
+                        id="updatePosition"
+                        value={editingEmployee?.position || ""}
+                        onChange={(e) => setEditingEmployee((prev) => prev ? { ...prev, position: e.target.value } : null)}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="updateDailyWage" className="text-right">Daily Wage</Label>
+                      <Input
+                        id="updateDailyWage"
+                        type="number"
+                        value={editingEmployee?.dailyWage || ""}
+                        onChange={(e) => setEditingEmployee((prev) => prev ? { ...prev, dailyWage: Number(e.target.value) } : null)}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="updateStatus" className="text-right">Status</Label>
+                      <Select
+                        onValueChange={(value) => setEditingEmployee((prev) => prev ? { ...prev, status: value === "true" } : null)}
+                        defaultValue={editingEmployee?.status ? "true" : "false"}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Active</SelectItem>
+                          <SelectItem value="false">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="departments" className="text-right">Departments</Label>
+                      <div className="col-span-3 space-y-2">
+                        {departments.map((dept) => (
+                          <div key={dept.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`updateDept-${dept.id}`}
+                              checked={editingEmployee?.dept_ids?.includes(dept.id)}
+                              onCheckedChange={(checked) => {
+                                setEditingEmployee((prev) => {
+                                  if (!prev) return prev;
+                                  const newDeptIds = checked
+                                    ? [...(prev.dept_ids || []), dept.id]
+                                    : (prev.dept_ids || []).filter((id) => id !== dept.id);
+                                  return { ...prev, dept_ids: newDeptIds };
+                                });
+                              }}
                             />
+                            <Label htmlFor={`updateDept-${dept.id}`}>{dept.department_name}</Label>
                           </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="updateEmail" className="text-right">
-                              Email
-                            </Label>
-                            <Input
-                              id="updateEmail"
-                              value={editingEmployee?.email || ""}
-                              onChange={(e) =>
-                                setEditingEmployee((prev) =>
-                                  prev
-                                    ? { ...prev, email: e.target.value }
-                                    : null
-                                )
-                              }
-                              className="col-span-3"
-                            />
-                          </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label
-                              htmlFor="updatePassword"
-                              className="text-right"
-                            >
-                              Password
-                            </Label>
-                            <Input
-                              id="updatePassword"
-                              type="password"
-                              placeholder="Enter new password"
-                              onChange={(e) =>
-                                setEditingEmployee((prev) =>
-                                  prev
-                                    ? { ...prev, password: e.target.value }
-                                    : null
-                                )
-                              }
-                              className="col-span-3"
-                            />
-                          </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label
-                              htmlFor="updateAddress"
-                              className="text-right"
-                            >
-                              Address
-                            </Label>
-                            <Input
-                              id="updateAddress"
-                              value={editingEmployee?.address || ""}
-                              onChange={(e) =>
-                                setEditingEmployee((prev) =>
-                                  prev
-                                    ? { ...prev, address: e.target.value }
-                                    : null
-                                )
-                              }
-                              className="col-span-3"
-                            />
-                          </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label
-                              htmlFor="updatePhoneNumber"
-                              className="text-right"
-                            >
-                              Phone Number
-                            </Label>
-                            <Input
-                              id="updatePhoneNumber"
-                              value={editingEmployee?.phoneNumber || ""}
-                              onChange={(e) =>
-                                setEditingEmployee((prev) =>
-                                  prev
-                                    ? { ...prev, phoneNumber: e.target.value }
-                                    : null
-                                )
-                              }
-                              className="col-span-3"
-                            />
-                          </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label
-                              htmlFor="updatePosition"
-                              className="text-right"
-                            >
-                              Position
-                            </Label>
-                            <Input
-                              id="updatePosition"
-                              value={editingEmployee?.position || ""}
-                              onChange={(e) =>
-                                setEditingEmployee((prev) =>
-                                  prev
-                                    ? { ...prev, position: e.target.value }
-                                    : null
-                                )
-                              }
-                              className="col-span-3"
-                            />
-                          </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label
-                              htmlFor="updateDailyWage"
-                              className="text-right"
-                            >
-                              Daily Wage
-                            </Label>
-                            <Input
-                              id="updateDailyWage"
-                              type="number"
-                              value={editingEmployee?.dailyWage || ""}
-                              onChange={(e) =>
-                                setEditingEmployee((prev) =>
-                                  prev
-                                    ? {
-                                      ...prev,
-                                      dailyWage: Number(e.target.value),
-                                    }
-                                    : null
-                                )
-                              }
-                              className="col-span-3"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="departments" className="text-right">
-                              Departments
-                            </Label>
-                            <div className="col-span-3 space-y-2">
-                              {departments.map((dept) => (
-                                <div
-                                  key={dept.id}
-                                  className="flex items-center space-x-2"
-                                >
-                                  <Checkbox
-                                    id={`updateDept-${dept.id}`}
-                                    checked={editingEmployee?.dept_ids?.includes(
-                                      dept.id
-                                    )}
-                                    onCheckedChange={(checked) => {
-                                      setEditingEmployee((prev) => {
-                                        if (!prev) return prev;
-                                        const newDeptIds = checked
-                                          ? [...(prev.dept_ids || []), dept.id]
-                                          : (prev.dept_ids || []).filter(
-                                            (id) => id !== dept.id
-                                          );
-                                        return {
-                                          ...prev,
-                                          dept_ids: newDeptIds,
-                                        };
-                                      });
-                                    }}
-                                  />
-                                  <Label htmlFor={`updateDept-${dept.id}`}>
-                                    {dept.department_name}
-                                  </Label>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button
-                            onClick={() =>
-                              handleUpdateStaff(editingEmployee?.id)
-                            }
-                          >
-                            Update Employee
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                    <Dialog
-                      open={isDeleteDialogOpen}
-                      onOpenChange={setIsDeleteDialogOpen}
-                    >
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Confirm Deletion</DialogTitle>
-                          <DialogDescription>
-                            Are you sure you want to delete this staff member?
-                            This action cannot be undone.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <Button
-                            variant="outline"
-                            onClick={() => setIsDeleteDialogOpen(false)}
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={confirmDeleteStaff}
-                          >
-                            Delete
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-
-                    {/* <Button
-                      key={`delete-${employee.id}`}
-                      variant="destructive"
-                      size="sm"
-                      className="flex items-center justify-center w-32"
-                      onClick={() => handleDeleteStaff(employee.id)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete Staff
-                    </Button> */}
-
-                    <Button
-                      key={`status-${employee.id}`}
-                      variant={employee.status ? "outline" : "default"}
-                      size="sm"
-                      className="flex items-center justify-center w-28"
-                      onClick={() =>
-                        handleStatusChange(employee.id, employee.status)
-                      }
-                    >
-                      {employee.status ? (
-                        <>
-                          <ToggleLeft className="mr-2 h-4 w-4" />
-                          Deactivate
-                        </>
-                      ) : (
-                        <>
-                          <ToggleRight className="mr-2 h-4 w-4" />
-                          Reactivate
-                        </>
-                      )}
-                    </Button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  <DialogFooter>
+                    <Button onClick={() => handleUpdateStaff(editingEmployee?.id)}>Update Employee</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              <Button
+                key={`delete-${employee.id}`}
+                variant="destructive"
+                size="sm"
+                className="flex items-center justify-center w-32"
+                onClick={() => handleDeleteStaff(employee.id)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Delete Staff
+              </Button>
+              <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Confirm Deletion</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to delete this staff member? This action cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
+                    <Button variant="destructive" onClick={confirmDeleteStaff}>Delete</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              <Button
+                key={`status-${employee.id}`}
+                variant={employee.status ? "outline" : "default"}
+                size="sm"
+                className="flex items-center justify-center w-32"
+                onClick={() => handleStatusChange(employee.id, employee.status)}
+              >
+                {employee.status ? (
+                  <>
+                    <ToggleLeft className="mr-2 h-4 w-4" /> Deactivate
+                  </>
+                ) : (
+                  <>
+                    <ToggleRight className="mr-2 h-4 w-4" /> Reactivate
+                  </>
+                )}
+              </Button>
+            </div>
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+) : (
+  <p>No Employees Found</p>
+)}
+
+
       </div>
 
       <Dialog

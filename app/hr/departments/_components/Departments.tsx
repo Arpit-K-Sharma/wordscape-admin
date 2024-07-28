@@ -146,19 +146,22 @@ function Departments() {
           <div className="flex justify-between items-center mb-4">
             <Button onClick={openAddDialog}>Add Department</Button>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {departments.map((department) => (
-              <div 
-                key={department._id} 
-                className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-xl"
-              >
-                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                  <h2 className="text-xl font-semibold text-gray-800">{department.department_name}</h2>
-                </div>
-                <div className="p-4">
-                  <p className="text-gray-600 mb-4 h-20 overflow-y-auto">{department.description}</p>
-                  <div className="flex flex-wrap gap-2">
+          {departments.length > 0 ? (
+          <Table>
+            <TableCaption>A list of departments.</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {departments.map((department) => (
+                <TableRow key={department._id}>
+                  <TableCell>{department.department_name}</TableCell>
+                  <TableCell>{department.description}</TableCell>
+                  <TableCell>
                     <Button
                       variant="outline"
                       size="sm"
@@ -182,11 +185,14 @@ function Departments() {
                     >
                       <FiUsers className="mr-1" /> View Members
                     </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          ):(
+            <p>No departments found.</p>
+          )}
 
           {/* Add Department Dialog */}
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
