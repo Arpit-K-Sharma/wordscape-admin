@@ -18,6 +18,10 @@ export interface Staff {
     departmentNames?: string[] | null; 
 }
 
+
+  
+  
+
 export const staffService = {
     getStaff: async(): Promise<Staff[]> => {
         try {
@@ -27,5 +31,12 @@ export const staffService = {
             console.error("Error fetching staff data:", error);
             throw error;
         }
-    }
+    },
+    getStaffById: async (staffId: string): Promise<Staff> => {
+        console.log("hello")
+        const response = await axios.get(`${API_URL}/staff/${staffId}`);
+        console.log(response.data.data)
+        return response.data.data;
+      }
+
 };

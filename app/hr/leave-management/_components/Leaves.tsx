@@ -56,6 +56,7 @@ const Leaves: React.FC = () => {
   const [selectedLeaveId, setSelectedLeaveId] = useState<string | null>(null);
   const[leaveToHandle,  setLeaveToHandle] = useState<string>("");
   const[handleStatus,  setHandleStatus] = useState<string>("");
+  
 
   useEffect(() => {
     fetchLeaveData();
@@ -78,10 +79,15 @@ const Leaves: React.FC = () => {
   
   const addLeave = async() => {
     if (selectedEmployee && startDate && endDate && leaveType && leaveReason) {
+
       const newLeave = {
         staff_id: selectedEmployee.id,
-        start_date: startDate.toISOString(),
-        end_date: endDate.toISOString(),
+        start_date: new Date(startDate.getTime() + 86400000)
+          .toISOString()
+          .split("T")[0],
+        end_date: new Date(endDate.getTime() + 86400000)
+        .toISOString()
+        .split("T")[0],
         reason: leaveReason,
         type: leaveType,
         status: leaveStatus, // Ensure status is a string
@@ -95,6 +101,7 @@ const Leaves: React.FC = () => {
         setLeaveReason("");
         setLeaveType(undefined);
         fetchLeaveData();
+        
       } catch (error) {
         console.error("Error adding leave", error);
       }
@@ -156,8 +163,8 @@ const handleClose= async() =>{
     setSelectedLeaveId(leave.id);
     setLeaveToUpdate(leave);
     handleChange(leave.staff_id);
-    setStartDate(new Date(leave.start_date));
-    setEndDate(new Date(leave.end_date));
+    setStartDate(leave.start_date);
+    setEndDate(leave.end_date);
     setLeaveReason(leave.reason);
     setLeaveType(leave.type);
     setLeaveStatus(leave.status);
@@ -172,7 +179,7 @@ const handleClose= async() =>{
     setStartDate(undefined);
     setStartDate(undefined);
     setLeaveReason("");
-    setLeaveType("");
+    setLeaveType(undefined);
   };
 
   const handleUpdateLeave = async () => {
@@ -180,8 +187,12 @@ const handleClose= async() =>{
       const updatedLeave = {
         staff_id: selectedEmployee.id,
         staff_name: selectedEmployee.fullName,
-        start_date: startDate.toISOString(),
-        end_date: endDate.toISOString(),
+        start_date: new Date(startDate.getTime() + 86400000)
+        .toISOString()
+        .split("T")[0],
+        end_date: new Date(endDate.getTime() + 86400000)
+        .toISOString()
+        .split("T")[0],
         reason: leaveReason,
         type: leaveType,
       };
@@ -195,6 +206,12 @@ const handleClose= async() =>{
       }
     }
   };
+
+  const isRowDisabled = (status: string) => {
+    return status === "Approved" || status === "Rejected";
+  };
+  
+
  
 
 
@@ -241,7 +258,7 @@ const handleClose= async() =>{
                 </Label>
                 <Input
                   id="startDate"
-                  value={startDate? new Date(startDate).toLocaleDateString() : "Select date"}
+                  value={startDate? startDate : "Select date"}
                   onClick={() => handleDateClick('start')}
                   readOnly
                   className="col-span-3"
@@ -253,7 +270,7 @@ const handleClose= async() =>{
                 </Label>
                 <Input
                   id="endDate"
-                  value={endDate? new Date(endDate).toLocaleDateString() : "Select date"}
+                  value={endDate? endDate : "Select date"}
                   onClick={() => handleDateClick('end')}
                   readOnly
                   className="col-span-3"
@@ -268,17 +285,6 @@ const handleClose= async() =>{
                   value={leaveReason}
                   onChange={(e) => setLeaveReason(e.target.value)}
                   className="col-span-3"
-                />
-              </div>
-              <div className='grid grid-cols-4 items-center gap-4'>
-                <Label htmlFor='status' className='text-right'>
-                  Status
-                </Label>
-                <Input
-                  id='leaveStatus'
-                  value={leaveStatus}
-                  readOnly
-                  className='col-span-3'
                 />
               </div>
               <div className='grid grid-cols-4 items-center gap-4'>
@@ -326,29 +332,29 @@ const handleClose= async() =>{
         </Dialog>
 
 
-        {leaveManagement.length > 0 ?(
-          <Table className="w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-  <TableHeader className="bg-gray-100">
-    <TableRow>
-      <TableHead className="text-center py-2 px-4">Employee Name</TableHead>
-      <TableHead className="text-center py-2 px-4">Start Date</TableHead>
-      <TableHead className="text-center py-2 px-4">End Date</TableHead>
-      <TableHead className="text-center py-2 px-4">Cause</TableHead>
-      <TableHead className="text-center py-2 px-4">Type</TableHead>
-      <TableHead className="text-center py-2 px-4">Status</TableHead>
-      <TableHead className="text-center py-2 px-4">Edit</TableHead>
-      <TableHead className="text-center py-2 px-4">Actions</TableHead>
-    </TableRow>
-  </TableHeader>
-  <TableBody>
-    {leaveManagement && leaveManagement.map((leave) => (
-      <TableRow key={leave.id} className="border-t border-gray-200">
-        <TableCell className="text-center py-2 px-4">{leave.staff_name}</TableCell>
-        <TableCell className="text-center py-2 px-4">{new Date(leave.start_date).toLocaleDateString()}</TableCell>
-        <TableCell className="text-center py-2 px-4">{new Date(leave.end_date).toLocaleDateString()}</TableCell>
-        <TableCell className="text-center py-2 px-4">{leave.reason}</TableCell>
-        <TableCell className="text-center py-2 px-4">{leave.type}</TableCell>
-        <TableCell className="text-center py-2 px-4">
+        {leaveManagement && leaveManagement.length > 0 ? (
+  <Table className="w-full bg-white border border-black rounded-lg shadow-sm">
+    <TableHeader>
+      <TableRow style={{ backgroundColor: '#000000' }}> 
+        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Employee Name</TableHead>
+        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Start Date</TableHead>
+        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>End Date</TableHead>
+        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Cause</TableHead>
+        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Type</TableHead>
+        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Status</TableHead>
+        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Edit</TableHead>
+        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Actions</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {leaveManagement && leaveManagement.map((leave) => (
+        <TableRow key={leave.id} className="border-t border-black">
+          <TableCell className="text-center py-2 px-4 font-semibold">{leave.staff_name}</TableCell>
+          <TableCell className="text-center py-2 px-4 font-semibold">{leave.start_date}</TableCell>
+          <TableCell className="text-center py-2 px-4 font-semibold">{leave.end_date}</TableCell>
+          <TableCell className="text-center py-2 px-4 font-semibold">{leave.reason}</TableCell>
+          <TableCell className="text-center py-2 px-4 font-semibold">{leave.type}</TableCell>
+          <TableCell className="text-center py-2 px-4 font-semibold">
             {leave.status !== "Pending" ? (
               leave.status === "Approved" ? (
                 <span className="w-24 inline-block font-bold text-green-500 text-center px-2 py-1">
@@ -364,57 +370,60 @@ const handleClose= async() =>{
                 {leave.status}
               </span>
             )}
-        </TableCell>
-
-
-        <TableCell className="flex justify-center ml-3 text-center py-2 px-4">
-          <Button
-            variant="outline"
-            onClick={() => openUpdateDialog(leave)}
-            className="mr-3"
-          >
-            <FiEdit className="mr-2" />
-            Update
-          </Button>
-        </TableCell>
-        <TableCell className="text-center py-2 px-4">
-          <Button
-            onClick={() => handleLeave(leave.id,"approve")}
-            className="mr-3 bg-success font-bold text-success-foreground hover:bg-success-hover"
-          >
-            <FiCheck className="mr-2" />
-            Approve
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => handleLeave(leave.id,"reject")}
-            className="mr-3 font-bold"
-          >
-            <FiX className="mr-2" />
-            Reject
-          </Button>
-        </TableCell>
-      </TableRow>
-    ))}
-  </TableBody> 
-</Table>
-
-        ) : (
-          <p>No Leaves Found</p>
-        )}
+          </TableCell>
+          <TableCell className="flex justify-center ml-3 text-center py-2 px-4">
+            <Button
+              variant="outline"
+              onClick={() => openUpdateDialog(leave)}
+              disabled={isRowDisabled(leave.status)}
+              className="mr-3"
+            >
+              <FiEdit className="mr-2" />
+              Update
+            </Button>
+          </TableCell>
+          <TableCell className="text-center py-2 px-4">
+            <Button
+              onClick={() => handleLeave(leave.id,"approve")}
+              disabled={isRowDisabled(leave.status)}
+              variant="outline"
+              className="mr-3 font-bold hover:text-success-foreground hover:bg-success-hover border border-solid border-slate-300"
+            >
+              <FiCheck className="mr-2" />
+              Approve
+            </Button>
+            <Button
+              variant="outline" 
+              onClick={() => handleLeave(leave.id,"reject")}
+              disabled={isRowDisabled(leave.status)}
+              className="mr-3 font-bold hover:text-warning-foreground hover:bg-warning-hover border border-solid border-slate-300"
+            >
+              <FiX className="mr-2" />
+              Reject
+            </Button>
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody> 
+  </Table>
+) : (
+  <p>No Leaves Found</p>
+)}
 
 
         <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Update Leave</DialogTitle>
+              <DialogTitle className='flex items-center'>
+              <p className="flex-1">Update Leave</p>
+              </DialogTitle>
+              
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
                   Employee Name
                 </Label>
-                {/* Replace Input with Select from react-select */}
                 <Select
                   value={selectedEmployee?.fullName}
                   onValueChange={handleChange}
@@ -437,7 +446,7 @@ const handleClose= async() =>{
                 </Label>
                 <Input
                   id="startDate"
-                  value={startDate? new Date(startDate).toLocaleDateString() : "Select date"}
+                  value={startDate? startDate : "Select date"}
                   onClick={() => handleDateClick('start')}
                   readOnly
                   className="col-span-3"
@@ -449,7 +458,7 @@ const handleClose= async() =>{
                 </Label>
                 <Input
                   id="endDate"
-                  value={endDate? new Date(endDate).toLocaleDateString() : "Select date"}
+                  value={endDate? endDate : "Select date"}
                   onClick={() => handleDateClick('end')}
                   readOnly
                   className="col-span-3"
@@ -464,17 +473,6 @@ const handleClose= async() =>{
                   value={leaveReason}
                   onChange={(e) => setLeaveReason(e.target.value)}
                   className="col-span-3"
-                />
-              </div>
-              <div className='grid grid-cols-4 items-center gap-4'>
-                <Label htmlFor='status' className='text-right'>
-                  Status
-                </Label>
-                <Input
-                  id='leaveStatus'
-                  value={leaveStatus}
-                  readOnly
-                  className='col-span-3'
                 />
               </div>
               <div className='grid grid-cols-4 items-center gap-4'>
@@ -517,18 +515,15 @@ const handleClose= async() =>{
             <DialogFooter>
             {handleStatus === "approve" ? (
             <Button onClick={handleApproval} className=' bg-success text-success-foreground hover:bg-success-hover'>
-              <FiCheck className="mr-2"/>
               Approve
             </Button>
           ) : 
           <Button variant="destructive" onClick={handleRejection}>
-          <FiTrash2 className="mr-2" />
           Reject
         </Button>}
 
           
               <Button variant="outline" onClick={handleClose}>
-                <FiX className="mr-2" />
                 Cancel
               </Button>
             </DialogFooter>
