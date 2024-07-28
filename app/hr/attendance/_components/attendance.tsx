@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { format, parse, isToday } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -30,8 +30,8 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import HRSidebar from '@/app/components/HRSidebar/hrsidebar';
-import { attendanceService } from '@/app/services/hrServices/attendanceService';
+import HRSidebar from "@/app/components/HRSidebar/hrsidebar";
+import { attendanceService } from "@/app/services/hrServices/attendanceService";
 
 export interface Staff {
   _id: string;
@@ -43,7 +43,7 @@ export interface AttendanceStaff {
   staff_name: string;
   check_in: string;
   check_out: string;
-  status: 'Present' | 'Absent' | 'Paid' | 'Unpaid';
+  status: "Present" | "Absent" | "Paid" | "Unpaid";
   remarks: string;
 }
 
@@ -59,12 +59,16 @@ export interface AttendanceSubmission {
 
 const AttendanceForm: React.FC = () => {
   const [date, setDate] = useState<Date>(new Date());
-  const [attendanceData, setAttendanceData] = useState<AttendanceData | null>(null);
-  
+  const [attendanceData, setAttendanceData] = useState<AttendanceData | null>(
+    null
+  );
+
   const fetchAttendanceData = async (selectedDate: Date) => {
     try {
       const formattedDate = format(selectedDate, "dd-MM-yyyy");
-      const existingAttendance = await attendanceService.getAttendanceByDate(formattedDate);
+      const existingAttendance = await attendanceService.getAttendanceByDate(
+        formattedDate
+      );
 
       if (existingAttendance && existingAttendance.staffs.length > 0) {
         setAttendanceData(existingAttendance);
@@ -72,7 +76,7 @@ const AttendanceForm: React.FC = () => {
         setAttendanceData(null);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
       setAttendanceData(null);
     }
   };
@@ -81,7 +85,11 @@ const AttendanceForm: React.FC = () => {
     fetchAttendanceData(date);
   }, [date]);
 
-  const handleChange = (index: number, name: keyof AttendanceStaff, value: string) => {
+  const handleChange = (
+    index: number,
+    name: keyof AttendanceStaff,
+    value: string
+  ) => {
     if (attendanceData && isToday(date)) {
       const newStaffs = attendanceData.staffs.map((staff, i) => {
         if (i === index) {
@@ -99,15 +107,18 @@ const AttendanceForm: React.FC = () => {
 
     try {
       const dataToSend: AttendanceSubmission = {
-        date: format(parse(attendanceData.date, "dd-MM-yyyy", new Date()), "yyyy-MM-dd"),
-        staffs: attendanceData.staffs
+        date: format(
+          parse(attendanceData.date, "dd-MM-yyyy", new Date()),
+          "yyyy-MM-dd"
+        ),
+        staffs: attendanceData.staffs,
       };
       console.log(dataToSend);
       const response = await attendanceService.submitAttendance(dataToSend);
       console.log(response);
       alert("Attendance submitted successfully");
     } catch (error) {
-      console.error('Error submitting attendance:', error);
+      console.error("Error submitting attendance:", error);
       alert("Error submitting attendance. Please try again.");
     }
   };
@@ -115,11 +126,13 @@ const AttendanceForm: React.FC = () => {
   const isEditable = isToday(date);
 
   return (
-    <div className='flex font-archivo h-screen'>
+    <div className="flex font-archivo h-screen">
       <HRSidebar />
       <div className="flex-1 min-h-screen mt-[-80px] flex items-center justify-center">
         <div className="w-full max-w-[100%] bg-white px-8">
-          <h2 className='text-[25px] font-bold mb-6 mt-[-3rem]'>Attendance Form for {format(date, "PPP")}</h2>
+          <h2 className="text-[25px] font-bold mb-6 mt-[-3rem]">
+            Attendance Form for {format(date, "PPP")}
+          </h2>
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="flex justify-start items-center mb-4">
               <Popover>
@@ -149,26 +162,43 @@ const AttendanceForm: React.FC = () => {
               </Popover>
             </div>
             {attendanceData && attendanceData.staffs.length > 0 ? (
-              <Table className="w-full bg-white border border-black rounded-lg shadow-sm">
+              <Table className="w-full bg-white border  rounded-lg shadow-sm">
                 <TableHeader>
-                  <TableRow  style={{ backgroundColor: '#000000' }}>
-                    <TableHead className="w-[200px] text-center py-2 px-4 font-semibold">Staff Name</TableHead>
-                    <TableHead className='text-center py-2 px-4 font-semibold'>Check-in</TableHead>
-                    <TableHead className='text-center py-2 px-4 font-semibold'>Check-out</TableHead>
-                    <TableHead className='text-center py-2 px-4 font-semibold'>Status</TableHead>
-                    <TableHead className="w-[300px] text-center py-2 px-4 font-semibold">Remarks</TableHead>
+                  <TableRow className="bg-gray-800">
+                    <TableHead className="w-[200px] text-center py-2 px-4  text-white">
+                      Staff Name
+                    </TableHead>
+                    <TableHead className="text-center py-2 px-4  text-white">
+                      Check-in
+                    </TableHead>
+                    <TableHead className="text-center py-2 px-4 text-white">
+                      Check-out
+                    </TableHead>
+                    <TableHead className="text-center py-2 px-4  text-white">
+                      Status
+                    </TableHead>
+                    <TableHead className="w-[300px] text-center py-2 px-4 text-white">
+                      Remarks
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {attendanceData.staffs.map((staff, index) => (
-                    <TableRow key={staff.staff_id} className="border-t border-black">
-                      <TableCell>{staff.staff_name}</TableCell>
+                    <TableRow
+                      key={staff.staff_id}
+                      className="border-t border-grey-900"
+                    >
+                      <TableCell className="flex justify-center mt-1 ">
+                        {staff.staff_name}
+                      </TableCell>
                       <TableCell>
                         <Input
                           type="time"
                           value={staff.check_in}
-                          onChange={(e) => handleChange(index, 'check_in', e.target.value)}
-                          className='flex item-center justify-center border border-black'
+                          onChange={(e) =>
+                            handleChange(index, "check_in", e.target.value)
+                          }
+                          className="flex item-center justify-center  border border-grey-900"
                           disabled={!isEditable}
                         />
                       </TableCell>
@@ -176,18 +206,24 @@ const AttendanceForm: React.FC = () => {
                         <Input
                           type="time"
                           value={staff.check_out}
-                          onChange={(e) => handleChange(index, 'check_out', e.target.value)}
-                          className='flex item-center justify-center border border-black'
+                          onChange={(e) =>
+                            handleChange(index, "check_out", e.target.value)
+                          }
+                          className="flex item-center justify-center border border-grey-900 "
                           disabled={!isEditable}
-                  
                         />
                       </TableCell>
-                      <TableCell className="text-center py-2 px-4 font-semibold">
+                      <TableCell className="text-center py-2 px-4">
                         <Select
                           value={staff.status}
-                          onValueChange={(value) => handleChange(index, 'status', value as 'Present' | 'Absent')}
+                          onValueChange={(value) =>
+                            handleChange(
+                              index,
+                              "status",
+                              value as "Present" | "Absent"
+                            )
+                          }
                           disabled={!isEditable}
-          
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select status" />
@@ -204,9 +240,11 @@ const AttendanceForm: React.FC = () => {
                         <Input
                           type="text"
                           value={staff.remarks}
-                          onChange={(e) => handleChange(index, 'remarks', e.target.value)}
-                          className="w-full font-semibold border border-black"
-                          placeholder='Reason for leave, if any'
+                          onChange={(e) =>
+                            handleChange(index, "remarks", e.target.value)
+                          }
+                          className="w-full  border border-grey-900"
+                          placeholder="Reason for leave, if any"
                           disabled={!isEditable}
                         />
                       </TableCell>
@@ -215,7 +253,9 @@ const AttendanceForm: React.FC = () => {
                 </TableBody>
               </Table>
             ) : (
-              <div className="text-center py-4">No attendance available for this date.</div>
+              <div className="text-center py-4">
+                No attendance available for this date.
+              </div>
             )}
             {attendanceData && attendanceData.staffs.length > 0 && (
               <div className="flex">
@@ -230,6 +270,5 @@ const AttendanceForm: React.FC = () => {
     </div>
   );
 };
-
 
 export default AttendanceForm;

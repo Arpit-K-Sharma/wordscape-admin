@@ -1,10 +1,9 @@
 "use client";
-import HRSidebar from '@/app/components/HRSidebar/hrsidebar';
-import React, { useState, useEffect } from 'react'
+import HRSidebar from "@/app/components/HRSidebar/hrsidebar";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
-
 
 import {
   Table,
@@ -35,38 +34,43 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FiTrash2, FiX, FiEdit, FiCheck } from "react-icons/fi";
-import { LeaveManagement, LeaveManagementService } from '@/app/services/hrServices/leaveManagementService';
-import { staffService, Staff } from '@/app/services/hrServices/staffService';
+import {
+  LeaveManagement,
+  LeaveManagementService,
+} from "@/app/services/hrServices/leaveManagementService";
+import { staffService, Staff } from "@/app/services/hrServices/staffService";
 
 const Leaves: React.FC = () => {
   const [leaveManagement, setLeaveManagement] = useState<LeaveManagement[]>([]);
   const [employeeOptions, setEmployeeOptions] = useState<any[]>([]); // State for employee options
-  const [selectedEmployee, setSelectedEmployee] = useState<Staff | null>({fullName:"Select Your Employee"});
+  const [selectedEmployee, setSelectedEmployee] = useState<Staff | null>({
+    fullName: "Select Your Employee",
+  });
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [leaveType, setLeaveType] = useState<string | undefined>(undefined);
   const [leaveStatus, setLeaveStatus] = useState<string>("Pending");
-  const [leaveReason, setLeaveReason] = useState<string>('');
+  const [leaveReason, setLeaveReason] = useState<string>("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
-  const [calendarType, setCalendarType] = useState<'start' | 'end'>('start');
+  const [calendarType, setCalendarType] = useState<"start" | "end">("start");
   const [isCalendarDialogOpen, setIsCalendarDialogOpen] = useState(false);
-  const[leaveToUpdate, setLeaveToUpdate] = useState<LeaveManagement | null>(null);
+  const [leaveToUpdate, setLeaveToUpdate] = useState<LeaveManagement | null>(
+    null
+  );
   const [selectedLeaveId, setSelectedLeaveId] = useState<string | null>(null);
-  const[leaveToHandle,  setLeaveToHandle] = useState<string>("");
-  const[handleStatus,  setHandleStatus] = useState<string>("");
-  
+  const [leaveToHandle, setLeaveToHandle] = useState<string>("");
+  const [handleStatus, setHandleStatus] = useState<string>("");
 
   useEffect(() => {
     fetchLeaveData();
     fetchEmployeeOptions();
-  }, [leaveStatus]); 
+  }, [leaveStatus]);
 
-
-  useEffect(() =>{
+  useEffect(() => {
     console.log(leaveStatus);
-  },[setLeaveStatus,leaveStatus])
+  }, [setLeaveStatus, leaveStatus]);
 
   const fetchLeaveData = async () => {
     try {
@@ -76,23 +80,22 @@ const Leaves: React.FC = () => {
       console.log("Error fetching leave data", error);
     }
   };
-  
-  const addLeave = async() => {
-    if (selectedEmployee && startDate && endDate && leaveType && leaveReason) {
 
+  const addLeave = async () => {
+    if (selectedEmployee && startDate && endDate && leaveType && leaveReason) {
       const newLeave = {
         staff_id: selectedEmployee.id,
         start_date: new Date(startDate.getTime() + 86400000)
           .toISOString()
           .split("T")[0],
         end_date: new Date(endDate.getTime() + 86400000)
-        .toISOString()
-        .split("T")[0],
+          .toISOString()
+          .split("T")[0],
         reason: leaveReason,
         type: leaveType,
         status: leaveStatus, // Ensure status is a string
       };
-      
+
       try {
         await LeaveManagementService.addLeave(newLeave.staff_id, newLeave);
         setSelectedEmployee(null);
@@ -101,7 +104,6 @@ const Leaves: React.FC = () => {
         setLeaveReason("");
         setLeaveType(undefined);
         fetchLeaveData();
-        
       } catch (error) {
         console.error("Error adding leave", error);
       }
@@ -110,54 +112,55 @@ const Leaves: React.FC = () => {
 
   const fetchEmployeeOptions = async () => {
     try {
-      const employees = await staffService.getStaff(); 
+      const employees = await staffService.getStaff();
       console.log(employees.data);
       setEmployeeOptions(employees.data);
     } catch (error) {
-      console.log('Error fetching employees', error);
+      console.log("Error fetching employees", error);
     }
   };
 
-  const handleDateClick = (type: 'start' | 'end') => {
+  const handleDateClick = (type: "start" | "end") => {
     setCalendarType(type);
     setIsCalendarDialogOpen(true);
   };
 
   const handleChange = (value: any) => {
-    const filteredObject = employeeOptions.filter((option) => option.id === value);
+    const filteredObject = employeeOptions.filter(
+      (option) => option.id === value
+    );
     console.log(filteredObject);
     if (filteredObject.length > 0) {
-        console.log(filteredObject[0]);
-        setSelectedEmployee(filteredObject[0]);
+      console.log(filteredObject[0]);
+      setSelectedEmployee(filteredObject[0]);
     } else {
-        console.warn("No employee found with the given ID:", value);
+      console.warn("No employee found with the given ID:", value);
     }
-};
+  };
 
-const handleLeave = async(leave_id: string, type:string) =>{
-  setIsApproveDialogOpen(true);
-  setLeaveToHandle(leave_id);
-  setHandleStatus(type);
-};
+  const handleLeave = async (leave_id: string, type: string) => {
+    setIsApproveDialogOpen(true);
+    setLeaveToHandle(leave_id);
+    setHandleStatus(type);
+  };
 
+  const handleApproval = async () => {
+    await LeaveManagementService.approveLeave(leaveToHandle);
+    setLeaveStatus("Approved");
+    handleClose();
+  };
 
-const handleApproval = async() =>{
-  await LeaveManagementService.approveLeave(leaveToHandle);
-  setLeaveStatus("Approved");
-  handleClose();
-};
+  const handleRejection = async () => {
+    await LeaveManagementService.declineLeave(leaveToHandle);
+    setLeaveStatus("Declined");
+    handleClose();
+  };
 
-const handleRejection = async()=>{
-  await LeaveManagementService.declineLeave(leaveToHandle);
-  setLeaveStatus("Declined");
-  handleClose();
-};
-
-const handleClose= async() =>{
-  setIsApproveDialogOpen(false);
-  setLeaveToHandle("");
-  setHandleStatus("");
-};
+  const handleClose = async () => {
+    setIsApproveDialogOpen(false);
+    setLeaveToHandle("");
+    setHandleStatus("");
+  };
 
   const openUpdateDialog = (leave: LeaveManagement) => {
     setSelectedLeaveId(leave.id);
@@ -183,24 +186,56 @@ const handleClose= async() =>{
   };
 
   const handleUpdateLeave = async () => {
-    if (selectedEmployee && startDate && endDate && leaveType && leaveReason && selectedLeaveId) { // Ensure selectedLeaveId is available
+    if (
+      selectedEmployee &&
+      startDate &&
+      endDate &&
+      leaveType &&
+      leaveReason &&
+      selectedLeaveId
+    ) {
+      // Ensure selectedLeaveId is available
+
+      let start = startDate;
+      let end = endDate;
+
+      // Function to convert string date (DD-MM-YYYY) to Date object
+      const convertStringToDate = (dateStr) => {
+        const [day, month, year] = dateStr.split("-").map(Number);
+        return new Date(year, month - 1, day);
+      };
+
+      // Check if startDate and endDate are strings in DD-MM-YYYY format, if so, convert them to Date objects
+      if (typeof startDate === "string" || startDate instanceof String) {
+        start = convertStringToDate(startDate);
+      }
+      if (typeof endDate === "string" || endDate instanceof String) {
+        end = convertStringToDate(endDate);
+      }
+
+      // Check if the converted dates are valid
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        console.error("Invalid start date or end date:", { start, end });
+        return;
+      }
+
       const updatedLeave = {
         staff_id: selectedEmployee.id,
         staff_name: selectedEmployee.fullName,
-        start_date: new Date(startDate.getTime() + 86400000)
-        .toISOString()
-        .split("T")[0],
-        end_date: new Date(endDate.getTime() + 86400000)
-        .toISOString()
-        .split("T")[0],
+        start_date: new Date(start.getTime() + 86400000)
+          .toISOString()
+          .split("T")[0],
+        end_date: new Date(end.getTime() + 86400000)
+          .toISOString()
+          .split("T")[0],
         reason: leaveReason,
         type: leaveType,
       };
-  
+
       try {
-        await LeaveManagementService.updateLeave(selectedLeaveId, updatedLeave); 
-        await fetchLeaveData(); 
-        closeUpdateDialog(); 
+        await LeaveManagementService.updateLeave(selectedLeaveId, updatedLeave);
+        await fetchLeaveData();
+        closeUpdateDialog();
       } catch (error) {
         console.error("Error updating leave:", error);
       }
@@ -210,10 +245,6 @@ const handleClose= async() =>{
   const isRowDisabled = (status: string) => {
     return status === "Approved" || status === "Rejected";
   };
-  
-
- 
-
 
   return (
     <div className="flex h-screen">
@@ -241,7 +272,11 @@ const handleClose= async() =>{
                   onValueChange={handleChange}
                 >
                   <SelectTrigger className="col-span-3">
-                  <SelectValue style={{ color: 'black' }}>{selectedEmployee ? selectedEmployee.fullName : 'Select employee'}</SelectValue>
+                    <SelectValue style={{ color: "black" }}>
+                      {selectedEmployee
+                        ? selectedEmployee.fullName
+                        : "Select employee"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {employeeOptions.map((employee) => (
@@ -258,8 +293,8 @@ const handleClose= async() =>{
                 </Label>
                 <Input
                   id="startDate"
-                  value={startDate? startDate : "Select date"}
-                  onClick={() => handleDateClick('start')}
+                  value={startDate ? startDate : "Select date"}
+                  onClick={() => handleDateClick("start")}
                   readOnly
                   className="col-span-3"
                 />
@@ -270,8 +305,8 @@ const handleClose= async() =>{
                 </Label>
                 <Input
                   id="endDate"
-                  value={endDate? endDate : "Select date"}
-                  onClick={() => handleDateClick('end')}
+                  value={endDate ? endDate : "Select date"}
+                  onClick={() => handleDateClick("end")}
                   readOnly
                   className="col-span-3"
                 />
@@ -287,15 +322,12 @@ const handleClose= async() =>{
                   className="col-span-3"
                 />
               </div>
-              <div className='grid grid-cols-4 items-center gap-4'>
-                <Label htmlFor='type' className='text-right'>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="type" className="text-right">
                   Type
                 </Label>
-                <Select
-                  value={leaveType}
-                  onValueChange={setLeaveType}
-                >
-                  <SelectTrigger className='col-span-3'>
+                <Select value={leaveType} onValueChange={setLeaveType}>
+                  <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select leave type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -309,20 +341,21 @@ const handleClose= async() =>{
           </DialogContent>
         </Dialog>
 
-        <Dialog open={isCalendarDialogOpen} onOpenChange={setIsCalendarDialogOpen}>
+        <Dialog
+          open={isCalendarDialogOpen}
+          onOpenChange={setIsCalendarDialogOpen}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Select Date</DialogTitle>
             </DialogHeader>
             <Calendar
               mode="single"
-              selected={calendarType === 'start' ? startDate : endDate}
-              onSelect={date => {
-                if (calendarType === 'start') {
-                  
+              selected={calendarType === "start" ? startDate : endDate}
+              onSelect={(date) => {
+                if (calendarType === "start") {
                   setStartDate(date);
                 } else {
-                  
                   setEndDate(date);
                 }
                 setIsCalendarDialogOpen(false);
@@ -331,93 +364,141 @@ const handleClose= async() =>{
           </DialogContent>
         </Dialog>
 
-
         {leaveManagement && leaveManagement.length > 0 ? (
-  <Table className="w-full bg-white border border-black rounded-lg shadow-sm">
-    <TableHeader>
-      <TableRow style={{ backgroundColor: '#000000' }}> 
-        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Employee Name</TableHead>
-        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Start Date</TableHead>
-        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>End Date</TableHead>
-        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Cause</TableHead>
-        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Type</TableHead>
-        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Status</TableHead>
-        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Edit</TableHead>
-        <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Actions</TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {leaveManagement && leaveManagement.map((leave) => (
-        <TableRow key={leave.id} className="border-t border-black">
-          <TableCell className="text-center py-2 px-4 font-semibold">{leave.staff_name}</TableCell>
-          <TableCell className="text-center py-2 px-4 font-semibold">{leave.start_date}</TableCell>
-          <TableCell className="text-center py-2 px-4 font-semibold">{leave.end_date}</TableCell>
-          <TableCell className="text-center py-2 px-4 font-semibold">{leave.reason}</TableCell>
-          <TableCell className="text-center py-2 px-4 font-semibold">{leave.type}</TableCell>
-          <TableCell className="text-center py-2 px-4 font-semibold">
-            {leave.status !== "Pending" ? (
-              leave.status === "Approved" ? (
-                <span className="w-24 inline-block font-bold text-green-500 text-center px-2 py-1">
-                  {leave.status}
-                </span>
-              ) : (
-                <span className="w-24 inline-block font-bold text-red-500 text-center px-2 py-1">
-                  {leave.status}
-                </span>
-              )
-            ) : (
-              <span className="w-24 inline-block font-bold text-yellow-500 text-center px-2 py-1">
-                {leave.status}
-              </span>
-            )}
-          </TableCell>
-          <TableCell className="flex justify-center ml-3 text-center py-2 px-4">
-            <Button
-              variant="outline"
-              onClick={() => openUpdateDialog(leave)}
-              disabled={isRowDisabled(leave.status)}
-              className="mr-3"
-            >
-              <FiEdit className="mr-2" />
-              Update
-            </Button>
-          </TableCell>
-          <TableCell className="text-center py-2 px-4">
-            <Button
-              onClick={() => handleLeave(leave.id,"approve")}
-              disabled={isRowDisabled(leave.status)}
-              variant="outline"
-              className="mr-3 font-bold hover:text-success-foreground hover:bg-success-hover border border-solid border-slate-300"
-            >
-              <FiCheck className="mr-2" />
-              Approve
-            </Button>
-            <Button
-              variant="outline" 
-              onClick={() => handleLeave(leave.id,"reject")}
-              disabled={isRowDisabled(leave.status)}
-              className="mr-3 font-bold hover:text-warning-foreground hover:bg-warning-hover border border-solid border-slate-300"
-            >
-              <FiX className="mr-2" />
-              Reject
-            </Button>
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody> 
-  </Table>
-) : (
-  <p>No Leaves Found</p>
-)}
-
+          <Table className="w-full bg-white border border-grey-900 rounded-lg shadow-sm">
+            <TableHeader>
+              <TableRow style={{ backgroundColor: "#000000" }}>
+                <TableHead
+                  className="text-center py-3 px-4 text-white font-semibold"
+                  style={{ backgroundColor: "#000000" }}
+                >
+                  Employee Name
+                </TableHead>
+                <TableHead
+                  className="text-center py-3 px-4 text-white font-semibold"
+                  style={{ backgroundColor: "#000000" }}
+                >
+                  Start Date
+                </TableHead>
+                <TableHead
+                  className="text-center py-3 px-4 text-white font-semibold"
+                  style={{ backgroundColor: "#000000" }}
+                >
+                  End Date
+                </TableHead>
+                <TableHead
+                  className="text-center py-3 px-4 text-white font-semibold"
+                  style={{ backgroundColor: "#000000" }}
+                >
+                  Cause
+                </TableHead>
+                <TableHead
+                  className="text-center py-3 px-4 text-white font-semibold"
+                  style={{ backgroundColor: "#000000" }}
+                >
+                  Type
+                </TableHead>
+                <TableHead
+                  className="text-center py-3 px-4 text-white font-semibold"
+                  style={{ backgroundColor: "#000000" }}
+                >
+                  Status
+                </TableHead>
+                <TableHead
+                  className="text-center py-3 px-4 text-white font-semibold"
+                  style={{ backgroundColor: "#000000" }}
+                >
+                  Edit
+                </TableHead>
+                <TableHead
+                  className="text-center py-3 px-4 text-white font-semibold"
+                  style={{ backgroundColor: "#000000" }}
+                >
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {leaveManagement &&
+                leaveManagement.map((leave) => (
+                  <TableRow key={leave.id} className="border-t border-grey-900">
+                    <TableCell className="text-center py-2 px-4 font-semibold">
+                      {leave.staff_name}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 font-semibold">
+                      {leave.start_date}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 font-semibold">
+                      {leave.end_date}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 font-semibold">
+                      {leave.reason}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 font-semibold">
+                      {leave.type}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 font-semibold">
+                      {leave.status !== "Pending" ? (
+                        leave.status === "Approved" ? (
+                          <span className="w-24 inline-block font-bold text-green-500 text-center px-2 py-1">
+                            {leave.status}
+                          </span>
+                        ) : (
+                          <span className="w-24 inline-block font-bold text-red-500 text-center px-2 py-1">
+                            {leave.status}
+                          </span>
+                        )
+                      ) : (
+                        <span className="w-24 inline-block font-bold text-yellow-500 text-center px-2 py-1">
+                          {leave.status}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="flex justify-center ml-3 text-center py-2 px-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => openUpdateDialog(leave)}
+                        disabled={isRowDisabled(leave.status)}
+                        className="mr-3"
+                      >
+                        <FiEdit className="mr-2" />
+                        Update
+                      </Button>
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4">
+                      <Button
+                        onClick={() => handleLeave(leave.id, "approve")}
+                        disabled={isRowDisabled(leave.status)}
+                        variant="outline"
+                        className="mr-3 font-bold hover:text-success-foreground hover:bg-success-hover border border-solid border-slate-300"
+                      >
+                        <FiCheck className="mr-2" />
+                        Approve
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleLeave(leave.id, "reject")}
+                        disabled={isRowDisabled(leave.status)}
+                        className="mr-3 font-bold hover:text-warning-foreground hover:bg-warning-hover border border-solid border-slate-300"
+                      >
+                        <FiX className="mr-2" />
+                        Reject
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <p>No Leaves Found</p>
+        )}
 
         <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle className='flex items-center'>
-              <p className="flex-1">Update Leave</p>
+              <DialogTitle className="flex items-center">
+                <p className="flex-1">Update Leave</p>
               </DialogTitle>
-              
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
@@ -429,7 +510,11 @@ const handleClose= async() =>{
                   onValueChange={handleChange}
                 >
                   <SelectTrigger className="col-span-3">
-                  <SelectValue style={{ color: 'black' }}>{selectedEmployee ? selectedEmployee.fullName : 'Select employee'}</SelectValue>
+                    <SelectValue style={{ color: "black" }}>
+                      {selectedEmployee
+                        ? selectedEmployee.fullName
+                        : "Select employee"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {employeeOptions.map((employee) => (
@@ -446,8 +531,8 @@ const handleClose= async() =>{
                 </Label>
                 <Input
                   id="startDate"
-                  value={startDate? startDate : "Select date"}
-                  onClick={() => handleDateClick('start')}
+                  value={startDate ? startDate : "Select date"}
+                  onClick={() => handleDateClick("start")}
                   readOnly
                   className="col-span-3"
                 />
@@ -458,8 +543,8 @@ const handleClose= async() =>{
                 </Label>
                 <Input
                   id="endDate"
-                  value={endDate? endDate : "Select date"}
-                  onClick={() => handleDateClick('end')}
+                  value={endDate ? endDate : "Select date"}
+                  onClick={() => handleDateClick("end")}
                   readOnly
                   className="col-span-3"
                 />
@@ -475,15 +560,12 @@ const handleClose= async() =>{
                   className="col-span-3"
                 />
               </div>
-              <div className='grid grid-cols-4 items-center gap-4'>
-                <Label htmlFor='type' className='text-right'>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="type" className="text-right">
                   Type
                 </Label>
-                <Select
-                  value={leaveType}
-                  onValueChange={setLeaveType}
-                >
-                  <SelectTrigger className='col-span-3'>
+                <Select value={leaveType} onValueChange={setLeaveType}>
+                  <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select leave type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -495,34 +577,40 @@ const handleClose= async() =>{
             </div>
             <Button onClick={handleUpdateLeave}>Update Leave</Button>
             <Button variant="secondary" onClick={closeUpdateDialog}>
-                Cancel
-              </Button>
+              Cancel
+            </Button>
           </DialogContent>
         </Dialog>
 
-        <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
+        <Dialog
+          open={isApproveDialogOpen}
+          onOpenChange={setIsApproveDialogOpen}
+        >
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{handleStatus=="approve"? "Approve Leave":"Reject Leave"}</DialogTitle>
+              <DialogTitle>
+                {handleStatus == "approve" ? "Approve Leave" : "Reject Leave"}
+              </DialogTitle>
               <DialogDescription>
-              {
-              handleStatus=="approve"? 
-              "Are you sure you want to approve the leave ?":
-              "Are you sure you want reject the leave ?"}
-                
+                {handleStatus == "approve"
+                  ? "Are you sure you want to approve the leave ?"
+                  : "Are you sure you want reject the leave ?"}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-            {handleStatus === "approve" ? (
-            <Button onClick={handleApproval} className=' bg-success text-success-foreground hover:bg-success-hover'>
-              Approve
-            </Button>
-          ) : 
-          <Button variant="destructive" onClick={handleRejection}>
-          Reject
-        </Button>}
+              {handleStatus === "approve" ? (
+                <Button
+                  onClick={handleApproval}
+                  className=" bg-success text-success-foreground hover:bg-success-hover"
+                >
+                  Approve
+                </Button>
+              ) : (
+                <Button variant="destructive" onClick={handleRejection}>
+                  Reject
+                </Button>
+              )}
 
-          
               <Button variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
@@ -532,6 +620,6 @@ const handleClose= async() =>{
       </main>
     </div>
   );
-}
+};
 
-export default Leaves
+export default Leaves;

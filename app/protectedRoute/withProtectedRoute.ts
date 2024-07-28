@@ -11,7 +11,7 @@ const withProtectedRoute = (WrappedComponent) => {
     useEffect(() => {
       // If the user is not an admin, redirect to the login page
       if (!isAdmin()) {
-        router.push("/login");
+        router.push("/");
       }
     }, [router]);
 

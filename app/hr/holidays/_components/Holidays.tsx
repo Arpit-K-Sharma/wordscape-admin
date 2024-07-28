@@ -251,22 +251,35 @@ const HolidaysPage: React.FC = () => {
         </Dialog>
 
         {displayedHolidays.length > 0 ? (
-          <Table  className="w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-            <TableHeader className="bg-gray-100">
-              <TableRow className="bg-gray-100">
-                <TableHead className='text-center'>Name</TableHead>
-                <TableHead className='text-center'>Date</TableHead>
-                <TableHead className='text-center'>Description</TableHead>
-                <TableHead className='text-center'>Actions</TableHead>
+          <Table className="w-full bg-white border border-grey-900 rounded-lg shadow-sm">
+            <TableHeader>
+              <TableRow className="bg-gray-800">
+                <TableHead className="text-center py-2 px-4  text-white">
+                  Name
+                </TableHead>
+                <TableHead className="text-center py-2 px-4  text-white">
+                  Date
+                </TableHead>
+                <TableHead className="text-center py-2 px-4 text-white">
+                  Description
+                </TableHead>
+                <TableHead className="text-center py-2 px-4 text-white">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {displayedHolidays.map((holiday) => (
-                <TableRow key={holiday.holiday_id} className="border-t border-gray-200">
-                  <TableCell className='text-center'>{holiday.name}</TableCell>
-                  <TableCell className='text-center'>{holiday.date}</TableCell>
-                  <TableCell className='text-center'>{holiday.description}</TableCell>
-                  <TableCell className='text-center'>
+                <TableRow
+                  key={holiday.holiday_id}
+                  className="border-t border-grey-900"
+                >
+                  <TableCell className="text-center ">{holiday.name}</TableCell>
+                  <TableCell className="text-center ">{holiday.date}</TableCell>
+                  <TableCell className="text-center ">
+                    {holiday.description}
+                  </TableCell>
+                  <TableCell className="text-center ">
                     <Button
                       variant="outline"
                       onClick={() => openUpdateDialog(holiday)}
