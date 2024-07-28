@@ -1,38 +1,41 @@
 "use client";
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { AiOutlineLoading } from "react-icons/ai";
 import logo from "../images/LogoOnly.png";
 import books from "../images/books.jpg";
 import { useRouter } from "next/navigation";
+import { Toaster } from "react-hot-toast";
+import { adminLogin, isLoggedIn, isAdmin } from "../_axios/axiosInstance";
+import { error } from "console";
+import toast from "react-hot-toast";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    // Simulating API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    if (email === "admin@gmail.com" && password === "password") {
-      console.log("Login successful");
+
+    const success = await adminLogin(email, password, "ROLE_ADMIN");
+
+    if (success) {
       router.push("/inventory");
     } else {
-      setError("Invalid email or password");
       setLoading(false);
+      toast.error("Failed to login");
     }
   };
 
   return (
     <div className="flex min-h-screen">
+      <Toaster position="top-right" />
       <div className="w-full lg:w-1/2 flex items-center justify-center bg-white">
         <div className="w-full max-w-md p-8">
           <Image
@@ -57,7 +60,7 @@ export default function AdminLogin() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@example.com"
+                placeholder="Enter your credentials."
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -75,7 +78,7 @@ export default function AdminLogin() {
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

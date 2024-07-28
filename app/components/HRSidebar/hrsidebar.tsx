@@ -1,6 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import Cookies from "js-cookie";
 import {
   LayoutDashboard,
   Users,
@@ -23,6 +24,10 @@ import LogoOnly from "../../../public/images/LogoOnly.png";
 
 const HRSidebar: React.FC = () => {
   const router = useRouter();
+  const handleLogout = () => {
+    Cookies.remove("accessToken");
+    router.push("/");
+  };
 
   return (
     <aside className="w-56 bg-white shadow-md font-archivo">
@@ -108,7 +113,7 @@ const HRSidebar: React.FC = () => {
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/")}
+            onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Log Out

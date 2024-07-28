@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Archivo } from "next/font/google";
 import "./globals.css";
+import { AuthorizationWrapper } from "./util/authContext";
 
 const inter = Inter({ subsets: ["latin"] });
 const archivo = Archivo({ weight: ["400", "700"], subsets: ["latin"] });
@@ -17,7 +18,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} font-archivo`}>{children}</body>
+      <body className={`${inter.className} font-archivo`}>
+        {/* Wrap children with AuthorizationWrapper */}
+        {children}
+      </body>
     </html>
   );
 }

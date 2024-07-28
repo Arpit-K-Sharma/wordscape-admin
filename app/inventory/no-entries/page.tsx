@@ -1,14 +1,21 @@
 "use client";
-import PurchaseEntryList from "@/app/components/PurchaseNoEntry/PurchaseWithoutEntry"
-import React from "react";
-import toast, {Toaster} from 'react-hot-toast'
 
-const entries = () => {
-  return <>
-  <PurchaseEntryList />;
-  <Toaster />
-  </>
-  
+import { AuthorizationWrapper } from "@/app/util/authContext";
+import React from "react";
+import { useRouter } from "next/navigation";
+import PurchaseEntryList from "@/app/components/PurchaseNoEntry/PurchaseWithoutEntry";
+
+const Page = () => {
+  const router = useRouter();
+  const pathname = router.asPath;
+
+  return (
+    <AuthorizationWrapper pathname={pathname}>
+      {" "}
+      {/* Pass pathname prop */}
+      <PurchaseEntryList />
+    </AuthorizationWrapper>
+  );
 };
 
-export default entries;
+export default Page;

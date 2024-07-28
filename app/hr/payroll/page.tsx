@@ -1,10 +1,13 @@
-import React from 'react'
-import Payroll from './_components/Payroll'
+import React from "react";
+import Payroll from "./_components/Payroll";
+import { AuthorizationWrapper } from "@/app/util/authContext";
 
 const page = () => {
   return (
-    <Payroll/>
-  )
-}
+    <AuthorizationWrapper>
+      <Payroll />
+    </AuthorizationWrapper>
+  );
+};
 
-export default page
+export default page;

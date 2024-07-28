@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import Cookies from "js-cookie";
 import {
   LayoutDashboard,
   Printer,
@@ -24,6 +25,12 @@ const InventorySidebar: React.FC = () => {
   const router = useRouter();
   const [stockLevelOpen, setStockLevelOpen] = useState(false);
   const [purchaseOrderOpen, setPurchaseOrderOpen] = useState(false);
+  const [logout, isLogout] = React.useState(false);
+
+  const handleLogout = () => {
+    Cookies.remove("accessToken");
+    router.push("/");
+  };
 
   return (
     <aside className="w-56 bg-white font-archivo">
@@ -149,7 +156,7 @@ const InventorySidebar: React.FC = () => {
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/")}
+            onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Log Out

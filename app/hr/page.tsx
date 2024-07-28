@@ -1,9 +1,15 @@
-import HROverview from "@/app/components/HRDashboard/HRDashboard";
-import React from "react";
+"use client";
 
-const page = () => {
-  
-  return <HROverview />;
+import React from "react";
+import HROverview from "@/app/components/HRDashboard/HRDashboard";
+import { AuthorizationWrapper } from "../util/authContext";
+
+const HRPage = () => {
+  return (
+    <AuthorizationWrapper>
+      <HROverview />
+    </AuthorizationWrapper>
+  );
 };
 
-export default page;
+export default HRPage;
