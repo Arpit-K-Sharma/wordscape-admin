@@ -1,5 +1,5 @@
 import AdminLogin from "./_auth/login";
-// Deployment
+// Deployment code
 export default function Home() {
   return (
     <main>
