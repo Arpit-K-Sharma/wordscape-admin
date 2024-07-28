@@ -269,7 +269,7 @@ const EmployeesPage: React.FC = () => {
             Add Staff
           </Button>
         </div>
-        <Table className="w-full bg-white border border-black rounded-lg shadow-sm">
+        {employees.length > 0 ? (        <Table className="w-full bg-white border border-black rounded-lg shadow-sm">
           <TableHeader>
             <TableRow  style={{ backgroundColor: '#000000' }}>
               <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Name</TableHead>
@@ -649,6 +649,10 @@ const EmployeesPage: React.FC = () => {
             ))}
           </TableBody>
         </Table>
+        ):(
+         <p>No Employees Found</p>
+        )}
+
       </div>
 
       <Dialog

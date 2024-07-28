@@ -146,7 +146,7 @@ function Departments() {
           <div className="flex justify-between items-center mb-4">
             <Button onClick={openAddDialog}>Add Department</Button>
           </div>
-
+        {departments.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {departments.map((department) => (
               <div 
@@ -187,6 +187,9 @@ function Departments() {
               </div>
             ))}
           </div>
+          ): (
+            <p className="text-gray-600 text-center">No departments found.</p>
+          )}
 
           {/* Add Department Dialog */}
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
