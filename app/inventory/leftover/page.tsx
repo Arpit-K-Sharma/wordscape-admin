@@ -2,7 +2,7 @@
 import React from "react";
 import Leftover from "@/app/components/Leftover/Leftovers";
 import { AuthorizationWrapper } from "@/app/util/authContext";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 const Page = () => {
   const router = useRouter();
