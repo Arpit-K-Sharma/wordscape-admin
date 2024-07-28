@@ -18,10 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} font-archivo`}>
-        {/* Wrap children with AuthorizationWrapper */}
-        {children}
-      </body>
+      <body className={`${inter.className} font-archivo`}>{children}</body>
     </html>
   );
 }

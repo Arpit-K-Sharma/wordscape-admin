@@ -1,10 +1,13 @@
-import React from 'react'
-import AttendanceForm from './_components/attendance'
+import React from "react";
+import AttendanceForm from "./_components/attendance";
+import { AuthorizationWrapper } from "@/app/util/authContext";
 
 const page = () => {
   return (
-    <AttendanceForm/>
-  )
-}
+    <AuthorizationWrapper>
+      <AttendanceForm />
+    </AuthorizationWrapper>
+  );
+};
 
-export default page
+export default page;
