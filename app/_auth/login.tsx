@@ -9,7 +9,7 @@ import logo from "../images/LogoOnly.png";
 import books from "../images/books.jpg";
 import { useRouter } from "next/navigation";
 import { Toaster } from "react-hot-toast";
-import { adminLogin, isLoggedIn, isAdmin } from "../_axios/axiosInstance";
+import { adminLogin } from "../_axios/axiosInstance";
 import { error } from "console";
 import toast from "react-hot-toast";
 
