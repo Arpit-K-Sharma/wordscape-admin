@@ -1,12 +1,11 @@
 "use client";
-
 import StocksPage from "@/app/components/Stock/Stock";
 import React from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { AuthorizationWrapper } from "@/app/util/authContext"; // Adjust the import path as necessary
 import { usePathname } from "next/navigation";
 
-const page = () => {
+const Page = () => {
   const pathname = usePathname();
 
   return (
@@ -19,4 +18,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
