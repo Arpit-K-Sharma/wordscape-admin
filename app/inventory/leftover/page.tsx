@@ -1,5 +1,4 @@
-"use client";
-
+// @client
 import React from "react";
 import Leftover from "@/app/components/Leftover/Leftovers";
 import { AuthorizationWrapper } from "@/app/util/authContext";
@@ -11,8 +10,6 @@ const Page = () => {
 
   return (
     <AuthorizationWrapper pathname={pathname}>
-      {" "}
-      {/* Pass pathname prop */}
       <Leftover />
     </AuthorizationWrapper>
   );
