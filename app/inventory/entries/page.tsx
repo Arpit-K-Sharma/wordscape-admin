@@ -9,10 +9,9 @@ import { usePathname } from "next/navigation";
 const Page = () => {
   const router = useRouter();
   const pathname = usePathname();
+
   return (
     <AuthorizationWrapper pathname={pathname}>
-      {" "}
-      {/* Pass pathname prop */}
       <PurchaseWithEntry />
     </AuthorizationWrapper>
   );
