@@ -145,7 +145,6 @@ const Payrolls: React.FC = () => {
                   <TableHead className="text-center py-2 px-4">Sub Total</TableHead>
                   <TableHead className="text-center py-2 px-4">Tax</TableHead>
                   <TableHead className="text-center py-2 px-4">Net Salary</TableHead>
-                  <TableHead className="text-center py-2 px-4">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -163,7 +162,7 @@ const Payrolls: React.FC = () => {
                     <TableCell className="text-center py-2 px-4">Rs. {payroll.sub_total}</TableCell>
                     <TableCell className="text-center py-2 px-4">Rs. {payroll.tax}</TableCell>
                     <TableCell className="text-center py-2 px-4">Rs. {payroll.net_salary}</TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       <Button
                       variant="destructive"
                       onClick={() => {openDeleteDialog(payroll)}}
@@ -172,7 +171,7 @@ const Payrolls: React.FC = () => {
                       <FiTrash2 className="mr-2" />
                       Delete
                     </Button>
-                </TableCell>
+                </TableCell> */}
                   </TableRow>
                 ))}
               </TableBody>

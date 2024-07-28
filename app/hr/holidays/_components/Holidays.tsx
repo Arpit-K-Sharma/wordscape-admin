@@ -276,7 +276,8 @@ const HolidaysPage: React.FC = () => {
                       Update
                     </Button>
                     <Button
-                      variant="destructive"
+                      variant="outline"
+                      className="mr-3 font-bold hover:text-warning-foreground hover:bg-warning-hover"
                       onClick={() => openDeleteDialog(holiday)}
                     >
                       <FiTrash2 className="mr-2" />

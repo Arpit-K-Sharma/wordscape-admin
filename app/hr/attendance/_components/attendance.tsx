@@ -149,26 +149,26 @@ const AttendanceForm: React.FC = () => {
               </Popover>
             </div>
             {attendanceData && attendanceData.staffs.length > 0 ? (
-              <Table className="w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-                <TableHeader className="bg-gray-100">
-                  <TableRow className='bg-gray-100'>
-                    <TableHead className="w-[200px]">Staff Name</TableHead>
-                    <TableHead className='text-center'>Check-in</TableHead>
-                    <TableHead className='text-center'>Check-out</TableHead>
-                    <TableHead className='text-center'>Status</TableHead>
-                    <TableHead className="w-[300px] text-center">Remarks</TableHead>
+              <Table className="w-full bg-white border border-black rounded-lg shadow-sm">
+                <TableHeader>
+                  <TableRow  style={{ backgroundColor: '#000000' }}>
+                    <TableHead className="w-[200px] text-center py-2 px-4 font-semibold">Staff Name</TableHead>
+                    <TableHead className='text-center py-2 px-4 font-semibold'>Check-in</TableHead>
+                    <TableHead className='text-center py-2 px-4 font-semibold'>Check-out</TableHead>
+                    <TableHead className='text-center py-2 px-4 font-semibold'>Status</TableHead>
+                    <TableHead className="w-[300px] text-center py-2 px-4 font-semibold">Remarks</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {attendanceData.staffs.map((staff, index) => (
-                    <TableRow key={staff.staff_id} className="border-t border-gray-200">
+                    <TableRow key={staff.staff_id} className="border-t border-black">
                       <TableCell>{staff.staff_name}</TableCell>
                       <TableCell>
                         <Input
                           type="time"
                           value={staff.check_in}
                           onChange={(e) => handleChange(index, 'check_in', e.target.value)}
-                          className='flex item-center justify-center'
+                          className='flex item-center justify-center border border-black'
                           disabled={!isEditable}
                         />
                       </TableCell>
@@ -177,16 +177,17 @@ const AttendanceForm: React.FC = () => {
                           type="time"
                           value={staff.check_out}
                           onChange={(e) => handleChange(index, 'check_out', e.target.value)}
-                          className='flex item-center justify-center'
+                          className='flex item-center justify-center border border-black'
                           disabled={!isEditable}
                   
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center py-2 px-4 font-semibold">
                         <Select
                           value={staff.status}
                           onValueChange={(value) => handleChange(index, 'status', value as 'Present' | 'Absent')}
                           disabled={!isEditable}
+          
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select status" />
@@ -204,7 +205,7 @@ const AttendanceForm: React.FC = () => {
                           type="text"
                           value={staff.remarks}
                           onChange={(e) => handleChange(index, 'remarks', e.target.value)}
-                          className="w-full"
+                          className="w-full font-semibold border border-black"
                           placeholder='Reason for leave, if any'
                           disabled={!isEditable}
                         />
@@ -217,7 +218,7 @@ const AttendanceForm: React.FC = () => {
               <div className="text-center py-4">No attendance available for this date.</div>
             )}
             {attendanceData && attendanceData.staffs.length > 0 && (
-              <div className="flex justify-end">
+              <div className="flex">
                 <Button type="submit" disabled={!isEditable}>
                   Submit Attendance
                 </Button>

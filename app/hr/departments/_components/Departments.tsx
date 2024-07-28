@@ -147,45 +147,46 @@ function Departments() {
             <Button onClick={openAddDialog}>Add Department</Button>
           </div>
 
-        <Table className="w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-        <TableHeader className="bg-gray-100">
-        <TableRow className='bg-gray-100'>
-                <TableHead className='text-center'>Name</TableHead>
-                <TableHead className='text-center'>Description</TableHead>
-                <TableHead className='text-center'>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {departments.map((department) => (
-                <TableRow key={department._id} className="border-t border-gray-200">
-                  <TableCell className='text-center'>{department.department_name}</TableCell>
-                  <TableCell className='text-center'>{department.description}</TableCell>
-                  <TableCell className='text-center'>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {departments.map((department) => (
+              <div 
+                key={department._id} 
+                className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-xl"
+              >
+                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                  <h2 className="text-xl font-semibold text-gray-800">{department.department_name}</h2>
+                </div>
+                <div className="p-4">
+                  <p className="text-gray-600 mb-4 h-20 overflow-y-auto">{department.description}</p>
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       variant="outline"
-                      className="mr-2"
+                      size="sm"
                       onClick={() => openUpdateDialog(department)}
+                      className="font-bold transition-colors duration-200"
                     >
                       <FiEdit2 className="mr-1" /> Update
                     </Button>
                     <Button
-                      variant="destructive"
-                      className="mr-2"
+                      variant="outline"
+                      size="sm"
                       onClick={() => openDeleteDialog(department)}
-                    >
+                      className="font-bold hover:text-warning-foreground hover:bg-warning-hover border border-solid border-slate-300"                    >
                       <FiTrash2 className="mr-1" /> Delete
                     </Button>
                     <Button
                       variant="outline"
+                      size="sm"
                       onClick={() => openMembersDialog(department)}
+                      className="font-bold transition-colors duration-200 hover:bg-black hover:text-white hover:border-black"
                     >
                       <FiUsers className="mr-1" /> View Members
                     </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
 
           {/* Add Department Dialog */}
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

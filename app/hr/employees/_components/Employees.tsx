@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   CheckCircle,
   CalendarPlus,
   DollarSign,
+  Eye,
 } from "lucide-react";
 import {
   Table,
@@ -92,6 +93,7 @@ const EmployeesPage: React.FC = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [staffToDelete, setStaffToDelete] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [newStaff, setNewStaff] = useState({
     fullName: "",
     email: "",
@@ -130,6 +132,13 @@ const EmployeesPage: React.FC = () => {
       toast.error("Failed to fetch departments");
     }
   };
+
+   const filteredEmployees = useMemo(() => {
+    if (searchTerm.length < 3) return employees;
+    return employees.filter((employee) =>
+      employee.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [employees, searchTerm]);
 
   const handleViewDetails = (employee: Employee) => {
     setSelectedEmployee(employee);
@@ -241,33 +250,43 @@ const EmployeesPage: React.FC = () => {
       <HRSidebar />
       <div className="flex-1 p-6">
         <h1 className="text-2xl font-bold mb-4">Employees</h1>
-        <Button onClick={() => setIsAddStaffDialogOpen(true)} className="mb-4">
-          <Plus className="mr-1 h-4 w-4" />
-          Add Staff
-        </Button>
-        <Table className="w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-          <TableHeader className="bg-gray-100">
-            <TableRow className='bg-gray-100'>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Position</TableHead>
-
-              <TableHead>Departments</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-center">Actions</TableHead>
+        <div className="flex justify-between items-center mb-4">
+          <div className="relative w-64">
+            <Input
+              placeholder="Search employees..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pr-10"
+            />
+            {searchTerm.length > 0 && searchTerm.length < 3 && (
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-400">
+                {3 - searchTerm.length} more...
+              </span>
+            )}
+          </div>
+          <Button onClick={() => setIsAddStaffDialogOpen(true)}>
+            <Plus className="mr-1 h-4 w-4" />
+            Add Staff
+          </Button>
+        </div>
+        <Table className="w-full bg-white border border-black rounded-lg shadow-sm">
+          <TableHeader>
+            <TableRow  style={{ backgroundColor: '#000000' }}>
+              <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Name</TableHead>
+              <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Email</TableHead>
+              <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Phone</TableHead>
+              <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Status</TableHead>
+              <TableHead className="text-center py-3 px-4 text-white font-semibold" style={{ backgroundColor: '#000000' }}>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {employees.map((employee) => (
-              <TableRow key={employee._id} className="border-t border-gray-200">
-                <TableCell>{employee.fullName}</TableCell>
-                <TableCell>{employee.email}</TableCell>
-                <TableCell>{employee.phoneNumber}</TableCell>
-                <TableCell>{employee.position}</TableCell>
+            {filteredEmployees.map((employee) => (
+              <TableRow key={employee._id} className="border-t border-black">
+                <TableCell className="text-center py-2 px-4 font-semibold">{employee.fullName}</TableCell>
+                <TableCell className="text-center py-2 px-4 font-semibold">{employee.email}</TableCell>
+                <TableCell className="text-center py-2 px-4 font-semibold">{employee.phoneNumber}</TableCell>
 
-                <TableCell>{employee.departmentNames.join(", ")}</TableCell>
-                <TableCell>
+                <TableCell className="text-center py-2 px-4 font-semibold">
                   {employee.status ? (
                     <span style={{ fontWeight: "bold", color: "green" }}>
                       Active
@@ -279,18 +298,17 @@ const EmployeesPage: React.FC = () => {
                   )}
                 </TableCell>
                 <TableCell>
-                  <div className="flex space-x-2">
+                  <div className="flex justify-center space-x-2">
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex items-center justify-center w-32"
+                          className="flex items-center justify-center pr-[3px]"
                           onClick={() => handleViewDetails(employee)}
                         >
-                          <ListCollapse className="mr-2 h-4 w-4" />
-                          View Details
-                        </Button>
+                          <Eye className="mr-2 h-4 w-10 p-0" />
+                          </Button>
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-[800px]">
                         <DialogHeader>
@@ -355,14 +373,14 @@ const EmployeesPage: React.FC = () => {
                       key={`update-${employee._id}`}
                       variant="outline"
                       size="sm"
-                      className="flex items-center justify-center w-32"
+                      className="flex items-center justify-center pr-[3px]"
                       onClick={() => {
                         console.log("Employee being edited:", employee);
                         setEditingEmployee({ ...employee });
                         setIsUpdateDialogOpen(true);
                       }}
                     >
-                      <Pencil className="mr-2 h-4 w-4" /> Update
+                      <Pencil className="mr-2 h-4 w-10 p-0" />
                     </Button>
                     <Dialog
                       open={isUpdateDialogOpen}
@@ -594,7 +612,7 @@ const EmployeesPage: React.FC = () => {
                       </DialogContent>
                     </Dialog>
 
-                    <Button
+                    {/* <Button
                       key={`delete-${employee.id}`}
                       variant="destructive"
                       size="sm"
@@ -602,13 +620,13 @@ const EmployeesPage: React.FC = () => {
                       onClick={() => handleDeleteStaff(employee.id)}
                     >
                       <Trash2 className="mr-2 h-4 w-4" /> Delete Staff
-                    </Button>
+                    </Button> */}
 
                     <Button
                       key={`status-${employee.id}`}
                       variant={employee.status ? "outline" : "default"}
                       size="sm"
-                      className="flex items-center justify-center w-32"
+                      className="flex items-center justify-center w-28"
                       onClick={() =>
                         handleStatusChange(employee.id, employee.status)
                       }

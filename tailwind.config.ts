@@ -60,6 +60,11 @@ const config = {
           foreground: "#FFFFFF",
           hover: "#45A049",
         },
+        warning: {
+          DEFAULT: "#FF3333",
+          foreground: "#FFFFFF",
+          hover: "#CC0000",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -95,7 +95,7 @@ const HROverview: React.FC = () => {
             </div>
 
             {/* Recent Employees */}
-            <Card className="h-[calc(100%)]">
+            <Card className="h-[calc(100%)-130px]">
               <CardHeader className="flex justify-between items-center">
                 <CardTitle className="text-xl">Recent Employees</CardTitle>
               </CardHeader>
@@ -104,10 +104,10 @@ const HROverview: React.FC = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Department</TableHead>
-                        <TableHead>Position</TableHead>
-                        <TableHead>Join Date</TableHead>
+                        <TableHead className="font-semibold">Name</TableHead>
+                        <TableHead className="font-semibold">Department</TableHead>
+                        <TableHead className="font-semibold">Position</TableHead>
+                        <TableHead className="font-semibold">Join Date</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -119,7 +119,7 @@ const HROverview: React.FC = () => {
                           </TableCell>
                           <TableCell>{employee.position}</TableCell>
                           <TableCell>
-                            {new Date(employee.created_at).toLocaleDateString()}
+                            {employee.created_at}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -127,9 +127,9 @@ const HROverview: React.FC = () => {
                   </Table>
                 </ScrollArea>
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   onClick={() => router.push("/hr/employees")}
-                  className="mt-3 bg-blue-700 text-white hover:bg-slate-800"
+                  className="mt-3 text-black hover:bg-slate-800 hover:text-white border border-solid border-slate-800"
                 >
                   View All Employees
                 </Button>
@@ -147,11 +147,12 @@ const HROverview: React.FC = () => {
             <CardContent>
               {currentYearHolidays.slice(0, 5).map((holiday) => (
                 <p key={holiday.holiday_id} className="mt-3 mb-1">
-                  <b>{holiday.name}:</b> {new Date(holiday.date).toLocaleDateString()}
+                  <b>{holiday.name}:</b> {holiday.date}
                 </p>
               ))}
               <Button
-                className="mt-4 bg-green-700 text-white hover:bg-slate-800"
+                variant="secondary"
+                className="mt-4 text-black hover:bg-slate-800 hover:text-white border border-solid border-slate-800"
                 onClick={() => router.push("/hr/holidays")}
               >
                 View All Holidays
