@@ -9,13 +9,14 @@ import {
   GraduationCap,
   BarChart,
   Settings,
+  LogOut,
   UserRound,
   Boxes,
   ArrowLeft,
   CheckCircle,
   CalendarPlus,
   DollarSign,
-  ClipboardList
+  ClipboardList,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LogoOnly from "../../../public/images/LogoOnly.png";
@@ -104,7 +105,14 @@ const HRSidebar: React.FC = () => {
             <CalendarPlus className="mr-2 h-4 w-4" />
             Holidays
           </Button>
-        
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/")}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Log Out
+          </Button>
         </nav>
       </div>
     </aside>

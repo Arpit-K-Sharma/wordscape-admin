@@ -33,7 +33,7 @@ export default function AdminLogin() {
 
   return (
     <div className="flex min-h-screen">
-      <div className="w-1/2 flex items-center justify-center bg-white">
+      <div className="w-full lg:w-1/2 flex items-center justify-center bg-white">
         <div className="w-full max-w-md p-8">
           <Image
             className="mx-auto mb-8 w-24 sm:w-28 md:w-32 lg:w-36 h-auto"
@@ -97,7 +97,7 @@ export default function AdminLogin() {
           </form>
         </div>
       </div>
-      <div className="w-1/2 relative">
+      <div className="hidden lg:block w-1/2 relative">
         <Image src={books} alt="Books" layout="fill" objectFit="cover" />
       </div>
     </div>

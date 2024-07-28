@@ -11,6 +11,7 @@ import {
   Warehouse,
   UserRound,
   ChevronDown,
+  LogOut,
   ChevronRight,
   Package,
   ShoppingCart,
@@ -150,7 +151,7 @@ const InventorySidebar: React.FC = () => {
             className="w-full justify-start mb-2 text-sm"
             onClick={() => router.push("/")}
           >
-            <UserRound className="mr-2 h-4 w-4" />
+            <LogOut className="mr-2 h-4 w-4" />
             Log Out
           </Button>
         </nav>
