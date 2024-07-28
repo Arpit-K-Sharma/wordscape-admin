@@ -64,22 +64,22 @@ const InventorySidebar: React.FC = () => {
             </Button>
             {stockLevelOpen && (
               <>
-              <Button
-                variant="ghost"
-                className="w-full justify-start mb-2 text-sm pl-8 "
-                onClick={() => router.push("/inventory/stocks")}
-              >
-                <Package className="mr-2 h-4 w-4" />
-                Stock
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start mb-2 text-sm pl-8 "
-                onClick={() => router.push("/inventory/leftover")}
-              >
-                <PackagePlus className="mr-2 h-4 w-4" />
-                Leftovers
-              </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start mb-2 text-sm pl-8 "
+                  onClick={() => router.push("/inventory/stocks")}
+                >
+                  <Package className="mr-2 h-4 w-4" />
+                  Stock
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start mb-2 text-sm pl-8 "
+                  onClick={() => router.push("/inventory/leftover")}
+                >
+                  <PackagePlus className="mr-2 h-4 w-4" />
+                  Leftovers
+                </Button>
               </>
             )}
           </div>
@@ -144,6 +144,14 @@ const InventorySidebar: React.FC = () => {
           >
             <UserRound className="mr-2 h-4 w-4" />
             Human Resources
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/")}
+          >
+            <UserRound className="mr-2 h-4 w-4" />
+            Log Out
           </Button>
         </nav>
       </div>
