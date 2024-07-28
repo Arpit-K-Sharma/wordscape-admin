@@ -1,9 +1,9 @@
 import { PurchaseEntrySlip } from "@/app/components/PurchaseEntryForm/PurchaseEntryForm";
 import React from "react";
-import toast, { Toaster } from "react-hot-toast";
+import { usePathname } from "next/navigation";
 import { AuthorizationWrapper } from "@/app/util/authContext";
 
-const page = ({ params }: { params: { orderId: string } }) => {
+const Page = ({ params }: { params: { orderId: string } }) => {
   const pathname = usePathname();
 
   return (
@@ -13,4 +13,4 @@ const page = ({ params }: { params: { orderId: string } }) => {
   );
 };
 
-export default page;
+export default Page;
