@@ -146,7 +146,7 @@ function Departments() {
           <div className="flex justify-between items-center mb-4">
             <Button onClick={openAddDialog}>Add Department</Button>
           </div>
-
+          {departments.length > 0 ? (
           <Table>
             <TableCaption>A list of departments.</TableCaption>
             <TableHeader>
@@ -187,6 +187,9 @@ function Departments() {
               ))}
             </TableBody>
           </Table>
+          ):(
+            <p>No departments found.</p>
+          )}
 
           {/* Add Department Dialog */}
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
