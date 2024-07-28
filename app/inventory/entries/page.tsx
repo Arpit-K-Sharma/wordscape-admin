@@ -4,11 +4,11 @@ import PurchaseWithEntry from "@/app/components/PurchaseItemEntry/PurchaseWithEn
 import { AuthorizationWrapper } from "@/app/util/authContext";
 import React from "react";
 import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const Page = () => {
   const router = useRouter();
-  const pathname = router.asPath;
-
+  const pathname = usePathname();
   return (
     <AuthorizationWrapper pathname={pathname}>
       {" "}
