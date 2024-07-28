@@ -25,7 +25,7 @@ const InventorySidebar: React.FC = () => {
   const [purchaseOrderOpen, setPurchaseOrderOpen] = useState(false);
 
   return (
-    <aside className="w-56 bg-white  font-archivo">
+    <aside className="w-56 bg-white font-archivo">
       <div className="p-3 flex flex-col mt-2">
         <div className="flex items-center mb-4 max-sm:ml-[50px]">
           <Image
