@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import Leaves from "./_components/Leaves";
 import { AuthorizationWrapper } from "@/app/util/authContext";
+import Leaves from "./_components/Leaves";
 
 const page = () => {
   return (

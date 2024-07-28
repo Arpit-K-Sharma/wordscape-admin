@@ -367,53 +367,29 @@ const Leaves: React.FC = () => {
         {leaveManagement && leaveManagement.length > 0 ? (
           <Table className="w-full bg-white border border-grey-900 rounded-lg shadow-sm">
             <TableHeader>
-              <TableRow style={{ backgroundColor: "#000000" }}>
-                <TableHead
-                  className="text-center py-3 px-4 text-white font-semibold"
-                  style={{ backgroundColor: "#000000" }}
-                >
+              <TableRow className="bg-gray-800">
+                <TableHead className="text-center py-3 px-4 text-white ">
                   Employee Name
                 </TableHead>
-                <TableHead
-                  className="text-center py-3 px-4 text-white font-semibold"
-                  style={{ backgroundColor: "#000000" }}
-                >
+                <TableHead className="text-center py-3 px-4 text-white">
                   Start Date
                 </TableHead>
-                <TableHead
-                  className="text-center py-3 px-4 text-white font-semibold"
-                  style={{ backgroundColor: "#000000" }}
-                >
+                <TableHead className="text-center py-3 px-4 text-white ">
                   End Date
                 </TableHead>
-                <TableHead
-                  className="text-center py-3 px-4 text-white font-semibold"
-                  style={{ backgroundColor: "#000000" }}
-                >
+                <TableHead className="text-center py-3 px-4 text-white ">
                   Cause
                 </TableHead>
-                <TableHead
-                  className="text-center py-3 px-4 text-white font-semibold"
-                  style={{ backgroundColor: "#000000" }}
-                >
+                <TableHead className="text-center py-3 px-4 text-white ">
                   Type
                 </TableHead>
-                <TableHead
-                  className="text-center py-3 px-4 text-white font-semibold"
-                  style={{ backgroundColor: "#000000" }}
-                >
+                <TableHead className="text-center py-3 px-4 text-white ">
                   Status
                 </TableHead>
-                <TableHead
-                  className="text-center py-3 px-4 text-white font-semibold"
-                  style={{ backgroundColor: "#000000" }}
-                >
+                <TableHead className="text-center py-3 px-4 text-white ">
                   Edit
                 </TableHead>
-                <TableHead
-                  className="text-center py-3 px-4 text-white font-semibold"
-                  style={{ backgroundColor: "#000000" }}
-                >
+                <TableHead className="text-center py-3 px-4 text-white">
                   Actions
                 </TableHead>
               </TableRow>
@@ -422,22 +398,22 @@ const Leaves: React.FC = () => {
               {leaveManagement &&
                 leaveManagement.map((leave) => (
                   <TableRow key={leave.id} className="border-t border-grey-900">
-                    <TableCell className="text-center py-2 px-4 font-semibold">
+                    <TableCell className="text-center py-2 px-4 ">
                       {leave.staff_name}
                     </TableCell>
-                    <TableCell className="text-center py-2 px-4 font-semibold">
+                    <TableCell className="text-center py-2 px-4 ">
                       {leave.start_date}
                     </TableCell>
-                    <TableCell className="text-center py-2 px-4 font-semibold">
+                    <TableCell className="text-center py-2 px-4 ">
                       {leave.end_date}
                     </TableCell>
-                    <TableCell className="text-center py-2 px-4 font-semibold">
+                    <TableCell className="text-center py-2 px-4">
                       {leave.reason}
                     </TableCell>
-                    <TableCell className="text-center py-2 px-4 font-semibold">
+                    <TableCell className="text-center py-2 px-4 ">
                       {leave.type}
                     </TableCell>
-                    <TableCell className="text-center py-2 px-4 font-semibold">
+                    <TableCell className="text-center py-2 px-4 ">
                       {leave.status !== "Pending" ? (
                         leave.status === "Approved" ? (
                           <span className="w-24 inline-block font-bold text-green-500 text-center px-2 py-1">
