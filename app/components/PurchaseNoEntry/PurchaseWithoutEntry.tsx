@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import ReactDOM from "react-dom";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import html2canvas from "html2canvas";
@@ -58,7 +57,7 @@ import PurchaseSlip from "./purchaseSlip";
 import { VendorInput } from "../../Schema/purchaseEntrySchema";
 import { vendorService } from "@/app/services/inventoryServices/vendorsService";
 import { inventoryService } from "@/app/services/inventoryServices/inventoryservice";
-
+// Deployment
 const PurchaseEntryList: React.FC = () => {
   const [purchaseEntries, setPurchaseEntries] = useState<PurchaseEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<PurchaseEntry | null>(
