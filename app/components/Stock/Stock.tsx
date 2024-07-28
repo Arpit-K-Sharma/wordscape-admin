@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import InventorySidebar from "../Sidebar/InventorySidebar";
 import { Button } from "@/components/ui/button";
 import { FiEdit2, FiTrash2, FiPlus, FiX } from "react-icons/fi";
-import { GrAddCircle } from "react-icons/gr";
 import {
   Dialog,
   DialogContent,
@@ -26,14 +25,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import StockForm from "./StockForm";
-import UpdateItemForm from "./UpdateItemForm";
-import AddTypeForm from "./AddTypeForm";
 import toast, { Toaster } from "react-hot-toast";
-import { stockService } from "@/app/services/stockService";
 import { Input } from "@/components/ui/input";
 import { Plus, ChevronUp, ChevronDown, Info } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { inventoryService } from "@/app/services/inventoryServices/inventoryservice";
 
 interface Item {
   _id: string;
@@ -124,14 +120,12 @@ const StocksPage: React.FC = () => {
 
   const onSubmit = async (data: TypeFormValues) => {
     try {
-      const url = "http://localhost:8000/inventory";
       await toast.promise(
-        axios.post<TypeFormProps>(url, data),
+        inventoryService.createType(data),
         {
           loading: 'Creating item...',
           success: (response) => {
-            console.log("Item created", response.data);
-            setItem([...item, response.data]);
+            console.log("Item created", response);
             fetchInventory();
             return "Item created successfully";
           },
@@ -152,14 +146,12 @@ const StocksPage: React.FC = () => {
 
   const onSubmitAdd = async (data: AddItemValues, itemId: string) => {
     try {
-      const url = `http://localhost:8000/add-item/${itemId}`;
       await toast.promise(
-        axios.post(url, data.items),
+        inventoryService.addItem(itemId, data),
         {
           loading: 'Creating item...',
           success: (response) => {
-            console.log("Item created", response.data);
-            setItem([...item, response.data]);
+            console.log("Item created", response);
             fetchInventory();
             return "Item created successfully";
           },
@@ -179,8 +171,8 @@ const StocksPage: React.FC = () => {
 
   const fetchInventory = async () => {
     try {
-      const response = await stockService.fetchInventory();
-      const data: InventoryItem[] = (response as InventoryResponse).data;
+      const response = await inventoryService.fetchInventory();
+      const data: InventoryItem[] = response;
 
       if (Array.isArray(data)) {
         setInventoryData(data);
@@ -250,7 +242,7 @@ const StocksPage: React.FC = () => {
   const handleTypeDelete = async () => {
     if (!selectedType) return;
     try {
-      const response = await stockService.deleteType(selectedType._id);
+      const response = await inventoryService.deleteType(selectedType._id);
       if (response.status === 'success') {
         console.log('Item Type deleted', response);
         setInventoryData(inventoryData.filter((v) => v._id !== selectedType._id));
@@ -269,16 +261,15 @@ const StocksPage: React.FC = () => {
     if (!selectedItem) return;
     console.error('No selected item to delete');
     try {
-      const url = `http://127.0.0.1:8000/inventory/${selectedItem._id}/${itemId}`;
-      const response = await axios.delete<{ status: string }>(url);
-      if (response.data.status === "success") {
-        console.log("Item Type deleted", selectedItem._id, response.data);
+      const response = await inventoryService.deleteItem(selectedItem._id, itemId)
+      if (response.status === "success") {
+        console.log("Item Type deleted", selectedItem._id, response);
         setInventoryData(inventoryData.filter((item) => item._id !== itemId));
         closeDeleteItemDialog();
         await fetchInventory();
         fetchInventory();
       } else {
-        console.error("Unexpected response format:", response.data);
+        console.error("Unexpected response format:", response);
       }
     } catch (error) {
       console.error("Error occurred while deleting the item Type:", error);
@@ -329,7 +320,7 @@ const StocksPage: React.FC = () => {
     });
   };
 
-  const scrollToIndex = (index) => {
+  const scrollToIndex = (index: number) => {
     if (scrollContainerRef.current) {
       const containerHeight = scrollContainerRef.current.clientHeight;
       const scrollTo = index * 270;
@@ -527,7 +518,7 @@ const StocksPage: React.FC = () => {
                                               <FormItem>
                                                 <FormLabel>Item Name</FormLabel>
                                                 <FormLabel className="ml-[320px]">
-                                                  <Button type="button" className="bg-transparent hover:bg-red-400 text-gray-400 hover:text-white transition-colors shadow-none p-2 rounded-full" onClick={() => removeItem(index)}>
+                                                  <Button  className="bg-transparent hover:bg-red-400 text-gray-400 hover:text-white transition-colors shadow-none p-2 rounded-full" onClick={() => removeItem(index)}>
                                                     <FiTrash2 className="text-xl" />
                                                   </Button>
                                                 </FormLabel>
@@ -539,7 +530,7 @@ const StocksPage: React.FC = () => {
                                             )} />
                                           </div>
                                         ))}
-                                        <Button type="button" onClick={addItem} className="text-white">
+                                        <Button  onClick={addItem} className="text-white">
                                           Add Item
                                         </Button>
                                         <Button type="submit" className="text-white w-full" disabled={isSubmitting} onClick={closeItemDialog}>

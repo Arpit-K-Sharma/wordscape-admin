@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Logo from '../../images/LogoBG.webp';
 import {
   Dialog,
   DialogContent,
@@ -20,8 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Eye, Upload, RefreshCw, Send, Info, FolderDown, PackagePlus, PackageCheck, Package } from "lucide-react";
 import { CheckCircle, CalendarDays } from "lucide-react";
 import toast, { Toaster } from 'react-hot-toast';
-import purchaseService from "@/app/services/purchaseOrderService";
-import { purchaseEntryService } from "@/app/services/purchaseEntryList.service";
+import { purchaseEntryService } from "@/app/services/inventoryServices/purchaseEntryService";
 import {
   HoverCard,
   HoverCardContent,
@@ -37,8 +35,11 @@ import {
 } from "@/components/ui/table"
 import { LiaHourglassStartSolid } from "react-icons/lia";
 import jsPDF from "jspdf";
-import { PurchaseEntryItem, PurchaseEntryVendor, PurchaseEntry, Item, InventoryItem, Vendor, IssueItemsPayload} from "../Schema/purchaseWithoutEntry";
+import { PurchaseEntryItem, PurchaseEntryVendor, PurchaseEntry, Item, InventoryItem, Vendor, IssueItemsPayload } from "../../Schema/purchaseWithoutEntry";
 import PurchaseSlip from "./purchaseSlip";
+import { VendorInput } from "../../Schema/purchaseEntrySchema";
+import { vendorService } from "@/app/services/inventoryServices/vendorsService";
+import { inventoryService } from "@/app/services/inventoryServices/inventoryservice";
 
 
 const PurchaseEntryList: React.FC = () => {
@@ -51,18 +52,8 @@ const PurchaseEntryList: React.FC = () => {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [isIssuing, setIsIssuing] = useState(false);
   const [issueError, setIssueError] = useState<string | null>(null);
-  const [reload, setReload] = useState(0)
-  const [vendorInputs, setVendorInputs] = useState<{
-    [purchaseEntryId: string]: {
-      invoiceNo: string;
-      invoiceDate: string;
-      grandTotal: string;
-      vat: string;
-      discount: string;
-      image: string;
-      items: { rate: string; code: string; amount: string }[];
-    };
-  }>({});
+  const [reload, setReload] = useState(0);
+  const [vendorInputs, setVendorInputs] = useState<{ [purchaseEntryId: string]: VendorInput }>({});
 
   const router = useRouter();
 
@@ -72,12 +63,12 @@ const PurchaseEntryList: React.FC = () => {
         const [purchaseEntriesResponse, inventoryResponse, vendorsResponse] =
           await Promise.all([
             purchaseEntryService.getPurchaseOrdersWithoutEntries(),
-            purchaseEntryService.getInventoryItems(),
-            purchaseEntryService.getVendors(),
+            inventoryService.fetchInventory(),
+            vendorService.getVendors(),
           ]);
 
         setPurchaseEntries(purchaseEntriesResponse);
-        setInventoryItems(inventoryResponse as InventoryItem[]);
+        setInventoryItems(inventoryResponse);
         setVendors(vendorsResponse);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -119,43 +110,31 @@ const PurchaseEntryList: React.FC = () => {
   };
 
   const getVendorDetails = (vendorId: string): Vendor | undefined => {
+    console.log(vendors)
     return vendors.find((vendor) => vendor._id === vendorId);
   };
 
   const handleFileUpload = async (
-
     purchaseEntryId: string,
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/upload-image/",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      if (response.data && response.data.filename) {
-        setVendorInputs((prevInputs) => ({
-          ...prevInputs,
-          [purchaseEntryId]: {
-            ...prevInputs[purchaseEntryId],
-            image: response.data.filename,
-          },
-        }));
-      }
+      const filename = await purchaseEntryService.uploadImage(file);
+      setVendorInputs((prevInputs) => ({
+        ...prevInputs,
+        [purchaseEntryId]: {
+          ...prevInputs[purchaseEntryId],
+          image: filename,
+        },
+      }));
     } catch (error) {
       console.error("Error uploading file:", error);
     }
   };
+
   const handleSubmit = async (purchaseEntryId: string) => {
     if (!selectedEntry) return;
 
@@ -189,7 +168,7 @@ const PurchaseEntryList: React.FC = () => {
     };
 
     await toast.promise(
-      axios.post(`http://127.0.0.1:8000/purchase_entry/${orderId}`, data),
+      purchaseEntryService.createPurchaseEntry(orderId, data),
       {
         loading: 'Creating Purchase Order',
         success: (response) => {
@@ -203,8 +182,7 @@ const PurchaseEntryList: React.FC = () => {
       }
     );
     setIsDetailsDialogOpen(false);
-    setReload(reload + 1)
-
+    setReload(reload + 1);
   };
 
   const handleIssueItems = async (orderId: string) => {
@@ -218,7 +196,7 @@ const PurchaseEntryList: React.FC = () => {
 
     try {
       await toast.promise(
-        axios.post("http://127.0.0.1:8000/issued_item", payload),
+        purchaseEntryService.issueItems(payload),
         {
           loading: 'Issuing Items',
           success: (response) => {
@@ -230,7 +208,7 @@ const PurchaseEntryList: React.FC = () => {
           duration: 3000,
         }
       );
-      setReload(reload + 1)
+      setReload(reload + 1);
     } catch (error) {
       console.error("Error issuing items:", error);
       setIssueError("Failed to issue items. Please try again.");
@@ -428,7 +406,7 @@ const PurchaseEntryList: React.FC = () => {
                             onClick={() => handleleftOverClick(entry.orderId)}
                             className="flex items-center ml-1"
                           >
-                            <Package className="mr-2 h-4 w-4" /> 
+                            <Package className="mr-2 h-4 w-4" />
                             Left Overs
                           </Button>
                         </>

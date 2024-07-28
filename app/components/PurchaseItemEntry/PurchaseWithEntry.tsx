@@ -14,16 +14,16 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Eye, RefreshCw, CheckCircle, CalendarDays, Info } from "lucide-react";
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import Logo from '../../images/LogoBG.webp';
-import purchaseService from "@/app/services/purchaseOrderService";
+import { purchaseEntryService } from "@/app/services/inventoryServices/purchaseEntryService";
+import { vendorService } from "@/app/services/inventoryServices/vendorsService";
 import { Package } from 'lucide-react';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { inventoryService } from "@/app/services/inventoryServices/inventoryservice";
 import {
   Table,
   TableBody,
@@ -32,64 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-interface PurchaseOrderItem {
-  itemId: string;
-  quantityFromVendor: number;
-  quantityFromStock: number;
-  itemCode: string | null;
-  rate: number | null;
-  amount: number | null;
-}
-
-interface PurchaseEntry {
-  _id: string;
-  vendorId: string;
-  isCompleted: boolean;
-  items: PurchaseOrderItem[];
-  tag: string | null;
-  remarks: string | null;
-  image: string | null;
-  discount: number | null;
-  vat: number | null;
-  grandTotal: number | null;
-  invoiceNo: string | null;
-  invoiceDate: string | null;
-  is_issued: boolean | null;
-}
-
-interface PurchaseOrder {
-  _id: string;
-  orderId: string;
-  isCompleted: boolean;
-  purchaseEntry: PurchaseEntry[];
-}
-
-interface Items {
-  _id: string;
-  itemName: string;
-  availability: number;
-}
-
-interface InventoryItem {
-  _id: string;
-  type: string;
-  item: Items[];
-}
-
-interface Vendor {
-  _id: string;
-  vendorName: string;
-  vendorAddress: string;
-  vendorVAT: string;
-  vendorPhone: string;
-}
-
-interface IssueItemsPayload {
-  order_id: string;
-  approved_by: string;
-  issued_date: string;
-}
+import { PurchaseOrder, InventoryItem, Vendor, IssueItemsPayload } from "../../Schema/purchaseWithEntrySchema";
 
 const PurchaseWithEntry: React.FC = () => {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
@@ -107,9 +50,9 @@ const PurchaseWithEntry: React.FC = () => {
     const fetchData = async () => {
       try {
         const [purchaseOrders, inventoryItems, vendors] = await Promise.all([
-          purchaseService.getPurchaseOrders(),
-          purchaseService.getInventoryItems(),
-          purchaseService.getVendors(),
+          purchaseEntryService.getPurchaseOrders(),
+          inventoryService.fetchInventory(),
+          vendorService.getVendors(),
         ]);
         console.log(purchaseOrders);
         setPurchaseOrders(purchaseOrders);
@@ -144,85 +87,6 @@ const PurchaseWithEntry: React.FC = () => {
   }
 
   const contentRef = useRef<HTMLDivElement>(null);
-
-  const downloadPDF = async () => {
-    if (!contentRef.current || !isDetailsDialogOpen) {
-      console.error('Content not available or dialog not open');
-      return;
-    }
-
-    setLoader(true);
-
-    const clonedContent = contentRef.current.cloneNode(true) as HTMLElement;
-    clonedContent.style.height = 'auto';
-    clonedContent.style.overflow = 'visible';
-    document.body.appendChild(clonedContent);
-
-    const scrollHeight = clonedContent.scrollHeight;
-    const viewportHeight = window.innerHeight;
-    const numPages = Math.ceil(scrollHeight / viewportHeight);
-
-    const canvasArray: HTMLCanvasElement[] = [];
-
-    for (let i = 0; i < numPages; i++) {
-      window.scrollTo(0, i * viewportHeight);
-      await html2canvas(clonedContent, {
-        logging: true,
-        useCORS: true,
-        allowTaint: true,
-        scale: 2,
-        scrollY: -window.scrollY
-      }).then((canvas) => {
-        canvasArray.push(canvas);
-      });
-    }
-
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-
-    for (let i = 0; i < canvasArray.length; i++) {
-      const canvas = canvasArray[i];
-      const imgData = canvas.toDataURL('image/jpeg', 1.0);
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-
-      const zoomFactor = 3;
-      const widthReduction = 0.7;
-
-      const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-      const scaledWidth = pageWidth * widthReduction;
-      const scaledHeight = (scaledWidth / imgWidth) * imgHeight;
-      const imgX = (pageWidth - scaledWidth) / 2;
-      const imgY = 10;
-
-      const cropWidth = imgWidth / zoomFactor;
-      const cropHeight = imgHeight / zoomFactor;
-      const cropX = (imgWidth - cropWidth) / 2;
-      const cropY = (imgHeight - cropHeight) / 2;
-
-      pdf.addImage(
-        imgData, 'JPEG',
-        imgX, imgY, scaledWidth, scaledHeight,
-        undefined,
-        'FAST',
-        0
-      );
-
-      if (i < canvasArray.length - 1) {
-        pdf.addPage();
-      }
-    }
-
-    pdf.save('purchase_order_details.pdf');
-
-    document.body.removeChild(clonedContent);
-    setLoader(false);
-  };
 
   const handleIssueItems = async (orderId: string) => {
     setIsIssuing(true);
@@ -564,17 +428,6 @@ const PurchaseWithEntry: React.FC = () => {
                   })}
                 </ScrollArea>
               </div>
-              <Button
-                className="receipt-modal-download-button"
-                onClick={downloadPDF}
-                disabled={!(loader === false)}
-              >
-                {loader ? (
-                  <span>Downloading</span>
-                ) : (
-                  <span>Download</span>
-                )}
-              </Button>
             </DialogContent>
           </Dialog>
         </div>

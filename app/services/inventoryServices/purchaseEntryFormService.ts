@@ -15,6 +15,7 @@ export interface PurchaseEntry {
 }
 
 export interface PurchaseOrder {
+  _id: string;
   orderId: string;
   isCompleted: boolean;
   purchaseEntry: PurchaseEntry[];
@@ -64,6 +65,16 @@ export const purchaseEntryService = {
     }
   },
 
+  getReorders: async (): Promise<PurchaseOrder[]> => {
+    try {
+      const response = await axios.get<ApiResponse<PurchaseOrder[]>>(`${BASE_URL}/reorders`);
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching reorders:", error);
+      throw error;
+    }
+  },
+
   getVendors: async (): Promise<Vendor[]> => {
     try {
       const response = await axios.get<ApiResponse<Vendor[]>>(
@@ -87,4 +98,5 @@ export const purchaseEntryService = {
       throw error;
     }
   },
+  
 };

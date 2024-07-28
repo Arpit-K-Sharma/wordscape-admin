@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios";
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,87 +28,28 @@ import {
 } from "@/components/ui/hover-card"
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import InventorySidebar from "../Sidebar/InventorySidebar";
-import toast, { Toaster } from "react-hot-toast";
-import { purchaseEntryService } from "@/app/services/purchaseEntryFormService";
-import { vendorService } from "@/app/services/vendorService";
-import { dashboardService } from "@/app/services/dashboardService";
+import toast from "react-hot-toast";
 import { FiTrash2 } from "react-icons/fi";
-import { MdOutlineAddHomeWork, } from "react-icons/md";
-import { RiStickyNoteAddLine } from "react-icons/ri";
+import { MdOutlineAddHomeWork } from "react-icons/md";
 import { Send, Plus } from "lucide-react";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 
-
-const itemSchema = z.object({
-  inventoryId: z.string(),
-  itemId: z.string(),
-  quantityFromVendor: z.number(),
-  quantityFromStock: z.number(),
-});
-
-const purchaseEntrySchema = z.object({
-  vendorId: z.string(),
-  isCompleted: z.boolean().default(false),
-  items: z.array(itemSchema),
-});
-
-const formSchema = z.object({
-  orderId: z.string(),
-  isCompleted: z.boolean().default(false),
-  purchaseEntry: z.array(purchaseEntrySchema),
-  remarks: z.string().optional(),
-});
-
-interface Vendor {
-  _id: string;
-  vendorName: string;
-  vendorAddress: string;
-  vendorVAT: string;
-  vendorPhone: string;
-}
-
-interface ApprovedOrders {
-  _id: string;
-}
-
-interface PurchaseEntrySlipProps {
-  orderId: string;
-  isReorder?: boolean;
-}
-
-interface Item {
-  _id: string;
-  itemName: string;
-  availability: number;
-}
-
-interface Inventory {
-  _id: string;
-  item: Item[];
-}
-
-interface CustomButtonProps {
-  type: "submit" | "button" | "reset";
-  className?: string;
-  isSubmitting?: boolean;
-  onClick?: () => void;
-}
+import { purchaseEntryService } from "../../services/inventoryServices/purchaseEntryService";
+import { vendorService } from "@/app/services/inventoryServices/vendorsService";
+import { formSchema, FormSchema, Vendor, ApprovedOrders, Inventory, PurchaseEntrySlipProps, Item } from "../../Schema/purchaseEntrySchema";
 
 export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps) {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [inventory, setInventory] = useState<Inventory[]>([]);
-  const [approvedOrders, setApprovedOrders] = useState<ApprovedOrders[]>([]);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item[]>([]);
   const [selectedVendors, setSelectedVendors] = useState<string[]>([]);
 
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       orderId: orderId,
@@ -150,46 +90,56 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
   };
 
   useEffect(() => {
-    const fetchVendors = async () => {
+    const fetchData = async () => {
       try {
         const vendors = await vendorService.getVendors();
         setVendors(vendors);
+
+        const items = await purchaseEntryService.getItems();
+        setInventory(items);
+
+        const storedFormData = localStorage.getItem(`formData_${orderId}`);
+        if (storedFormData) {
+          const parsedData = JSON.parse(storedFormData);
+          form.reset(parsedData);
+        } else if (orderId) {
+          form.setValue("orderId", orderId);
+        }
+
+        if (isReorder) {
+          fetchReorderData();
+        }
       } catch (error) {
-        console.error("Error fetching vendors:", error);
-        setVendors([]);
+        console.error("Error fetching data:", error);
       }
     };
 
-    const fetchItems = async () => {
-      try {
-        const response = await purchaseEntryService.getItems();
-        setInventory(response);
-      } catch (error) {
-        console.error("Error fetching items:", error);
-      }
-    };
-
-    const fetch_approved_orders = async () => {
-      try {
-        const orders = await dashboardService.fetch_approved_orders();
-        setApprovedOrders(orders);
-      } catch (error) {
-        console.log("error fetching data: ", error);
-      }
-    };
-
-    fetchVendors();
-    fetchItems();
-    fetch_approved_orders();
-
-    if (orderId) {
-      form.setValue("orderId", orderId);
-    }
-
-    if (isReorder) {
-      fetchReorderData();
-    }
+    fetchData();
   }, [orderId, form, isReorder]);
+
+  const fetchReorderData = async () => {
+    try {
+      const purchase_order = await purchaseEntryService.getPurchaseEntries()
+      const orderData = purchase_order;
+
+      form.reset({
+        orderId: orderId,
+        isCompleted: false,
+        purchaseEntry: [{
+          vendorId: orderData.purchaseEntry[0].vendorId,
+          isCompleted: false,
+          items: orderData.purchaseEntry[0].items.map((item: any) => ({
+            inventoryId: item.inventoryId,
+            itemId: item.itemId,
+            quantityFromVendor: item.quantityFromVendor,
+            quantityFromStock: 0
+          }))
+        }]
+      });
+    } catch (error) {
+      console.error("Error fetching reorder data:", error);
+    }
+  };
 
   const addItem = (index: number) => {
     form.setValue(`purchaseEntry.${index}.items`, [
@@ -225,31 +175,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
     setSelectedVendors(prev => [...prev, ""]);
   };
 
-  const fetchReorderData = async () => {
-    try {
-      const purchase_order = await purchaseEntryService.getPurchaseEntries()
-      const orderData = purchase_order;
-
-      form.reset({
-        orderId: orderId,
-        isCompleted: false,
-        purchaseEntry: [{
-          vendorId: orderData.purchaseEntry[0].vendorId,
-          isCompleted: false,
-          items: orderData.purchaseEntry[0].items.map((item: any) => ({
-            inventoryId: item.inventoryId,
-            itemId: item.itemId,
-            quantityFromVendor: item.quantityFromVendor,
-            quantityFromStock: 0
-          }))
-        }]
-      });
-    } catch (error) {
-      console.error("Error fetching reorder data:", error);
-    }
-  };
-
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: FormSchema) => {
     try {
       setIsSubmitting(true);
       if (isReorder) {
@@ -267,30 +193,26 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
         };
 
         await toast.promise(
-          axios.post(`http://localhost:8000/reOrder/${orderId}`, reorderData),
+          purchaseEntryService.createReorder(orderId, reorderData),
           {
             loading: 'Creating reorder...',
             success: (response) => {
-              console.log("Reorder created:", response.data);
+              console.log("Reorder created:", response);
               const storedStatus = localStorage.getItem('poStatus');
               const currentStatus = storedStatus ? JSON.parse(storedStatus) : {};
               const newStatus = { ...currentStatus, [orderId]: 'created' };
 
               localStorage.setItem('poStatus', JSON.stringify(newStatus));
-
               localStorage.removeItem(`formData_${orderId}`);
 
               return "Reorder Placed Successfully";
             },
             error: "Error creating reorder",
-          },
-          {
-            duration: 3000,
           }
         );
       } else {
         await toast.promise(
-          purchaseEntryService.createPurchaseEntry(data),
+          purchaseEntryService.createPurchaseOrder(data),
           {
             loading: 'Creating purchase order...',
             success: (response) => {
@@ -306,19 +228,11 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
               return "Purchase Order Placed Successfully";
             },
             error: "Error creating purchase order",
-          },
-          {
-            duration: 3000,
           }
         );
       }
-
-      // Wait for an additional moment to ensure the success message is seen
       await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Navigate after the success message has been displayed
       router.push('/');
-
     } catch (error) {
       console.error("Error creating order:", error);
     } finally {
@@ -326,7 +240,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
     }
   };
 
-  const saveFormDataToLocalStorage = (data: z.infer<typeof formSchema>) => {
+  const saveFormDataToLocalStorage = (data: FormSchema) => {
     try {
       localStorage.setItem(`formData_${orderId}`, JSON.stringify(data));
     } catch (error) {
@@ -335,40 +249,8 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const vendors = await vendorService.getVendors();
-        setVendors(vendors);
-
-        const response = await purchaseEntryService.getItems();
-        setInventory(response);
-
-        const orders = await dashboardService.fetch_approved_orders();
-        setApprovedOrders(orders);
-
-        // Load form data from localStorage
-        const storedFormData = localStorage.getItem(`formData_${orderId}`);
-        if (storedFormData) {
-          const parsedData = JSON.parse(storedFormData);
-          form.reset(parsedData);
-        } else if (orderId) {
-          form.setValue("orderId", orderId);
-        }
-
-        if (isReorder) {
-          fetchReorderData();
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
-  }, [orderId, form, isReorder]);
-
-  useEffect(() => {
     const subscription = form.watch((value) => {
-      saveFormDataToLocalStorage(value as z.infer<typeof formSchema>);
+      saveFormDataToLocalStorage(value as FormSchema);
     });
     return () => subscription.unsubscribe();
   }, [form, orderId]);
@@ -385,7 +267,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
     return 'max-w-6xl';
   }, []);
 
-  const getItems = (value) => {
+  const getItems = (value: string) => {
     const selectedInventory = inventory.find((inv) => inv._id === value);
     return selectedInventory ? selectedInventory.item : [];
   }
@@ -431,8 +313,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                   />
 
                   <div className={`${isReorder ? "max-h-[68vh]" : " max-h-[60.5vh]"} overflow-y-auto overflow-x-hidden`} >
-
-                    {purchaseEntryFields && purchaseEntryFields.map((entry, index) => (
+                    {purchaseEntryFields.map((entry, index) => (
                       <div
                         key={entry.id}
                         className="space-y-4 p-4 border rounded-lg mb-[20px]"
@@ -670,7 +551,7 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                                           <FormItem>
                                             <FormLabel className="font-semibold">Remarks</FormLabel>
                                             <FormControl>
-                                              <Textarea 
+                                              <Textarea
                                                 {...field}
                                                 placeholder="Enter remarks for reorder"
                                                 className="h-[70px]"
@@ -700,18 +581,15 @@ export function PurchaseEntrySlip({ orderId, isReorder }: PurchaseEntrySlipProps
                     </Button>
                   )}
 
-                  <Button type="submit" className="w-full  font-semibold"
-                    isSubmitting={isSubmitting}>
+                  <Button type="submit" className="w-full font-semibold" disabled={isSubmitting}>
                     <Send size={18} className="mr-[10px]" />
                     {isReorder ? "Submit Reorder" : "Submit Purchase Order"}
                   </Button>
                 </form>
-
               </Form>
             </ScrollArea>
           </CardContent>
         </Card>
-
       </div>
     </div>
   );

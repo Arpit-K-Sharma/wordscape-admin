@@ -1,3 +1,4 @@
+import { InventoryItems } from "@/app/Schema/inventorySchema";
 import axios from "axios";
 
 const BASE_URL = "http://localhost:8000";
@@ -22,6 +23,7 @@ export interface ApprovedOrders {
   inkType: string;
   deliveryOption: string;
   status: string;
+  purchase_order_created: boolean | null;
 }
 
 export interface User {
@@ -91,4 +93,15 @@ export const dashboardService = {
       throw error;
     }
   },
+  fetch_inventory_items: async (): Promise<InventoryItems[]> => {
+    try {
+        const response = await axios.get<ApiResponse<InventoryItems[]>>(
+            `${BASE_URL}/inventory`
+        );
+        return response.data.data;
+    } catch (error) {
+        console.error("Error fetching inventory data:", error);
+        throw error;
+    }
+}
 };

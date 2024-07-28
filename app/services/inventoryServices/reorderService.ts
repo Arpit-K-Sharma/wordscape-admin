@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// Interfaces
 interface Item {
     inventoryId: string
     itemId: string
@@ -33,21 +32,6 @@ interface Item {
     purchaseEntry: PurchaseEntry[]
   }
   
-  interface Vendor {
-    _id: string
-    vendorName: string
-  }
-  interface Items {
-    _id: string,
-    itemName: string
-  }
-  
-  interface InventoryItem {
-    _id: string
-    type: string
-    item: Items[]
-  }
-  
 
 interface ApiResponse<T> {
   status: string;
@@ -64,26 +48,6 @@ export const reorderService = {
       return response.data.data;
     } catch (error) {
       console.error("Error fetching reorders:", error);
-      throw error;
-    }
-  },
-
-  getVendors: async (): Promise<Vendor[]> => {
-    try {
-      const response = await axios.get<{ data: Vendor[] }>(`${API_BASE_URL}/vendors`);
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching vendors:", error);
-      throw error;
-    }
-  },
-
-  getInventoryItems: async (): Promise<InventoryItem[]> => {
-    try {
-      const response = await axios.get<{ data: InventoryItem[] }>(`${API_BASE_URL}/inventory`);
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching inventory items:", error);
       throw error;
     }
   },
