@@ -2,13 +2,15 @@
 import React from "react";
 import { ReorderTable } from "@/app/components/Reorder/Reorder";
 import { AuthorizationWrapper } from "@/app/util/authContext";
+import { usePathname } from "next/navigation";
 
-const page = () => {
+const Page = () => {
+  const pathname = usePathname();
   return (
-    <AuthorizationWrapper>
+    <AuthorizationWrapper pathname={pathname}>
       <ReorderTable />
     </AuthorizationWrapper>
   );
 };
 
-export default page;
+export default Page;

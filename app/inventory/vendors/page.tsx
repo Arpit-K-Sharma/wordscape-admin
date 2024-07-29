@@ -3,11 +3,9 @@
 import React from "react";
 import Vendors from "@/app/components/Vendors/Vendors";
 import { AuthorizationWrapper } from "@/app/util/authContext"; // Import AuthorizationWrapper
-import { useRouter } from "next/navigation"; // Import useRouter
-
+import { usePathname } from "next/navigation";
 const Page = () => {
-  const router = useRouter();
-  const pathname = router.asPath;
+  const pathname = usePathname();
 
   return (
     <AuthorizationWrapper pathname={pathname}>

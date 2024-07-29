@@ -147,7 +147,7 @@ const PayrollHistory: React.FC<StaffPayrollCardProps> = ({ staffId }) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {payroll.length > 0 ? (
+                  {payroll && payroll.length > 0 ? (
                     payroll.map((entry, index) => (
                       <TableRow
                         key={entry.id}

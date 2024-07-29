@@ -16,8 +16,10 @@ export interface HolidayData {
 
 export const holidayService = {
   getHolidays: async (): Promise<HolidayData[]> => {
-    const response = await axios.get<HolidayData[]>(`${API_URL}/holidays`);
-    return response.data.data;
+    const response = await axios.get<{ data: HolidayData[] }>(
+      `${API_URL}/holidays`
+    ); // Updated type
+    return response.data.data; // Accessing response.data.data as intended
   },
 
   addHoliday: async (holiday: Omit<Holiday, "holiday_id">): Promise<void> => {

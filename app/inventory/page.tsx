@@ -3,11 +3,10 @@
 import React from "react";
 import Dashboard from "../components/Dashboard/Dashboard";
 import { AuthorizationWrapper } from "../util/authContext";
-import { useRouter } from "next/navigation"; // Import useRouter
+import { usePathname } from "next/navigation";
 
 const InventoryPage = () => {
-  const router = useRouter();
-  const pathname = router.asPath;
+  const pathname = usePathname();
 
   return (
     <AuthorizationWrapper pathname={pathname}>

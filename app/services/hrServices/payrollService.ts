@@ -9,6 +9,7 @@ export interface Payroll {
   month: string;
   working_days: number;
   paid_leaves: number;
+  year: number;
   holidays: number;
   weekends: number;
   daily_wage: number;
@@ -41,7 +42,10 @@ export const PayrollService = {
 
   listPayrolls: async (): Promise<Payroll[]> => {
     try {
-      const response = await axios.get<Payroll[]>(`${API_URL}/payroll`);
+      const response = await axios.get<{ data: Payroll[] }>(
+        `${API_URL}/payroll`
+      );
+
       // Map _id to id
       const payrolls = response.data.data.map((payroll: any) => ({
         ...payroll,
@@ -70,7 +74,7 @@ export const PayrollService = {
 
   getPayrollForStaff: async (staffId: string): Promise<Payroll[]> => {
     try {
-      const response = await axios.get<Payroll[]>(
+      const response = await axios.get<{ data: Payroll[] }>(
         `${API_URL}/payroll/staff/${staffId}`
       );
       return response.data.data;

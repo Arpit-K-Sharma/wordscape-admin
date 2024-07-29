@@ -13,7 +13,7 @@ interface ErrorResponseData {
   message?: string;
 }
 
-const baseURL = "https://erp-v2-7a15.onrender.com";
+const baseURL = "https://erp-api.wordscapepress.com";
 
 const axiosInstance = axios.create({
   baseURL: baseURL,
