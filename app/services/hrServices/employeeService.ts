@@ -36,7 +36,7 @@ export interface NewStaffData {
   dept_ids: string[];
 }
 
-const BASE_URL = "https://inventory-hr.onrender.com";
+const BASE_URL = "https://admin-api.wordscapepress.com";
 
 export const employeeService = {
   getAllEmployees: async (): Promise<Employee[]> => {
