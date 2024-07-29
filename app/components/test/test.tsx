@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from "react"
-import axios from "axios"
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Table,
   TableBody,
@@ -9,69 +9,71 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 
 interface Item {
-  inventoryId: string
-  itemId: string
-  quantityFromVendor: number
-  quantityFromStock: number
-  itemCode: string | null
-  rate: number | null
-  amount: number | null
+  inventoryId: string;
+  itemId: string;
+  quantityFromVendor: number;
+  quantityFromStock: number;
+  itemCode: string | null;
+  rate: number | null;
+  amount: number | null;
 }
 
 interface PurchaseEntry {
-  _id: string | null
-  vendorId: string
-  isCompleted: boolean
-  items: Item[]
-  tag: string
-  remarks: string
-  image: string | null
-  discount: number | null
-  vat: number | null
-  grandTotal: number | null
-  invoiceNo: string | null
-  invoiceDate: string | null
+  _id: string | null;
+  vendorId: string;
+  isCompleted: boolean;
+  items: Item[];
+  tag: string;
+  remarks: string;
+  image: string | null;
+  discount: number | null;
+  vat: number | null;
+  grandTotal: number | null;
+  invoiceNo: string | null;
+  invoiceDate: string | null;
 }
 
 interface PurchaseOrder {
-  _id: string | null
-  orderId: string
-  isCompleted: boolean
-  purchaseEntry: PurchaseEntry[]
+  _id: string | null;
+  orderId: string;
+  isCompleted: boolean;
+  purchaseEntry: PurchaseEntry[];
 }
 
 interface ApiResponse {
-  status: string
-  status_code: number
-  data: PurchaseOrder[]
+  status: string;
+  status_code: number;
+  data: PurchaseOrder[];
 }
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
 export function ReorderTable() {
-  const [reorders, setReorders] = useState<PurchaseOrder[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
+  const [reorders, setReorders] = useState<PurchaseOrder[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get<ApiResponse>("http://127.0.0.1:8000/reorders")
-        console.log('Reorders response:', response.data)
-        setReorders(response.data.data)
+        const response = await axios.get<ApiResponse>(`${BASE_URL}/reorders`);
+        console.log("Reorders response:", response.data);
+        setReorders(response.data.data);
       } catch (error) {
-        console.error("Error fetching data:", error)
+        console.error("Error fetching data:", error);
       }
-    }
-    fetchData()
-  }, [])
+    };
+    fetchData();
+  }, []);
 
   const filteredReorders = reorders.filter((reorder) =>
     reorder.purchaseEntry.some((entry) =>
       entry.vendorId.toLowerCase().includes(searchTerm.toLowerCase())
     )
-  )
+  );
 
   return (
     <div className="container mx-auto py-10">
@@ -106,7 +108,9 @@ export function ReorderTable() {
                     ))}
                   </ul>
                 </TableCell>
-                <TableCell>{entry.isCompleted ? "Completed" : "Pending"}</TableCell>
+                <TableCell>
+                  {entry.isCompleted ? "Completed" : "Pending"}
+                </TableCell>
                 <TableCell>{entry.grandTotal ?? "N/A"}</TableCell>
               </TableRow>
             ))
@@ -114,5 +118,5 @@ export function ReorderTable() {
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

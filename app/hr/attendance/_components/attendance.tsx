@@ -34,7 +34,8 @@ import HRSidebar from "@/app/components/HRSidebar/hrsidebar";
 import { attendanceService } from "@/app/services/hrServices/attendanceService";
 
 export interface Staff {
-  _id: string;
+  _id?: string;
+  id?: string;
   fullName: string;
 }
 

@@ -1,7 +1,17 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
-import { jwtDecode } from "jwt-decode";
 import toast from "react-hot-toast";
+import { jwtDecode, JwtPayload } from "jwt-decode";
+import JwtDecode from "jwt-decode";
+
+interface CustomJwtPayload extends JwtPayload {
+  id: string;
+  roles: string[];
+}
+
+interface ErrorResponseData {
+  message?: string;
+}
 
 const baseURL = "https://erp-v2-7a15.onrender.com";
 
@@ -9,6 +19,7 @@ const axiosInstance = axios.create({
   baseURL: baseURL,
 });
 
+// Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = Cookies.get("accessToken");
@@ -22,6 +33,7 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+// Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
     return response;
@@ -34,7 +46,12 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-export const adminLogin = async (email, password, role) => {
+// Admin login function
+export const adminLogin = async (
+  email: string,
+  password: string,
+  role: string
+): Promise<boolean> => {
   try {
     const response = await axiosInstance.post("/home/login", {
       email,
@@ -45,7 +62,7 @@ export const adminLogin = async (email, password, role) => {
       const token = response.data.token;
       Cookies.set("accessToken", token, { expires: 7 });
 
-      const decoded = jwtDecode(token);
+      const decoded = jwtDecode<CustomJwtPayload>(token); // Correct usage
       if (decoded.id && decoded.roles && decoded.roles.includes("ROLE_ADMIN")) {
         localStorage.setItem("id", decoded.id);
         toast.success("Admin logged in successfully");
@@ -60,17 +77,19 @@ export const adminLogin = async (email, password, role) => {
       return false;
     }
   } catch (error) {
-    const errorMessage = error.response?.data?.message || "Login failed";
+    const axiosError = error as AxiosError<ErrorResponseData>;
+    const errorMessage = axiosError.response?.data?.message || "Login failed";
     toast.error(errorMessage);
     console.error("Error:", error);
     return false;
   }
 };
 
+// Function to get role from token
 export const getRoleFromToken = () => {
   const token = Cookies.get("accessToken");
   if (token) {
-    const decoded = jwtDecode(token);
+    const decoded = jwtDecode<CustomJwtPayload>(token);
     return decoded.roles[0];
   } else {
     Cookies.remove("accessToken");
@@ -78,6 +97,7 @@ export const getRoleFromToken = () => {
   }
 };
 
+// Function to check if the user is an admin
 export const isAdmin = () => {
   return getRoleFromToken() === "ROLE_ADMIN";
 };

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export interface PurchaseOrderItem {
   itemId: string;
@@ -67,7 +67,9 @@ export const purchaseEntryService = {
 
   getReorders: async (): Promise<PurchaseOrder[]> => {
     try {
-      const response = await axios.get<ApiResponse<PurchaseOrder[]>>(`${BASE_URL}/reorders`);
+      const response = await axios.get<ApiResponse<PurchaseOrder[]>>(
+        `${BASE_URL}/reorders`
+      );
       return response.data.data;
     } catch (error) {
       console.error("Error fetching reorders:", error);
@@ -98,5 +100,4 @@ export const purchaseEntryService = {
       throw error;
     }
   },
-  
 };

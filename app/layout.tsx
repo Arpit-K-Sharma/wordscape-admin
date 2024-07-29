@@ -19,7 +19,7 @@ export default function RootLayout({
   types,
 }: {
   children: React.ReactNode;
-  types?: any;
+  types: any;
 }) {
   return (
     <html lang="en">

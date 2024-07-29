@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",
+    "@types/jwt-decode": "^2.2.1",
     "@types/node": "^20.14.11",
     "@types/react": "^18",
     "@types/react-dom": "^18",

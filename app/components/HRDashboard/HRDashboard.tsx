@@ -23,19 +23,41 @@ const hrOverviewData = {
   urgentApprovals: 2,
 };
 
+interface Employee {
+  _id: string;
+  fullName: string;
+  departmentNames: string[];
+  position: string;
+  created_at: string;
+}
+
+interface Holiday {
+  holiday_id: string;
+  name: string;
+  date: string;
+}
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+interface HolidayData {
+  year: number;
+  holidays: Holiday[];
+}
+
 const HROverview: React.FC = () => {
-  const [staffData, setStaffData] = useState([]);
-  const [holidaysData, setHolidaysData] = useState([]);
+  const [staffData, setStaffData] = useState<Employee[]>([]);
+
+  const [holidaysData, setHolidaysData] = useState<HolidayData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [staffResponse, holidaysResponse] = await Promise.all([
-          axios.get("http://127.0.0.1:8000/staff"),
-          axios.get("http://127.0.0.1:8000/holidays"),
+          axios.get(`${BASE_URL}/staff`),
+          axios.get(`${BASE_URL}/holidays`),
         ]);
 
         setStaffData(staffResponse.data.data || []);
@@ -67,9 +89,7 @@ const HROverview: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xl">
-                    Total Employees
-                  </CardTitle>
+                  <CardTitle className="text-xl">Total Employees</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -105,22 +125,26 @@ const HROverview: React.FC = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="font-semibold">Name</TableHead>
-                        <TableHead className="font-semibold">Department</TableHead>
-                        <TableHead className="font-semibold">Position</TableHead>
-                        <TableHead className="font-semibold">Join Date</TableHead>
+                        <TableHead className="font-semibold">
+                          Department
+                        </TableHead>
+                        <TableHead className="font-semibold">
+                          Position
+                        </TableHead>
+                        <TableHead className="font-semibold">
+                          Join Date
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {staffData.slice(0, 5).map((employee) => (
+                      {staffData.slice(0, 5).map((employee: Employee) => (
                         <TableRow key={employee._id}>
                           <TableCell>{employee.fullName}</TableCell>
                           <TableCell>
                             {employee.departmentNames.join(", ")}
                           </TableCell>
                           <TableCell>{employee.position}</TableCell>
-                          <TableCell>
-                            {employee.created_at}
-                          </TableCell>
+                          <TableCell>{employee.created_at}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

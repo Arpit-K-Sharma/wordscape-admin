@@ -1,13 +1,17 @@
 "use client";
 import React from "react";
-import HolidaysPage from "./_components/Holidays";
 import { AuthorizationWrapper } from "@/app/util/authContext";
-const page = () => {
+import { usePathname } from "next/navigation";
+import HolidaysPage from "./_components/Holidays";
+
+const Page = () => {
+  const pathname = usePathname();
+
   return (
-    <AuthorizationWrapper>
+    <AuthorizationWrapper pathname={pathname}>
       <HolidaysPage />
     </AuthorizationWrapper>
   );
 };
 
-export default page;
+export default Page;

@@ -22,7 +22,8 @@ interface UpdateVendorDialogProps {
   isOpen: boolean;
   closeModal: () => void;
   vendor: Vendor;
-  onVendorUpdated: () => void;
+  updateVendor: (id: string, data: Partial<Vendor>) => Promise<Vendor>;
+  onVendorUpdated?: () => void; // Add this line
 }
 
 function UpdateVendorDialog({
@@ -51,12 +52,12 @@ function UpdateVendorDialog({
         <VendorForm
           onSubmit={onSubmit}
           defaultValues={{ ...vendor, id: vendor._id }}
-          buttonText={(
+          buttonText={
             <span className="flex items-center justify-center">
               <FiEdit2 className="mr-2" />
               Update Vendor
             </span>
-          )}
+          }
         />
         <Button
           variant="destructive"

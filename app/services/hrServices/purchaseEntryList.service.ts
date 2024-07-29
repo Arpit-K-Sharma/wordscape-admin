@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
 
 export interface PurchaseEntry {
   _id: string;
@@ -34,16 +35,16 @@ export interface PurchaseEntryItem {
 }
 
 export interface Item {
-    _id: string;
-    itemName: string;
-    availability: number;
-  }
+  _id: string;
+  itemName: string;
+  availability: number;
+}
 
 export interface InventoryItem {
-    _id: string;
-    type: string;
-    item: Item[];
-  }
+  _id: string;
+  type: string;
+  item: Item[];
+}
 
 export interface Vendor {
   _id: string;
@@ -54,10 +55,10 @@ export interface Vendor {
 }
 
 export interface CreatePurchaseEntryRequest {
-    orderId: string;
-    isCompleted: boolean;
-    purchaseEntry: Omit<PurchaseEntryVendor, '_id'>[];
-  }
+  orderId: string;
+  isCompleted: boolean;
+  purchaseEntry: Omit<PurchaseEntryVendor, "_id">[];
+}
 
 export const purchaseEntryService = {
   getPurchaseOrdersWithoutEntries: async (): Promise<PurchaseEntry[]> => {
@@ -101,17 +102,25 @@ export const purchaseEntryService = {
     }
   },
 
-  createPurchaseEntry: async (data: CreatePurchaseEntryRequest): Promise<PurchaseEntry> => {
+  createPurchaseEntry: async (
+    data: CreatePurchaseEntryRequest
+  ): Promise<PurchaseEntry> => {
     try {
-      const response = await axios.post<PurchaseEntry>(`${BASE_URL}/purchase_entry`, data);
+      const response = await axios.post<PurchaseEntry>(
+        `${BASE_URL}/purchase_entry`,
+        data
+      );
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('Axios error:', error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'An error occurred while creating the purchase entry');
+        console.error("Axios error:", error.response?.data || error.message);
+        throw new Error(
+          error.response?.data?.message ||
+            "An error occurred while creating the purchase entry"
+        );
       } else {
-        console.error('Error:', error);
-        throw new Error('An unexpected error occurred');
+        console.error("Error:", error);
+        throw new Error("An unexpected error occurred");
       }
     }
   },

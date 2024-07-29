@@ -1,7 +1,7 @@
 import { InventoryItems } from "@/app/Schema/inventorySchema";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export interface ApprovedOrders {
   _id: string;
@@ -95,13 +95,13 @@ export const dashboardService = {
   },
   fetch_inventory_items: async (): Promise<InventoryItems[]> => {
     try {
-        const response = await axios.get<ApiResponse<InventoryItems[]>>(
-            `${BASE_URL}/inventory`
-        );
-        return response.data.data;
+      const response = await axios.get<ApiResponse<InventoryItems[]>>(
+        `${BASE_URL}/inventory`
+      );
+      return response.data.data;
     } catch (error) {
-        console.error("Error fetching inventory data:", error);
-        throw error;
+      console.error("Error fetching inventory data:", error);
+      throw error;
     }
-}
+  },
 };

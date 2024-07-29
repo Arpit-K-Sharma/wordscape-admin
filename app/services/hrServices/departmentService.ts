@@ -3,20 +3,22 @@
 import axios from "axios";
 
 export interface Department {
-  id: string;
+  id?: string;
+  _id?: string;
   department_name: string;
   description: string;
 }
 
 export interface Staff {
-  id: string;
+  id?: string;
+  _id?: string;
   fullName: string;
   email: string;
   position: string;
   departmentNames: string[];
 }
 
-const API_URL = "http://127.0.0.1:8000"; // Replace with your actual API base URL
+const API_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export const departmentService = {
   getDepartments: async (): Promise<Department[]> => {
@@ -33,7 +35,7 @@ export const departmentService = {
 
   updateDepartment: async (
     id: string,
-    department: Omit<Department, "_id">
+    department: Omit<Department, "id" | "_id">
   ): Promise<Department> => {
     const response = await axios.put(`${API_URL}/department/${id}`, department);
     return response.data.data;

@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState, useRef, RefObject } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 import { useForm, useFieldArray, Control } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -28,7 +28,11 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import { Input } from "@/components/ui/input";
 import { Plus, ChevronUp, ChevronDown, Info } from "lucide-react";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { inventoryService } from "@/app/services/inventoryServices/inventoryservice";
 
 interface Item {
@@ -84,10 +88,10 @@ const StocksPage: React.FC = () => {
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [openDialogId, setOpenDialogId] = useState<string>('');
+  const [openDialogId, setOpenDialogId] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [formType, setFormType] = useState('');
+  const [formType, setFormType] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<InventoryItem | null>(null);
@@ -95,9 +99,10 @@ const StocksPage: React.FC = () => {
   const [isItemDeleteDialogOpen, setIsItemDeleteDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
-  const [selectedItemId, setSelectedItemId] = useState<string>('');
+  const [selectedItemId, setSelectedItemId] = useState<string>("");
   const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollContainerRef = useRef(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
   const currentItemRef = useRef(null);
 
   const router = useRouter();
@@ -107,10 +112,14 @@ const StocksPage: React.FC = () => {
     defaultValues: {
       type: "",
       item: [{ itemName: "", availability: "" || "0" }],
-    }
+    },
   });
   const { control: typeControl, handleSubmit: handleSubmit } = form;
-  const { fields: typeFields, append: appendType, remove: removeType } = useFieldArray({
+  const {
+    fields: typeFields,
+    append: appendType,
+    remove: removeType,
+  } = useFieldArray({
     control: typeControl,
     name: "item",
   });
@@ -123,7 +132,7 @@ const StocksPage: React.FC = () => {
       await toast.promise(
         inventoryService.createType(data),
         {
-          loading: 'Creating item...',
+          loading: "Creating item...",
           success: (response) => {
             console.log("Item created", response);
             fetchInventory();
@@ -149,7 +158,7 @@ const StocksPage: React.FC = () => {
       await toast.promise(
         inventoryService.addItem(itemId, data),
         {
-          loading: 'Creating item...',
+          loading: "Creating item...",
           success: (response) => {
             console.log("Item created", response);
             fetchInventory();
@@ -197,7 +206,7 @@ const StocksPage: React.FC = () => {
     setIsClient(true);
   }, []);
 
-  const handleOpenForm = (type: 'add' | 'update', inventoryId: string) => {
+  const handleOpenForm = (type: "add" | "update", inventoryId: string) => {
     console.log(`Handling form for type: ${type}, inventoryId: ${inventoryId}`);
     setFormType(type);
     setOpenDialogId(inventoryId);
@@ -243,25 +252,30 @@ const StocksPage: React.FC = () => {
     if (!selectedType) return;
     try {
       const response = await inventoryService.deleteType(selectedType._id);
-      if (response.status === 'success') {
-        console.log('Item Type deleted', response);
-        setInventoryData(inventoryData.filter((v) => v._id !== selectedType._id));
+      if (response.status === "success") {
+        console.log("Item Type deleted", response);
+        setInventoryData(
+          inventoryData.filter((v) => v._id !== selectedType._id)
+        );
         toast.success("Category deleted successfully!");
         fetchInventory();
         closeDeleteDialog();
       } else {
-        console.error('Unexpected response format:', response);
+        console.error("Unexpected response format:", response);
       }
     } catch (error) {
-      console.error('Error occurred while deleting the item Type:', error);
+      console.error("Error occurred while deleting the item Type:", error);
     }
   };
 
   const handleItemDelete = async (itemId: string) => {
     if (!selectedItem) return;
-    console.error('No selected item to delete');
+    console.error("No selected item to delete");
     try {
-      const response = await inventoryService.deleteItem(selectedItem._id, itemId)
+      const response = await inventoryService.deleteItem(
+        selectedItem._id,
+        itemId
+      );
       if (response.status === "success") {
         console.log("Item Type deleted", selectedItem._id, response);
         setInventoryData(inventoryData.filter((item) => item._id !== itemId));
@@ -279,14 +293,16 @@ const StocksPage: React.FC = () => {
   const itemform = useForm<AddItemValues>({
     resolver: zodResolver(stockSchema),
     defaultValues: {
-      items: [
-        { itemName: "", availability: "" || "0" },
-      ],
+      items: [{ itemName: "", availability: "" || "0" }],
     },
   });
 
   const { control: itemControl, handleSubmit: handleItemSubmit } = itemform;
-  const { fields: itemFields, append: appendItem, remove: removeItems } = useFieldArray({
+  const {
+    fields: itemFields,
+    append: appendItem,
+    remove: removeItems,
+  } = useFieldArray({
     control: itemControl,
     name: "items",
   });
@@ -314,7 +330,8 @@ const StocksPage: React.FC = () => {
 
   const scrollDown = () => {
     setCurrentIndex((prevIndex) => {
-      const newIndex = prevIndex < inventoryData.length - 1 ? prevIndex + 1 : prevIndex;
+      const newIndex =
+        prevIndex < inventoryData.length - 1 ? prevIndex + 1 : prevIndex;
       scrollToIndex(newIndex);
       return newIndex;
     });
@@ -322,11 +339,12 @@ const StocksPage: React.FC = () => {
 
   const scrollToIndex = (index: number) => {
     if (scrollContainerRef.current) {
-      const containerHeight = scrollContainerRef.current.clientHeight;
+      const containerHeight = (scrollContainerRef.current as HTMLDivElement)
+        .clientHeight;
       const scrollTo = index * 270;
-      scrollContainerRef.current.scrollTo({
+      (scrollContainerRef.current as HTMLDivElement).scrollTo({
         top: scrollTo,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }
   };
@@ -340,31 +358,33 @@ const StocksPage: React.FC = () => {
             <CardTitle className="text-xl font-bold text-black">
               <div className="flex flex-row justify-between">
                 <div className="flex ">
-                <div className=" text-3xl  mt-[20px] ">
-                  Inventory Stock Levels
-                </div>
-                <div className="mt-[-5px] ml-[10px]">
-                  <span className="text-2xl font-normal text-gray-600 ml-2">
-                    <HoverCard>
-                      <HoverCardTrigger><Info className="hover:cursor-pointer hover:text-blue-900" /></HoverCardTrigger>
-                      <HoverCardContent className="w-[300px] rounded-[20px]">
-                        <div className="p-[10px] items-center justify-center font-archivo">
-                          <h1 className="ml-[20px] font-semibold mb-[10px] text-[15px] text-gray-700">
-                            Information
-                          </h1>
-                          <p className=" ml-[20px] text-left text-gray-600 text-[15px]">
-                          This page provides a comprehensive overview of your inventory, enabling you to efficiently manage and monitor your stock levels. 
-                          </p>
-                        </div>
-                      </HoverCardContent>
-                    </HoverCard>
-                  </span>
-                </div>
+                  <div className=" text-3xl  mt-[20px] ">
+                    Inventory Stock Levels
+                  </div>
+                  <div className="mt-[-5px] ml-[10px]">
+                    <span className="text-2xl font-normal text-gray-600 ml-2">
+                      <HoverCard>
+                        <HoverCardTrigger>
+                          <Info className="hover:cursor-pointer hover:text-blue-900" />
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-[300px] rounded-[20px]">
+                          <div className="p-[10px] items-center justify-center font-archivo">
+                            <h1 className="ml-[20px] font-semibold mb-[10px] text-[15px] text-gray-700">
+                              Information
+                            </h1>
+                            <p className=" ml-[20px] text-left text-gray-600 text-[15px]">
+                              This page provides a comprehensive overview of
+                              your inventory, enabling you to efficiently manage
+                              and monitor your stock levels.
+                            </p>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    </span>
+                  </div>
                 </div>
                 <div className="mr-[15px]">
-                  <Dialog
-                    open={isDialogOpen}
-                    onOpenChange={setIsDialogOpen}>
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger>
                       <Button
                         disabled={isSubmitting}
@@ -379,14 +399,18 @@ const StocksPage: React.FC = () => {
                         <DialogTitle>Add New Category to Inventory</DialogTitle>
                         <DialogDescription>
                           <Form {...form}>
-                            <form onSubmit={handleSubmit(async (data) => {
-                              await onSubmit(data);
-                              form.reset();
-                            })}
+                            <form
+                              onSubmit={handleSubmit(async (data) => {
+                                await onSubmit(data);
+                                form.reset();
+                              })}
                               className="space-y-4"
                             >
                               {typeFields.map((item, index) => (
-                                <div key={item.id} className="bg-white rounded-md shadow-lg p-4 space-y-4">
+                                <div
+                                  key={item.id}
+                                  className="bg-white rounded-md shadow-lg p-4 space-y-4"
+                                >
                                   <FormField
                                     control={typeControl}
                                     name="type"
@@ -394,7 +418,10 @@ const StocksPage: React.FC = () => {
                                       <FormItem>
                                         <FormLabel>Type</FormLabel>
                                         <FormControl>
-                                          <Input placeholder="Insert the type" {...field} />
+                                          <Input
+                                            placeholder="Insert the type"
+                                            {...field}
+                                          />
                                         </FormControl>
                                         <FormMessage />
                                       </FormItem>
@@ -407,7 +434,10 @@ const StocksPage: React.FC = () => {
                                       <FormItem>
                                         <FormLabel>Item Name</FormLabel>
                                         <FormControl>
-                                          <Input placeholder="Insert the item name" {...field} />
+                                          <Input
+                                            placeholder="Insert the item name"
+                                            {...field}
+                                          />
                                         </FormControl>
                                         <FormMessage />
                                       </FormItem>
@@ -415,8 +445,12 @@ const StocksPage: React.FC = () => {
                                   />
                                 </div>
                               ))}
-                              <Button type="submit" className="w-full" disabled={isSubmitting}
-                                onClick={closeDialog}>
+                              <Button
+                                type="submit"
+                                className="w-full"
+                                disabled={isSubmitting}
+                                onClick={closeDialog}
+                              >
                                 Add to Inventory
                               </Button>
                             </form>
@@ -442,24 +476,31 @@ const StocksPage: React.FC = () => {
                   <Button
                     onClick={scrollUp}
                     disabled={currentIndex === 0}
-                    className={`${currentIndex === 0 ? 'bg-gray-300 text-black' : ''}`}
+                    className={`${
+                      currentIndex === 0 ? "bg-gray-300 text-black" : ""
+                    }`}
                   >
                     <ChevronUp className="h-4 w-4" />
                   </Button>
                   <Button
                     onClick={scrollDown}
                     disabled={currentIndex >= inventoryData.length - 2}
-                    className={`${currentIndex >= inventoryData.length - 2 ? 'bg-gray-300 text-black' : ''}`}
+                    className={`${
+                      currentIndex >= inventoryData.length - 2
+                        ? "bg-gray-300 text-black"
+                        : ""
+                    }`}
                   >
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </div>
                 <div
                   className="overflow-y-auto flex-grow"
-                  style={{ scrollBehavior: 'smooth' }}
-                  ref={scrollContainerRef}
+                  style={{ scrollBehavior: "smooth" }}
+                  ref={scrollContainerRef as RefObject<HTMLDivElement>}
                 >
-                  {inventoryData && inventoryData.length > 0 && (
+                  {inventoryData &&
+                    inventoryData.length > 0 &&
                     inventoryData.map((inventoryType, index) => (
                       <div
                         key={inventoryType._id}
@@ -467,42 +508,69 @@ const StocksPage: React.FC = () => {
                         ref={index === currentIndex ? currentItemRef : null}
                       >
                         <div className="flex justify-between mb-4">
-                          <h2 className="text-2xl pl-3 font-bold text-gray-900 mt-[5px]">{inventoryType.type}</h2>
+                          <h2 className="text-2xl pl-3 font-bold text-gray-900 mt-[5px]">
+                            {inventoryType.type}
+                          </h2>
                           <div className="flex space-x-2">
-                            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                            <Dialog
+                              open={isDeleteDialogOpen}
+                              onOpenChange={setIsDeleteDialogOpen}
+                            >
                               <DialogTrigger>
-                                <Button className="bg-white rounded-full hover:bg-red-700 text-black hover:text-white transition-colors shadow-none p-2" onClick={() => openDeleteDialog(inventoryType)}>
+                                <Button
+                                  className="bg-white rounded-full hover:bg-red-700 text-black hover:text-white transition-colors shadow-none p-2"
+                                  onClick={() =>
+                                    openDeleteDialog(inventoryType)
+                                  }
+                                >
                                   <FiTrash2 className="text-xl" />
                                 </Button>
                               </DialogTrigger>
                               <DialogContent>
                                 <DialogHeader>
-                                  <DialogTitle>Delete Category from Inventory</DialogTitle>
+                                  <DialogTitle>
+                                    Delete Category from Inventory
+                                  </DialogTitle>
                                   <DialogDescription>
-                                    Are you sure you want to delete this? This action cannot be undone.
+                                    Are you sure you want to delete this? This
+                                    action cannot be undone.
                                   </DialogDescription>
                                 </DialogHeader>
                                 <DialogFooter>
-                                  <Button variant="destructive" onClick={handleTypeDelete}>
+                                  <Button
+                                    variant="destructive"
+                                    onClick={handleTypeDelete}
+                                  >
                                     <FiTrash2 className="mr-2" />
                                     Delete
                                   </Button>
-                                  <Button variant="secondary" onClick={closeDeleteDialog}>
+                                  <Button
+                                    variant="secondary"
+                                    onClick={closeDeleteDialog}
+                                  >
                                     <FiX className="mr-2" />
                                     Cancel
                                   </Button>
                                 </DialogFooter>
                               </DialogContent>
                             </Dialog>
-                            <Dialog open={isItemDialogOpen} onOpenChange={setIsItemDialogOpen}>
+                            <Dialog
+                              open={isItemDialogOpen}
+                              onOpenChange={setIsItemDialogOpen}
+                            >
                               <DialogTrigger>
-                                <Button className="bg-white rounded-full hover:bg-green-800 hover:text-white text-black transition-colors p-2 shadow-none" onClick={openItemDialog}>
+                                <Button
+                                  className="bg-white rounded-full hover:bg-green-800 hover:text-white text-black transition-colors p-2 shadow-none"
+                                  onClick={openItemDialog}
+                                >
                                   <Plus className="text-xl" />
                                 </Button>
                               </DialogTrigger>
                               <DialogContent>
                                 <DialogHeader>
-                                  <DialogTitle>Add Item to Inventory</DialogTitle>
+                                  <DialogTitle>
+                                    Add Item to Inventory
+                                  </DialogTitle>
                                   <DialogDescription>
                                     <Form {...itemform}>
                                       <form
@@ -513,27 +581,52 @@ const StocksPage: React.FC = () => {
                                         className="space-y-4"
                                       >
                                         {itemFields.map((item, index) => (
-                                          <div key={item.id} className="rounded-md shadow-md p-4 space-y-4">
-                                            <FormField control={itemControl} name={`items.${index}.itemName`} render={({ field }) => (
-                                              <FormItem>
-                                                <FormLabel>Item Name</FormLabel>
-                                                <FormLabel className="ml-[320px]">
-                                                  <Button  className="bg-transparent hover:bg-red-400 text-gray-400 hover:text-white transition-colors shadow-none p-2 rounded-full" onClick={() => removeItem(index)}>
-                                                    <FiTrash2 className="text-xl" />
-                                                  </Button>
-                                                </FormLabel>
-                                                <FormControl>
-                                                  <Input placeholder="Insert the item name" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                              </FormItem>
-                                            )} />
+                                          <div
+                                            key={item.id}
+                                            className="rounded-md shadow-md p-4 space-y-4"
+                                          >
+                                            <FormField
+                                              control={itemControl}
+                                              name={`items.${index}.itemName`}
+                                              render={({ field }) => (
+                                                <FormItem>
+                                                  <FormLabel>
+                                                    Item Name
+                                                  </FormLabel>
+                                                  <FormLabel className="ml-[320px]">
+                                                    <Button
+                                                      className="bg-transparent hover:bg-red-400 text-gray-400 hover:text-white transition-colors shadow-none p-2 rounded-full"
+                                                      onClick={() =>
+                                                        removeItem(index)
+                                                      }
+                                                    >
+                                                      <FiTrash2 className="text-xl" />
+                                                    </Button>
+                                                  </FormLabel>
+                                                  <FormControl>
+                                                    <Input
+                                                      placeholder="Insert the item name"
+                                                      {...field}
+                                                    />
+                                                  </FormControl>
+                                                  <FormMessage />
+                                                </FormItem>
+                                              )}
+                                            />
                                           </div>
                                         ))}
-                                        <Button  onClick={addItem} className="text-white">
+                                        <Button
+                                          onClick={addItem}
+                                          className="text-white"
+                                        >
                                           Add Item
                                         </Button>
-                                        <Button type="submit" className="text-white w-full" disabled={isSubmitting} onClick={closeItemDialog}>
+                                        <Button
+                                          type="submit"
+                                          className="text-white w-full"
+                                          disabled={isSubmitting}
+                                          onClick={closeItemDialog}
+                                        >
                                           Add Item
                                         </Button>
                                       </form>
@@ -547,32 +640,60 @@ const StocksPage: React.FC = () => {
                         <div className="h-[calc(100%-60px)] pl-3 overflow-y-auto mb-[0px]">
                           <div className="grid grid-cols-4 md:grid-cols-2 lg:grid-cols-5 gap-3">
                             {inventoryType.item.map((item) => (
-                              <Card key={item._id} className="bg-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 hover:bg-gray-50 max-h-[200px] rounded-[15px]">
+                              <Card
+                                key={item._id}
+                                className="bg-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 hover:bg-gray-50 max-h-[200px] rounded-[15px]"
+                              >
                                 <CardContent className="p-4">
                                   <div className="flex flex-row justify-between mb-2">
                                     <div className="w-[90px]">
-                                      <h3 className="font-semibold pt-[5px] mb-[30px] text-lg text-[#3B3939] truncate">{item.itemName}</h3>
+                                      <h3 className="font-semibold pt-[5px] mb-[30px] text-lg text-[#3B3939] truncate">
+                                        {item.itemName}
+                                      </h3>
                                     </div>
                                     <div>
-                                      <Dialog open={isItemDeleteDialogOpen} onOpenChange={setIsItemDeleteDialogOpen}>
+                                      <Dialog
+                                        open={isItemDeleteDialogOpen}
+                                        onOpenChange={setIsItemDeleteDialogOpen}
+                                      >
                                         <DialogTrigger>
-                                          <Button className="bg-white hover:bg-red-600 text-[#686666] hover:text-white transition-colors shadow-none p-2 rounded-full" onClick={() => { setSelectedItemId(item._id); openDeleteItemDialog(inventoryType) }}>
+                                          <Button
+                                            className="bg-white hover:bg-red-600 text-[#686666] hover:text-white transition-colors shadow-none p-2 rounded-full"
+                                            onClick={() => {
+                                              setSelectedItemId(item._id);
+                                              openDeleteItemDialog(
+                                                inventoryType
+                                              );
+                                            }}
+                                          >
                                             <FiTrash2 className="text-[20px]" />
                                           </Button>
                                         </DialogTrigger>
                                         <DialogContent>
                                           <DialogHeader>
-                                            <DialogTitle>Delete from Inventory</DialogTitle>
+                                            <DialogTitle>
+                                              Delete from Inventory
+                                            </DialogTitle>
                                             <DialogDescription>
-                                              Are you sure you want to delete this? This action cannot be undone.
+                                              Are you sure you want to delete
+                                              this? This action cannot be
+                                              undone.
                                             </DialogDescription>
                                           </DialogHeader>
                                           <DialogFooter>
-                                            <Button variant="destructive" onClick={() => handleItemDelete(selectedItemId)}>
+                                            <Button
+                                              variant="destructive"
+                                              onClick={() =>
+                                                handleItemDelete(selectedItemId)
+                                              }
+                                            >
                                               <FiTrash2 className="mr-2" />
                                               Delete
                                             </Button>
-                                            <Button variant="secondary" onClick={closeDeleteItemDialog}>
+                                            <Button
+                                              variant="secondary"
+                                              onClick={closeDeleteItemDialog}
+                                            >
                                               <FiX className="mr-2" />
                                               Cancel
                                             </Button>
@@ -582,8 +703,12 @@ const StocksPage: React.FC = () => {
                                     </div>
                                   </div>
                                   <div className="flex justify-between items-center">
-                                    <span className="text-sm text-[#7B7676] font-semibold">In Stock:</span>
-                                    <span className="text-lg font-semibold text-black">{item.availability}</span>
+                                    <span className="text-sm text-[#7B7676] font-semibold">
+                                      In Stock:
+                                    </span>
+                                    <span className="text-lg font-semibold text-black">
+                                      {item.availability}
+                                    </span>
                                   </div>
                                 </CardContent>
                               </Card>
@@ -591,8 +716,7 @@ const StocksPage: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                    ))
-                  )}
+                    ))}
                 </div>
               </div>
             )}
@@ -601,6 +725,6 @@ const StocksPage: React.FC = () => {
       </div>
     </div>
   );
-}
+};
 
 export default StocksPage;

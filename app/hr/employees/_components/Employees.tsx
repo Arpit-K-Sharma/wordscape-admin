@@ -49,7 +49,8 @@ import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
 interface Employee {
-  _id: string;
+  _id?: string;
+  id?: string;
   fullName: string;
   email: string;
   password: string;
@@ -61,10 +62,12 @@ interface Employee {
   status: boolean;
   address: string;
   role: string;
+  dept_ids?: string[];
 }
 
 interface Department {
-  id: string;
+  id?: string;
+  _id?: string;
   department_name: string;
   description: string;
 }
@@ -101,8 +104,8 @@ const EmployeesPage: React.FC = () => {
     address: "",
     phoneNumber: "",
     position: "",
-    dailyWage: "",
-    dept_ids: [],
+    dailyWage: 0,
+    dept_ids: [] as string[],
   });
 
   const Router = useRouter();
@@ -122,9 +125,11 @@ const EmployeesPage: React.FC = () => {
     }
   };
 
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
   const fetchDepartments = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8000/department");
+      const response = await axios.get(`${BASE_URL}/department`);
       setDepartments(response.data.data);
     } catch (error) {
       console.error("Error fetching departments:", error);
@@ -173,7 +178,7 @@ const EmployeesPage: React.FC = () => {
         address: "",
         phoneNumber: "",
         position: "",
-        dailyWage: "",
+        dailyWage: 0,
         dept_ids: [],
       });
     } catch (error) {
@@ -182,10 +187,10 @@ const EmployeesPage: React.FC = () => {
     }
   };
 
-  const handleDeleteStaff = (_id: string) => {
-    setStaffToDelete(_id);
-    setIsDeleteDialogOpen(true);
-  };
+  // const handleDeleteStaff = (_id: string) => {
+  //   setStaffToDelete(_id);
+  //   setIsDeleteDialogOpen(true);
+  // };
 
   const confirmDeleteStaff = async () => {
     if (staffToDelete) {
@@ -203,12 +208,12 @@ const EmployeesPage: React.FC = () => {
   };
 
   const handleStatusChange = async (
-    staffId: string,
+    staffId: string | undefined,
     currentStatus: boolean
   ) => {
+    if (!staffId) return;
     try {
       await employeeService.changeEmployeeStatus(staffId, !currentStatus);
-      fetchEmployees();
       fetchEmployees();
     } catch (error) {
       console.error("Error updating employee status:", error);
@@ -219,7 +224,7 @@ const EmployeesPage: React.FC = () => {
   const handleUpdateStaff = async (id: string) => {
     if (!editingEmployee) return;
     try {
-      const updatedEmployeeData = {
+      const updatedEmployeeData: Partial<Employee> = {
         fullName: editingEmployee.fullName,
         email: editingEmployee.email,
         address: editingEmployee.address,
@@ -621,7 +626,7 @@ const EmployeesPage: React.FC = () => {
                                     <Checkbox
                                       id={`updateDept-${dept.id}`}
                                       checked={editingEmployee?.dept_ids?.includes(
-                                        dept.id
+                                        dept.id ?? ""
                                       )}
                                       onCheckedChange={(checked) => {
                                         setEditingEmployee((prev) => {
@@ -630,7 +635,9 @@ const EmployeesPage: React.FC = () => {
                                             ? [
                                                 ...(prev.dept_ids || []),
                                                 dept.id,
-                                              ]
+                                              ].filter(
+                                                (id): id is string => id != null
+                                              )
                                             : (prev.dept_ids || []).filter(
                                                 (id) => id !== dept.id
                                               );
@@ -651,9 +658,14 @@ const EmployeesPage: React.FC = () => {
                           </div>
                           <DialogFooter>
                             <Button
-                              onClick={() =>
-                                handleUpdateStaff(editingEmployee?.id)
-                              }
+                              onClick={() => {
+                                if (editingEmployee?.id) {
+                                  handleUpdateStaff(editingEmployee.id);
+                                } else {
+                                  console.error("Employee ID is undefined");
+                                  // Optionally, show an error message to the user
+                                }
+                              }}
                             >
                               Update Employee
                             </Button>
@@ -848,11 +860,13 @@ const EmployeesPage: React.FC = () => {
                   <div key={dept.id} className="flex items-center space-x-2">
                     <Checkbox
                       id={`newDept-${dept.id}`}
-                      checked={newStaff.dept_ids.includes(dept.id)}
+                      checked={newStaff.dept_ids.includes(dept.id ?? "")}
                       onCheckedChange={(checked) => {
                         setNewStaff((prev) => {
                           const newDeptIds = checked
-                            ? [...prev.dept_ids, dept.id]
+                            ? [...prev.dept_ids, dept.id].filter(
+                                (id): id is string => id != null
+                              )
                             : prev.dept_ids.filter((id) => id !== dept.id);
                           return { ...prev, dept_ids: newDeptIds };
                         });

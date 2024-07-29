@@ -33,6 +33,13 @@ interface Vendor {
   vendorPhone: string;
 }
 
+interface UpdateVendorDialogProps {
+  isOpen: boolean;
+  closeModal: () => void;
+  vendor: Vendor;
+  updateVendor: (id: string, data: Partial<Vendor>) => Promise<Vendor>;
+}
+
 function Vendors() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
@@ -79,6 +86,15 @@ function Vendors() {
   const openDeleteDialog = (vendor: Vendor) => {
     setSelectedVendor(vendor);
     setIsDeleteDialogOpen(true);
+  };
+
+  const handleUpdateVendor = async (
+    id: string,
+    data: Partial<Vendor>
+  ): Promise<Vendor> => {
+    const updatedVendor = await vendorService.updateVendor(id, data);
+    await fetchVendors();
+    return updatedVendor;
   };
 
   const closeDeleteDialog = () => {
@@ -202,7 +218,7 @@ function Vendors() {
               isOpen={isUpdateDialogOpen}
               closeModal={closeUpdateDialog}
               vendor={selectedVendor}
-              updateVendor={vendorService.updateVendor}
+              updateVendor={handleUpdateVendor}
             />
           )}
 

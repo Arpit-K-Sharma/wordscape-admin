@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 interface Vendor {
   _id: string;
@@ -33,7 +33,7 @@ export const vendorService = {
 
   createVendor: async (data: Omit<Vendor, "_id">): Promise<Vendor> => {
     try {
-      console.log(data)
+      console.log(data);
       const response = await axios.post<Vendor>(`${BASE_URL}/vendor`, data);
       return response.data;
     } catch (error) {

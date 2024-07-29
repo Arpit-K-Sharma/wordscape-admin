@@ -18,7 +18,8 @@ export interface Employee {
 }
 
 export interface Department {
-  _id: string;
+  id?: string;
+  _id?: string;
   department_name: string;
   description: string;
 }
@@ -35,7 +36,7 @@ export interface NewStaffData {
   dept_ids: string[];
 }
 
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "https://inventory-hr.onrender.com";
 
 export const employeeService = {
   getAllEmployees: async (): Promise<Employee[]> => {
