@@ -61,6 +61,7 @@ const Leaves: React.FC = () => {
   const [selectedLeaveId, setSelectedLeaveId] = useState<string | null>(null);
   const [leaveToHandle, setLeaveToHandle] = useState<string>("");
   const [handleStatus, setHandleStatus] = useState<string>("");
+
   interface LeaveResponse {
     data: LeaveManagement[];
   }
@@ -83,37 +84,32 @@ const Leaves: React.FC = () => {
   };
 
   const addLeave = async () => {
-    if (selectedEmployee && selectedEmployee._id && newLeave.staff_id) {
+    if (selectedEmployee && selectedEmployee._id && selectedEmployee.id) {
       const newLeave = {
         _id: selectedEmployee._id,
-        staff_id: selectedEmployee.id,
+        staff_id: selectedEmployee.id, // Ensure staff_id is defined
         start_date: startDate
-          ? new Date(startDate.getTime() + 86400000).toISOString().split("T")[0]
-          : "",
-        end_date: endDate
-          ? new Date(endDate.getTime() + 86400000).toISOString().split("T")[0]
-          : "",
+          ? new Date(startDate.getTime() + 86400000)
+          : new Date(),
+        end_date: endDate ? new Date(endDate.getTime() + 86400000) : new Date(),
         reason: leaveReason,
-        type: leaveType,
+        type: leaveType || "", // Ensure type is a string
         status: leaveStatus, // Ensure status is a string
       };
 
-      if (newLeave.staff_id) {
-        // Check if staff_id is defined
-        try {
-          await LeaveManagementService.addLeave(newLeave.staff_id, newLeave);
-          setSelectedEmployee(null);
-          setStartDate(undefined);
-          setEndDate(undefined);
-          setLeaveReason("");
-          setLeaveType(undefined);
-          fetchLeaveData();
-        } catch (error) {
-          console.error("Error adding leave", error);
-        }
-      } else {
-        console.error("Staff ID is undefined");
+      try {
+        await LeaveManagementService.addLeave(newLeave.staff_id, newLeave);
+        setSelectedEmployee(null);
+        setStartDate(undefined);
+        setEndDate(undefined);
+        setLeaveReason("");
+        setLeaveType(undefined);
+        fetchLeaveData();
+      } catch (error) {
+        console.error("Error adding leave", error);
       }
+    } else {
+      console.error("Selected employee or staff ID is undefined");
     }
   };
 
@@ -252,387 +248,378 @@ const Leaves: React.FC = () => {
         }
       }
     }
+  };
 
-    return (
-      <div className="flex h-screen">
-        <HRSidebar />
-        <main className="flex-1 p-6">
-          <h1 className="text-2xl font-bold mb-6">Leave Management</h1>
+  return (
+    <div className="flex h-screen">
+      <HRSidebar />
+      <main className="flex-1 p-6">
+        <h1 className="text-2xl font-bold mb-6">Leave Management</h1>
 
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="mb-4" onClick={() => setIsAddDialogOpen(true)}>
-                Add Leave
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Leave</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Employee Name
-                  </Label>
-                  <Select
-                    value={selectedEmployee?.fullName}
-                    onValueChange={handleChange}
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue style={{ color: "black" }}>
-                        {selectedEmployee
-                          ? selectedEmployee.fullName
-                          : "Select employee"}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {employeeOptions.map((employee) => (
-                        <SelectItem key={employee.fullName} value={employee.id}>
-                          {employee.fullName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="date" className="text-right">
-                    Start Date
-                  </Label>
-                  <Input
-                    id="startDate"
-                    value={
-                      startDate
-                        ? startDate.toISOString().split("T")[0]
-                        : "Select date"
-                    }
-                    onClick={() => handleDateClick("start")}
-                    readOnly
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="date" className="text-right">
-                    End Date
-                  </Label>
-                  <Input
-                    id="endDate"
-                    value={
-                      endDate
-                        ? endDate.toISOString().split("T")[0]
-                        : "Select date"
-                    }
-                    onClick={() => handleDateClick("end")}
-                    readOnly
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="description" className="text-right">
-                    Cause
-                  </Label>
-                  <Input
-                    id="leaveReason"
-                    value={leaveReason}
-                    onChange={(e) => setLeaveReason(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="type" className="text-right">
-                    Type
-                  </Label>
-                  <Select value={leaveType} onValueChange={setLeaveType}>
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Select leave type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Paid">Paid</SelectItem>
-                      <SelectItem value="Unpaid">Unpaid</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="mb-4" onClick={() => setIsAddDialogOpen(true)}>
+              Add Leave
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Leave</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Employee Name
+                </Label>
+                <Select
+                  value={selectedEmployee?.fullName}
+                  onValueChange={handleChange}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue style={{ color: "black" }}>
+                      {selectedEmployee
+                        ? selectedEmployee.fullName
+                        : "Select employee"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {employeeOptions.map((employee) => (
+                      <SelectItem key={employee.fullName} value={employee.id}>
+                        {employee.fullName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <Button onClick={addLeave}>Save Leave</Button>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog
-            open={isCalendarDialogOpen}
-            onOpenChange={setIsCalendarDialogOpen}
-          >
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Select Date</DialogTitle>
-              </DialogHeader>
-              <Calendar
-                mode="single"
-                selected={calendarType === "start" ? startDate : endDate}
-                onSelect={(date) => {
-                  if (calendarType === "start") {
-                    setStartDate(date);
-                  } else {
-                    setEndDate(date);
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="date" className="text-right">
+                  Start Date
+                </Label>
+                <Input
+                  id="startDate"
+                  value={
+                    startDate
+                      ? startDate.toISOString().split("T")[0]
+                      : "Select date"
                   }
-                  setIsCalendarDialogOpen(false);
-                }}
-              />
-            </DialogContent>
-          </Dialog>
+                  onClick={() => handleDateClick("start")}
+                  readOnly
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="date" className="text-right">
+                  End Date
+                </Label>
+                <Input
+                  id="endDate"
+                  value={
+                    endDate
+                      ? endDate.toISOString().split("T")[0]
+                      : "Select date"
+                  }
+                  onClick={() => handleDateClick("end")}
+                  readOnly
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right">
+                  Cause
+                </Label>
+                <Input
+                  id="leaveReason"
+                  value={leaveReason}
+                  onChange={(e) => setLeaveReason(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="type" className="text-right">
+                  Type
+                </Label>
+                <Select value={leaveType} onValueChange={setLeaveType}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select leave type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Paid">Paid</SelectItem>
+                    <SelectItem value="Unpaid">Unpaid</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button onClick={addLeave}>Save Leave</Button>
+          </DialogContent>
+        </Dialog>
 
-          {leaveManagement && leaveManagement.length > 0 ? (
-            <Table className="w-full bg-white border border-grey-900 rounded-lg shadow-sm">
-              <TableHeader>
-                <TableRow className="bg-gray-800">
-                  <TableHead className="text-center py-3 px-4 text-white ">
-                    Employee Name
-                  </TableHead>
-                  <TableHead className="text-center py-3 px-4 text-white">
-                    Start Date
-                  </TableHead>
-                  <TableHead className="text-center py-3 px-4 text-white ">
-                    End Date
-                  </TableHead>
-                  <TableHead className="text-center py-3 px-4 text-white ">
-                    Cause
-                  </TableHead>
-                  <TableHead className="text-center py-3 px-4 text-white ">
-                    Type
-                  </TableHead>
-                  <TableHead className="text-center py-3 px-4 text-white ">
-                    Status
-                  </TableHead>
-                  <TableHead className="text-center py-3 px-4 text-white ">
-                    Edit
-                  </TableHead>
-                  <TableHead className="text-center py-3 px-4 text-white">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leaveManagement &&
-                  leaveManagement.map((leave) => (
-                    <TableRow
-                      key={leave.id}
-                      className="border-t border-grey-900"
-                    >
-                      <TableCell className="text-center py-2 px-4 ">
-                        {leave.staff_name}
-                      </TableCell>
-                      <TableCell className="text-center py-2 px-4 ">
-                        {leave.start_date.toISOString().split("T")[0]}
-                      </TableCell>
-                      <TableCell className="text-center py-2 px-4 ">
-                        {leave.end_date.toISOString().split("T")[0]}
-                      </TableCell>
-                      <TableCell className="text-center py-2 px-4">
-                        {leave.reason}
-                      </TableCell>
-                      <TableCell className="text-center py-2 px-4 ">
-                        {leave.type}
-                      </TableCell>
-                      <TableCell className="text-center py-2 px-4 ">
-                        {leave.status !== "Pending" ? (
-                          leave.status === "Approved" ? (
-                            <span className="w-24 inline-block font-bold text-green-500 text-center px-2 py-1">
-                              {leave.status}
-                            </span>
-                          ) : (
-                            <span className="w-24 inline-block font-bold text-red-500 text-center px-2 py-1">
-                              {leave.status}
-                            </span>
-                          )
-                        ) : (
-                          <span className="w-24 inline-block font-bold text-yellow-500 text-center px-2 py-1">
+        <Dialog
+          open={isCalendarDialogOpen}
+          onOpenChange={setIsCalendarDialogOpen}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Select Date</DialogTitle>
+            </DialogHeader>
+            <Calendar
+              mode="single"
+              selected={calendarType === "start" ? startDate : endDate}
+              onSelect={(date) => {
+                if (calendarType === "start") {
+                  setStartDate(date);
+                } else {
+                  setEndDate(date);
+                }
+                setIsCalendarDialogOpen(false);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {leaveManagement && leaveManagement.length > 0 ? (
+          <Table className="w-full bg-white border border-grey-900 rounded-lg shadow-sm">
+            <TableHeader>
+              <TableRow className="bg-gray-800">
+                <TableHead className="text-center py-3 px-4 text-white ">
+                  Employee Name
+                </TableHead>
+                <TableHead className="text-center py-3 px-4 text-white">
+                  Start Date
+                </TableHead>
+                <TableHead className="text-center py-3 px-4 text-white ">
+                  End Date
+                </TableHead>
+                <TableHead className="text-center py-3 px-4 text-white ">
+                  Cause
+                </TableHead>
+                <TableHead className="text-center py-3 px-4 text-white ">
+                  Type
+                </TableHead>
+                <TableHead className="text-center py-3 px-4 text-white ">
+                  Status
+                </TableHead>
+                <TableHead className="text-center py-3 px-4 text-white ">
+                  Edit
+                </TableHead>
+                <TableHead className="text-center py-3 px-4 text-white">
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {leaveManagement &&
+                leaveManagement.map((leave) => (
+                  <TableRow key={leave.id} className="border-t border-grey-900">
+                    <TableCell className="text-center py-2 px-4 ">
+                      {leave.staff_name}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 ">
+                      {leave.start_date.toISOString().split("T")[0]}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 ">
+                      {leave.end_date.toISOString().split("T")[0]}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4">
+                      {leave.reason}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 ">
+                      {leave.type}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 ">
+                      {leave.status !== "Pending" ? (
+                        leave.status === "Approved" ? (
+                          <span className="w-24 inline-block font-bold text-green-500 text-center px-2 py-1">
                             {leave.status}
                           </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="flex justify-center ml-3 text-center py-2 px-4">
-                        <Button
-                          variant="outline"
-                          onClick={() => openUpdateDialog(leave)}
-                          disabled={isRowDisabled(leave.status)}
-                          className="mr-3"
-                        >
-                          <FiEdit className="mr-2" />
-                          Update
-                        </Button>
-                      </TableCell>
-                      <TableCell className="text-center py-2 px-4">
-                        <Button
-                          onClick={() => {
-                            if (leave.id) handleLeave(leave.id, "approve");
-                          }}
-                          disabled={isRowDisabled(leave.status)}
-                          variant="outline"
-                          className="mr-3 font-bold hover:text-success-foreground hover:bg-success-hover border border-solid border-slate-300"
-                        >
-                          <FiCheck className="mr-2" />
-                          Approve
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            if (leave.id) handleLeave(leave.id, "reject");
-                          }}
-                          disabled={isRowDisabled(leave.status)}
-                          className="mr-3 font-bold hover:text-warning-foreground hover:bg-warning-hover border border-solid border-slate-300"
-                        >
-                          <FiX className="mr-2" />
-                          Reject
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <p>No Leaves Found</p>
-          )}
+                        ) : (
+                          <span className="w-24 inline-block font-bold text-red-500 text-center px-2 py-1">
+                            {leave.status}
+                          </span>
+                        )
+                      ) : (
+                        <span className="w-24 inline-block font-bold text-yellow-500 text-center px-2 py-1">
+                          {leave.status}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="flex justify-center ml-3 text-center py-2 px-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => openUpdateDialog(leave)}
+                        disabled={isRowDisabled(leave.status)}
+                        className="mr-3"
+                      >
+                        <FiEdit className="mr-2" />
+                        Update
+                      </Button>
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4">
+                      <Button
+                        onClick={() => {
+                          if (leave.id) handleLeave(leave.id, "approve");
+                        }}
+                        disabled={isRowDisabled(leave.status)}
+                        variant="outline"
+                        className="mr-3 font-bold hover:text-success-foreground hover:bg-success-hover border border-solid border-slate-300"
+                      >
+                        <FiCheck className="mr-2" />
+                        Approve
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          if (leave.id) handleLeave(leave.id, "reject");
+                        }}
+                        disabled={isRowDisabled(leave.status)}
+                        className="mr-3 font-bold hover:text-warning-foreground hover:bg-warning-hover border border-solid border-slate-300"
+                      >
+                        <FiX className="mr-2" />
+                        Reject
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <p>No Leaves Found</p>
+        )}
 
-          <Dialog
-            open={isUpdateDialogOpen}
-            onOpenChange={setIsUpdateDialogOpen}
-          >
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="flex items-center">
-                  <p className="flex-1">Update Leave</p>
-                </DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Employee Name
-                  </Label>
-                  <Select
-                    value={selectedEmployee?.fullName}
-                    onValueChange={handleChange}
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue style={{ color: "black" }}>
-                        {selectedEmployee
-                          ? selectedEmployee.fullName
-                          : "Select employee"}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {employeeOptions.map((employee) => (
-                        <SelectItem
-                          key={employee.fullName}
-                          value={employee._id}
-                        >
-                          {employee.fullName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="date" className="text-right">
-                    Start Date
-                  </Label>
-                  <Input
-                    id="startDate"
-                    value={
-                      startDate
-                        ? startDate.toISOString().split("T")[0]
-                        : "Select date"
-                    }
-                    onClick={() => handleDateClick("start")}
-                    readOnly
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="date" className="text-right">
-                    End Date
-                  </Label>
-                  <Input
-                    id="endDate"
-                    value={
-                      endDate
-                        ? endDate.toISOString().split("T")[0]
-                        : "Select date"
-                    }
-                    onClick={() => handleDateClick("end")}
-                    readOnly
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="description" className="text-right">
-                    Cause
-                  </Label>
-                  <Input
-                    id="leaveReason"
-                    value={leaveReason}
-                    onChange={(e) => setLeaveReason(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="type" className="text-right">
-                    Type
-                  </Label>
-                  <Select value={leaveType} onValueChange={setLeaveType}>
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Select leave type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Paid">Paid</SelectItem>
-                      <SelectItem value="Unpaid">Unpaid</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+        <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                <p className="flex-1">Update Leave</p>
+              </DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Employee Name
+                </Label>
+                <Select
+                  value={selectedEmployee?.fullName}
+                  onValueChange={handleChange}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue style={{ color: "black" }}>
+                      {selectedEmployee
+                        ? selectedEmployee.fullName
+                        : "Select employee"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {employeeOptions.map((employee) => (
+                      <SelectItem key={employee.fullName} value={employee._id}>
+                        {employee.fullName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <Button onClick={handleUpdateLeave}>Update Leave</Button>
-              <Button variant="secondary" onClick={closeUpdateDialog}>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="date" className="text-right">
+                  Start Date
+                </Label>
+                <Input
+                  id="startDate"
+                  value={
+                    startDate
+                      ? startDate.toISOString().split("T")[0]
+                      : "Select date"
+                  }
+                  onClick={() => handleDateClick("start")}
+                  readOnly
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="date" className="text-right">
+                  End Date
+                </Label>
+                <Input
+                  id="endDate"
+                  value={
+                    endDate
+                      ? endDate.toISOString().split("T")[0]
+                      : "Select date"
+                  }
+                  onClick={() => handleDateClick("end")}
+                  readOnly
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right">
+                  Cause
+                </Label>
+                <Input
+                  id="leaveReason"
+                  value={leaveReason}
+                  onChange={(e) => setLeaveReason(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="type" className="text-right">
+                  Type
+                </Label>
+                <Select value={leaveType} onValueChange={setLeaveType}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select leave type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Paid">Paid</SelectItem>
+                    <SelectItem value="Unpaid">Unpaid</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button onClick={handleUpdateLeave}>Update Leave</Button>
+            <Button variant="secondary" onClick={closeUpdateDialog}>
+              Cancel
+            </Button>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={isApproveDialogOpen}
+          onOpenChange={setIsApproveDialogOpen}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {handleStatus == "approve" ? "Approve Leave" : "Reject Leave"}
+              </DialogTitle>
+              <DialogDescription>
+                {handleStatus == "approve"
+                  ? "Are you sure you want to approve the leave ?"
+                  : "Are you sure you want reject the leave ?"}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              {handleStatus === "approve" ? (
+                <Button
+                  onClick={handleApproval}
+                  className=" bg-success text-success-foreground hover:bg-success-hover"
+                >
+                  Approve
+                </Button>
+              ) : (
+                <Button variant="destructive" onClick={handleRejection}>
+                  Reject
+                </Button>
+              )}
+
+              <Button variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog
-            open={isApproveDialogOpen}
-            onOpenChange={setIsApproveDialogOpen}
-          >
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {handleStatus == "approve" ? "Approve Leave" : "Reject Leave"}
-                </DialogTitle>
-                <DialogDescription>
-                  {handleStatus == "approve"
-                    ? "Are you sure you want to approve the leave ?"
-                    : "Are you sure you want reject the leave ?"}
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                {handleStatus === "approve" ? (
-                  <Button
-                    onClick={handleApproval}
-                    className=" bg-success text-success-foreground hover:bg-success-hover"
-                  >
-                    Approve
-                  </Button>
-                ) : (
-                  <Button variant="destructive" onClick={handleRejection}>
-                    Reject
-                  </Button>
-                )}
-
-                <Button variant="outline" onClick={handleClose}>
-                  Cancel
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </main>
-      </div>
-    );
-  };
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </main>
+    </div>
+  );
 };
 
 export default Leaves;
