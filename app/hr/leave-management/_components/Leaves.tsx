@@ -115,8 +115,8 @@ const Leaves: React.FC = () => {
 
   const fetchEmployeeOptions = async () => {
     try {
-      const employees: Staff[] = await staffService.getStaff(); // Ensure correct typing
-      setEmployeeOptions(employees); // Set employee options directly
+      const employees: Staff[] = await staffService.getStaff();
+      setEmployeeOptions(Array.isArray(employees) ? employees : []);
     } catch (error) {
       console.log("Error fetching employees", error);
     }
