@@ -42,7 +42,7 @@ import { staffService, Staff } from "@/app/services/hrServices/staffService";
 
 const Leaves: React.FC = () => {
   const [leaveManagement, setLeaveManagement] = useState<LeaveManagement[]>([]);
-  const [employeeOptions, setEmployeeOptions] = useState<any[]>([]); // State for employee options
+  const [employeeOptions, setEmployeeOptions] = useState<Staff[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<Staff | null>(null);
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -284,7 +284,10 @@ const Leaves: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {employeeOptions.map((employee) => (
-                      <SelectItem key={employee.fullName} value={employee.id}>
+                      <SelectItem
+                        key={employee.fullName}
+                        value={employee.id || ""}
+                      >
                         {employee.fullName}
                       </SelectItem>
                     ))}
@@ -510,7 +513,10 @@ const Leaves: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {employeeOptions.map((employee) => (
-                      <SelectItem key={employee.fullName} value={employee._id}>
+                      <SelectItem
+                        key={employee.fullName}
+                        value={employee._id || ""}
+                      >
                         {employee.fullName}
                       </SelectItem>
                     ))}
