@@ -77,7 +77,7 @@ const Leaves: React.FC = () => {
   const fetchLeaveData = async () => {
     try {
       const data = await LeaveManagementService.getLeave();
-      setLeaveManagement(data.data);
+      setLeaveManagement(Array.isArray(data.data) ? data.data : []);
     } catch (error) {
       console.log("Error fetching leave data", error);
     }
