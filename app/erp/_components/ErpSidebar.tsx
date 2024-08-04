@@ -200,34 +200,14 @@ const ErpSidebar: React.FC = () => {
               </>
             )}
           </div>
-
-          <div>
-            <Button
-              variant="ghost"
-              className="w-full justify-start mb-2 text-sm"
-              onClick={() => setTasksCategoryOpen(!tasksCategoryOpen)}
-            >
-              <Calculator className="mr-2 h-4 w-4" />
-              Tasks
-              {tasksCategoryOpen ? (
-                <ChevronDown className="ml-auto h-4 w-4" />
-              ) : (
-                <ChevronRight className="ml-auto h-4 w-4" />
-              )}
-            </Button>
-            {tasksCategoryOpen && (
-              <>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start mb-2 text-sm pl-8 "
-                  onClick={() => router.push("/erp/costCalculation")}
-                >
-                  <Calculator className="mr-2 h-4 w-4" />
-                  Cost Calculation
-                </Button>
-              </>
-            )}
-          </div>
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/erp/costCalculation")}
+          >
+            <Calculator className="mr-2 h-4 w-4" />
+            Cost Calculation
+          </Button>
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm "
