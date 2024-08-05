@@ -79,17 +79,15 @@ export default function CostCalculationPage() {
 
   const fetchData = async () => {
     try {
-      const [paperSizesData, sheetSizesData, papersData, platesData, bindingsData, laminationsData, coverTreatmentsData, inksData] = await Promise.all([
+      const [paperSizesData, sheetSizesData, papersData, platesData, bindingsData, laminationsData, inksData] = await Promise.all([
         getPaperSizes(),
         getSheetSizes(),
         getPapers(),
         getPlates(),
         getBindings(),
         getLaminations(),
-        getCoverTreatments(),
         getInks()
       ]);
-
       setPaperSizes(paperSizesData);
       setSheetSizes(sheetSizesData);
       setPaperTypes(papersData);
@@ -98,7 +96,6 @@ export default function CostCalculationPage() {
       setPlateSizes(platesData);
       setBindingType(bindingsData.map(b => b.bindingType));
       setLaminationType(laminationsData.map(l => l.laminationType));
-      setCoverTreatmentType(coverTreatmentsData.map(ct => ct.coverTreatmentType));
       setInks(inksData);
     } catch (error) {
       console.error('Error fetching data:', error);
