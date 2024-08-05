@@ -3,7 +3,7 @@ import { Order, SelectedOrder } from '../../Schema/erpSchema/OrderSchema';
 import {OrderResponse} from '../../erp/order/_components/order'
 
 // const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
-const API_URL = 'http://localhost:8081';
+const API_URL = 'http://localhost:8000';
 
 export const fetchOrders = async (page: number, sortField: string, sortDirection: string): Promise<OrderResponse> => {
   const response = await axios.get(`${API_URL}/orders?pageNumber=${page}&sortField=${sortField}&sortDirection=${sortDirection}`);

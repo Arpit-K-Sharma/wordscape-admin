@@ -115,10 +115,10 @@ export default function Users() {
                 </TableHeader>
                 <TableBody>
                   {users.map((user) => (
-                    <TableRow key={user.userId}>
-                      <TableCell className="truncate max-w-[80px]">{user.userId}</TableCell>
+                    <TableRow key={user.id}>
+                      <TableCell className="truncate max-w-[80px]">{user.id}</TableCell>
                       <TableCell>
-                        {editingUserId === user.userId ? (
+                        {editingUserId === user.id ? (
                           <Input
                             type="email"
                             defaultValue={user.email}
@@ -131,11 +131,11 @@ export default function Users() {
                       <TableCell>******</TableCell>
                       <TableCell>Active</TableCell>
                       <TableCell>
-                        {editingUserId === user.userId ? (
-                          <Button onClick={() => handleSave(user.userId)}>Save</Button>
+                        {editingUserId === user.id ? (
+                          <Button onClick={() => handleSave(user.id)}>Save</Button>
                         ) : (
                           <Button onClick={() => {
-                            setEditingUserId(user.userId);
+                            setEditingUserId(user.id);
                             setEditData({ email: user.email });
                           }}>Edit</Button>
                         )}

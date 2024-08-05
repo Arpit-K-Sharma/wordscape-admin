@@ -24,7 +24,7 @@ axiosInstance.interceptors.request.use(
   (config) => {
     const token = Cookies.get("accessToken");
     if (token) {
-      config.headers["access_token"] = token; // Store token as access_token in the header
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },
@@ -40,7 +40,7 @@ axiosInstance.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      window.location.href = "/";
+      console.log("error comming")
     }
     return Promise.reject(error);
   }

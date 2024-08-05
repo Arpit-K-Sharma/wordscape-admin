@@ -4,8 +4,8 @@ import { User, UserFormData } from '../../Schema/erpSchema/userSchema';
 const API_URL = '/staff'; 
 
 export const getUsers = async (): Promise<User[]> => {
-  const response = await axios.get<User[]>(API_URL);
-  return response.data;
+  const response = await axios.get<{ data: User[] }>(API_URL);
+  return response.data.data;
 };
 
 export const addUser = async (userData: UserFormData): Promise<User> => {
