@@ -15,8 +15,6 @@ interface ErrorResponseData {
 // const baseURL = "https://erp-api.wordscapepress.com";
 const baseURL = "http://127.0.0.1:8000";
 
-
-
 const axiosInstance = axios.create({
   baseURL: baseURL,
 });
@@ -26,7 +24,7 @@ axiosInstance.interceptors.request.use(
   (config) => {
     const token = Cookies.get("accessToken");
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers["access_token"] = token; // Store token as access_token in the header
     }
     return config;
   },
@@ -49,29 +47,26 @@ axiosInstance.interceptors.response.use(
 );
 
 // Admin login function
+// Admin login function
 export const adminLogin = async (
   email: string,
-  password: string,
+  password: string
 ): Promise<boolean> => {
   try {
     const response = await axiosInstance.post("/admin/login", {
-      email,
-      password
+      email, // Sending email as part of the request body
+      password, // Sending password as part of the request body
     });
-    if (response.data.access_token && response.data) {
-      const token = response.data.access_token;
-      Cookies.set("accessToken", token, { expires: 7 });
 
-      const decoded = jwtDecode<CustomJwtPayload>(token); // Correct usage
-      if (decoded.id ) {
-        localStorage.setItem("id", decoded.id);
-        toast.success("Admin logged in successfully");
-        return true;
-      } else {
-        console.error("Error: User is not an admin");
-        toast.error("Access denied. Admin privileges required.");
-        return false;
-      }
+    if (response.data.access_token) {
+      const token = response.data.access_token;
+      Cookies.set("accessToken", token, { expires: 7 }); // Store token in cookies
+
+      // Set the access_token header for future requests
+      axiosInstance.defaults.headers.common["access_token"] = token;
+
+      toast.success("Admin logged in successfully");
+      return true;
     } else {
       console.error("Error: No token found in the response");
       return false;
@@ -84,7 +79,6 @@ export const adminLogin = async (
     return false;
   }
 };
-
 // Function to get role from token
 export const getRoleFromToken = () => {
   const token = Cookies.get("accessToken");

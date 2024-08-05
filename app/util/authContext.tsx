@@ -2,23 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { isAdmin } from "../_axios/axiosInstance";
 import UnauthorizedAccess from "../Unauthorized";
+import Cookies from "js-cookie";
+
 export const useAdminCheck = () => {
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
-      try {
-        const adminStatus = await isAdmin();
-        setIsAuthorized(adminStatus);
-      } catch (error) {
-        console.error("Error checking admin status:", error);
-        setIsAuthorized(false);
-      } finally {
-        setIsLoading(false);
-      }
+      // Assuming admin status is determined by the presence of a token
+      const token = Cookies.get("accessToken");
+      setIsAuthorized(!!token); // Set authorized if token exists
+      setIsLoading(false);
     };
 
     checkAdminStatus();
