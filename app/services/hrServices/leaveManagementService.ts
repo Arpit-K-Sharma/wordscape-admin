@@ -5,12 +5,11 @@ const API_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export interface LeaveManagement {
   id?: string;
-
   _id: string;
   staff_id: string;
   staff_name: string;
-  start_date: Date;
-  end_date: Date;
+  start_date: any;
+  end_date: any;
   reason: string;
   type: string;
   status: string;

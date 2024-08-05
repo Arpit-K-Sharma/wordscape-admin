@@ -302,7 +302,7 @@ const Leaves: React.FC = () => {
                   id="startDate"
                   value={
                     startDate
-                      ? startDate.toISOString().split("T")[0]
+                      ? startDate.split("T")[0]
                       : "Select date"
                   }
                   onClick={() => handleDateClick("start")}
@@ -318,7 +318,7 @@ const Leaves: React.FC = () => {
                   id="endDate"
                   value={
                     endDate
-                      ? endDate.toISOString().split("T")[0]
+                      ? endDate.split("T")[0]
                       : "Select date"
                   }
                   onClick={() => handleDateClick("end")}
@@ -417,10 +417,10 @@ const Leaves: React.FC = () => {
                       {leave.staff_name}
                     </TableCell>
                     <TableCell className="text-center py-2 px-4 ">
-                      {leave.start_date.toISOString().split("T")[0]}
+                      {leave.start_date}
                     </TableCell>
                     <TableCell className="text-center py-2 px-4 ">
-                      {leave.end_date.toISOString().split("T")[0]}
+                      {leave.end_date.split("T")[0]}
                     </TableCell>
                     <TableCell className="text-center py-2 px-4">
                       {leave.reason}
@@ -531,7 +531,7 @@ const Leaves: React.FC = () => {
                   id="startDate"
                   value={
                     startDate
-                      ? startDate.toISOString().split("T")[0]
+                      ? startDate.split("T")[0]
                       : "Select date"
                   }
                   onClick={() => handleDateClick("start")}
@@ -547,7 +547,7 @@ const Leaves: React.FC = () => {
                   id="endDate"
                   value={
                     endDate
-                      ? endDate.toISOString().split("T")[0]
+                      ? endDate.split("T")[0]
                       : "Select date"
                   }
                   onClick={() => handleDateClick("end")}
