@@ -18,6 +18,7 @@ import {
   CalendarPlus,
   DollarSign,
   ClipboardList,
+  Home,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LogoOnly from "../../../public/images/LogoOnly.png";
@@ -44,6 +45,7 @@ const HRSidebar: React.FC = () => {
         </div>
 
         <nav className="flex-grow overflow-y-auto">
+          
           <Button
             variant="ghost"
             className="w-full mt-3 justify-start mb-5 text-sm"
@@ -51,6 +53,14 @@ const HRSidebar: React.FC = () => {
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Return to Inventory
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm bg-gray-200"
+            onClick={() => router.push("/erp/dashboard")}
+          >
+            <Home className="mr-2 h-4 w-4" />
+            Home
           </Button>
 
           <Button

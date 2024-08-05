@@ -1,6 +1,9 @@
 import React from "react";
 import { Separator } from "@/components/ui/separator"
 
+const renderValue = (value: number | string) => {
+  return isNaN(Number(value)) ? '' : value;
+};
 const DrawerTest = ({
   paperSize,
   pages,
@@ -65,8 +68,8 @@ const DrawerTest = ({
             <p>Inner type: <b>{selectedPaperType}</b></p>
             <p>Unit cost for paper type (per kg): Rs. <b>{changeCostPerKg}</b></p>
             <p>Inner paper thickness: <b>{selectedPaperThickness}</b> gsm</p>
-            <p>Total Sheets: <b>{totalReams * 500}</b></p>
-            <p>Total Reams: <b>{totalReams}</b></p>
+            <p>Total Sheets: <b>{renderValue(totalReams * 500)}</b></p>
+            <p>Total Reams: <b>{renderValue(totalReams)}</b></p>
           </li>
           <Separator className="my-6" />
           <li>
@@ -74,7 +77,7 @@ const DrawerTest = ({
             <p>Cover paper type: <b>{outerSelectedPaperType}</b></p>
             <p>Cost for outer paper type (per kg): Rs. <b>{outerPaperPrice}</b></p>
             <p>Cover paper thickness: <b>{selectedOuterPaperThickness} gsm</b></p>
-            <p>Total packet: <b>{totalPacket}</b></p>
+            <p>Total packet: <b>{renderValue(totalPacket)}</b></p>
           </li>
           <Separator className="my-6" />
           <li>
@@ -82,7 +85,7 @@ const DrawerTest = ({
             <p>Chosen plate size: <b>{plateSize}</b></p>
             <p>Plate Length: <b>{plateLength}</b></p>
             <p>Plate Length: <b>{plateBreadth}</b></p>
-            <p>Number of Plates: <b>{noPlate}</b></p>
+            <p>Number of Plates: <b>{renderValue(noPlate)}</b></p>
             <p>Ink Details: <b>{selectedInkType}</b></p>
           </li>
           <Separator className="my-6" />
@@ -92,44 +95,45 @@ const DrawerTest = ({
             <p>Value of sheet size: <b>{sheetValue}</b></p>
             <p>Length of sheet size: <b>{sheetLength || length}</b></p>
             <p>Breadth of sheet size: <b>{sheetBreadth || breadth}</b></p>
-            <p>Sheet can contain: <b>{paperFit} Pages</b></p>
-            <p>Total number of sheets for inner pages: <b>{requiredSheet}</b></p>
+            <p>Sheet can contain: <b>{renderValue(paperFit)} Pages</b></p>
+            <p>Total number of sheets for inner pages: <b>{renderValue(requiredSheet)}</b></p>
           </li>
           <Separator className="my-6" />
           <li>
             <h3 className="text-2xl font-semibold mt-4">Binding</h3>
             <p>Selected binding type: <b>{selectedBindingType}</b></p>
-            <p>Cost of binding: Rs. <b>{bindingCost}</b></p>
+            <p>Cost of binding: Rs. <b>{renderValue(bindingCost)}</b></p>
           </li>
           <Separator className="my-6" />
           <li>
             <h3 className="text-2xl font-semibold mt-4">Lamination</h3>
             <p>Type of Inner Lamination: <b>{selectedLaminationType}</b></p>
-            <p>Cost of Inner Lamination: Rs. <b>{laminationCost}</b></p>
+            <p>Cost of Inner Lamination: Rs. <b>{renderValue(laminationCost)}</b></p>
           </li>
           <Separator className="my-6" />
           <li>
             <h3 className="text-3xl font-semibold mt-4">Total Cost</h3>
-            <p>The cost of inner paper is Rs. <b>{Math.floor(innerPageCost)}</b></p>
-            <p>The cost of outer paper is Rs. <b>{Math.floor(outerPageCost) * totalPacket}</b></p>
-            <p>The cost of lamination is Rs. <b>{Math.floor(costLamination)}</b></p>
-            <p>The cost of binding is Rs.<b>{Math.floor(bindingFinalCost)}</b></p>
-            <p>The cost of printing on a plate is Rs.<b>{Math.floor(pricePrint)}</b></p>
-            <p>The cost of a plate with the selected ink is Rs.<b>{Math.floor(pricePlate)}</b></p>
+            <p>The cost of inner paper is Rs. <b>{renderValue(Math.floor(innerPageCost))}</b></p>
+            <p>The cost of outer paper is Rs. <b>{renderValue(Math.floor(outerPageCost) * totalPacket)}</b></p>
+            <p>The cost of lamination is Rs. <b>{renderValue(Math.floor(costLamination))}</b></p>
+            <p>The cost of binding is Rs.<b>{renderValue(Math.floor(bindingFinalCost))}</b></p>
+            <p>The cost of printing on a plate is Rs.<b>{renderValue(Math.floor(pricePrint))}</b></p>
+            <p>The cost of a plate with the selected ink is Rs.<b>{renderValue(Math.floor(pricePlate))}</b></p>
             <p>Total Cost (Excluding Vat): Rs. <b>{
-              Math.floor(innerPageCost) +
-                Math.floor(outerPageCost) * totalPacket +
-                Math.floor(costLamination) +
-                Math.floor(bindingFinalCost) +
-                Math.floor(pricePrint) +
+              renderValue(Math.floor(innerPageCost) +
+              Math.floor(outerPageCost) * totalPacket +
+              Math.floor(costLamination) +
+              Math.floor(bindingFinalCost) +
+              Math.floor(pricePrint) +
                 Math.floor(pricePlate)
-            }</b></p>
+              )}
+            </b></p>
           </li>
           <Separator className="my-6" />
           <li>
             <h3 className="text-2xl font-semibold mt-4">Total (with 20% margin): Rs </h3>
             <b>
-              {Math.floor(
+              {renderValue(Math.floor(
                 (Math.floor(innerPageCost) +
                   Math.floor(outerPageCost) * totalPacket +
                   Math.floor(costLamination) +
@@ -137,6 +141,7 @@ const DrawerTest = ({
                   Math.floor(pricePrint) +
                   Math.floor(pricePlate)) *
                 1.2
+              )
               )}
             </b>
           </li>

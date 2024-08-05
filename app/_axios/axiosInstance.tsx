@@ -13,7 +13,8 @@ interface ErrorResponseData {
 }
 
 // const baseURL = "https://erp-api.wordscapepress.com";
-const baseURL = "http://localhost:8081";
+const baseURL = "http://127.0.0.1:8000";
+
 
 
 const axiosInstance = axios.create({
@@ -51,20 +52,18 @@ axiosInstance.interceptors.response.use(
 export const adminLogin = async (
   email: string,
   password: string,
-  role: string
 ): Promise<boolean> => {
   try {
-    const response = await axiosInstance.post("/home/login", {
+    const response = await axiosInstance.post("/admin/login", {
       email,
-      password,
-      role,
+      password
     });
-    if (response.data && response.data.token) {
-      const token = response.data.token;
+    if (response.data.access_token && response.data) {
+      const token = response.data.access_token;
       Cookies.set("accessToken", token, { expires: 7 });
 
       const decoded = jwtDecode<CustomJwtPayload>(token); // Correct usage
-      if (decoded.id && decoded.roles && decoded.roles.includes("ROLE_ADMIN")) {
+      if (decoded.id ) {
         localStorage.setItem("id", decoded.id);
         toast.success("Admin logged in successfully");
         return true;

@@ -14,6 +14,7 @@ import ErpSidebar from '../../_components/ErpSidebar';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HelpCircle } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 
 export default function CostCalculationPage() {
   const [paperSizes, setPaperSizes] = useState<PaperSize[]>([]);
@@ -68,6 +69,7 @@ export default function CostCalculationPage() {
   const [plateBreadth, setPlateBreadth] = useState(0);
   const [sheetPackage, setSheetPackage] = useState('500');
   const [innerSheetPackage, setInnerSheetPackage] = useState('500');
+
 
   const router = useRouter();
 
@@ -430,39 +432,41 @@ export default function CostCalculationPage() {
     pricePrint +
     calculateLamination(laminationPrice, parseFloat(sheetLength), parseFloat(sheetBreadth), parseInt(quantity), parseInt(length), parseInt(breadth))
 
-  return (
-    <><div className="flex h-screen">
-      <div className="flex-shrink-0">
-        <ErpSidebar />
-      </div>
-      <div className="cost-calc-container bg-gray-100 w-[60%] min-h-screen border flex">
-        <div className="main-content flex-1 p-2 h-screen overflow-hidden">
 
-          <ScrollArea>
-            <Card className="shadow-lg h-[calc(112vh-120px)] overflow-y-auto">
-              <div className="text-center p-4 mt-2 flex justify-center items-center">
-                <h1 className="text-4xl font-bold text-gray-800">Cost Calculator</h1>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="ml-2 h-5 w-5 text-gray-500 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Here's the order costing interface for staff to compute the overall charge for a customer's project.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              <CardHeader>
-                <CardTitle className="text-2xl font-semibold text-gray-700">Total Estimate: Rs.{totalCost}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form className="space-y-6">
-                  <div className="cost-box">
-                    <h2 className="text-xl font-semibold text-gray-700 mb-4">Product Specs</h2>
-                    <div className="grid grid-cols-1 gap-4">
+return (
+  <><div className="flex h-screen">
+    <div className="flex-shrink-0">
+      <ErpSidebar />
+    </div>
+    <div className="cost-calc-container bg-gray-100 w-[60%] min-h-screen border flex">
+      <div className="main-content flex-1 p-2 h-screen overflow-hidden">
+        <ScrollArea>
+          <Card className="shadow-lg h-[calc(112vh-120px)] overflow-y-auto">
+            <div className="text-center p-4 mt-2 flex justify-center items-center">
+              <h1 className="text-4xl font-bold text-gray-800">Cost Calculator</h1>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="ml-2 h-5 w-5 text-gray-500 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Here's the order costing interface for staff to compute the overall charge for a customer's project.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <CardHeader>
+              <CardTitle className="text-2xl font-semibold text-gray-700">Total Estimate: Rs.{Number.isNaN(totalCost) ? 0 : totalCost}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form className="space-y-6">
+                <div className="cost-box">
+                  <h2 className="text-xl font-semibold text-gray-700 mb-4">Product Specs</h2>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="paperSize">Paper Size</Label>
                       <Select onValueChange={handlePaperSizeChange} value={paperSize}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="paperSize">
                           <SelectValue placeholder="Select Paper Size" />
                         </SelectTrigger>
                         <SelectContent>
@@ -473,7 +477,11 @@ export default function CostCalculationPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="pages">Number of Pages</Label>
                       <Input
+                        id="pages"
                         type="number"
                         placeholder="Enter number of pages"
                         value={pages}
@@ -482,7 +490,11 @@ export default function CostCalculationPage() {
                         max={500}
                         required
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="quantity">Quantity</Label>
                       <Input
+                        id="quantity"
                         type="number"
                         placeholder="Enter quantity"
                         value={quantity}
@@ -492,18 +504,26 @@ export default function CostCalculationPage() {
                         required
                       />
                     </div>
+                  </div>
 
-                    <Separator className="my-6" />
+                  <Separator className="my-6" />
 
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2">Custom Paper Detail</h3>
-                    <div className="grid grid-cols-2 gap-4">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Custom Paper Detail</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="length">Length (inches)</Label>
                       <Input
+                        id="length"
                         type="number"
                         placeholder="Enter length (inches)"
                         value={length}
                         onChange={(e) => setLength(e.target.value)}
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="breadth">Breadth (inches)</Label>
                       <Input
+                        id="breadth"
                         type="number"
                         placeholder="Enter breadth (inches)"
                         value={breadth}
@@ -511,12 +531,15 @@ export default function CostCalculationPage() {
                       />
                     </div>
                   </div>
+                </div>
 
-                  <div className="cost-box-1">
-                    <h2 className="text-xl font-semibold text-gray-700 mb-4">Product Detail</h2>
-                    <div className="grid grid-cols-1 gap-4">
+                <div className="cost-box-1">
+                  <h2 className="text-xl font-semibold text-gray-700 mb-4">Product Detail</h2>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="bindingType">Binding Type</Label>
                       <Select onValueChange={handleBindingTypeChange} value={selectedBindingType}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="bindingType">
                           <SelectValue placeholder="Select Binding Type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -527,15 +550,22 @@ export default function CostCalculationPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="bindingCost">Binding Cost (Custom Price)</Label>
                       <Input
+                        id="bindingCost"
                         type="number"
                         placeholder="Binding Cost (Custom Price)"
                         value={bindingCost.toString()}
                         onChange={(e) => setBindingCost(parseFloat(e.target.value))}
                         required
                       />
+                    </div>
+                    {/* <div className="space-y-2">
+                      <Label htmlFor="coverTreatment">Cover Treatment Type</Label>
                       <Select onValueChange={handleCoverTreatmentTypeChange} value={selectedCoverTreatmentType}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="coverTreatment">
                           <SelectValue placeholder="Select Cover Treatment Type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -546,14 +576,17 @@ export default function CostCalculationPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                    </div>
+                    </div> */}
                   </div>
+                </div>
 
-                  <div className="cost-box-m">
-                    <h2 className="text-xl font-semibold text-gray-700 mb-4">Material Detail</h2>
-                    <div className="grid grid-cols-2 gap-4">
+                <div className="cost-box-m">
+                  <h2 className="text-xl font-semibold text-gray-700 mb-4">Material Detail</h2>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="innerPaperType">Inner Paper Type</Label>
                       <Select onValueChange={handlePaperTypeChange} value={selectedPaperType}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="innerPaperType">
                           <SelectValue placeholder="Select Inner Paper Type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -564,8 +597,11 @@ export default function CostCalculationPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="innerPaperThickness">Inner Paper Thickness</Label>
                       <Select onValueChange={handlePaperThicknessChange} value={selectedPaperThickness}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="innerPaperThickness">
                           <SelectValue placeholder="Set Inner Paper Thickness" />
                         </SelectTrigger>
                         <SelectContent>
@@ -576,8 +612,11 @@ export default function CostCalculationPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="outerPaperType">Outer Paper Type</Label>
                       <Select onValueChange={handleOuterPaperTypeChange} value={outerSelectedPaperType}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="outerPaperType">
                           <SelectValue placeholder="Select Outer Paper Type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -588,8 +627,11 @@ export default function CostCalculationPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="outerPaperThickness">Outer Paper Thickness</Label>
                       <Select onValueChange={handlePaperOuterThicknessChange} value={selectedOuterPaperThickness}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="outerPaperThickness">
                           <SelectValue placeholder="Set Outer Paper Thickness" />
                         </SelectTrigger>
                         <SelectContent>
@@ -601,9 +643,12 @@ export default function CostCalculationPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="mt-4">
+                  </div>
+                  <div className="mt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="laminationType">Lamination Type</Label>
                       <Select onValueChange={handleLaminationTypeChange} value={selectedLaminationType}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="laminationType">
                           <SelectValue placeholder="Select Lamination Type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -616,12 +661,15 @@ export default function CostCalculationPage() {
                       </Select>
                     </div>
                   </div>
+                </div>
 
-                  <div className="cost-box-2">
-                    <h2 className="text-xl font-semibold text-gray-700 mb-4">Process Detail</h2>
-                    <div className="grid grid-cols-1 gap-4">
+                <div className="cost-box-2">
+                  <h2 className="text-xl font-semibold text-gray-700 mb-4">Process Detail</h2>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="plateSize">Plate Size</Label>
                       <Select onValueChange={handlePlateSizeChange} value={plateSize}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="plateSize">
                           <SelectValue placeholder="Select Plate Size" />
                         </SelectTrigger>
                         <SelectContent>
@@ -632,11 +680,14 @@ export default function CostCalculationPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-black font-semibold">The selected plate will fit a quantity of: {plateFit} Papers</p>
-                      <p className="text-black font-semibold">The selected plate will cost: Rs. {pricePrint}</p>
-                      <p className="text-black font-semibold">The selected plate with ink {selectedInkType} will cost: Rs.{pricePlate}</p>
+                    </div>
+                    <p className="text-black font-semibold">The selected plate will fit a quantity of: {Number.isNaN(plateFit) ? 0 : plateFit} Papers</p>
+                    <p className="text-black font-semibold">The selected plate will cost: Rs. {Number.isNaN(pricePrint) ? 0 : pricePrint}</p>
+                    <p className="text-black font-semibold">The selected plate with ink {selectedInkType} will cost: Rs.{Number.isNaN(pricePlate) ? 0 : pricePlate}</p>
+                    <div className="space-y-2">
+                      <Label htmlFor="sheetSize">Sheet Size</Label>
                       <Select onValueChange={handleSheetSizeChange} value={sheetSize}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="sheetSize">
                           <SelectValue placeholder="Select Sheet Size" />
                         </SelectTrigger>
                         <SelectContent>
@@ -647,9 +698,12 @@ export default function CostCalculationPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-black font-semibold">The selected sheet will fit a quantity of: {paperFit} Papers</p>
+                    </div>
+                    <p className="text-black font-semibold">The selected sheet will fit a quantity of: {Number.isNaN(paperFit) ? 0 : paperFit} Papers</p>
+                    <div className="space-y-2">
+                      <Label htmlFor="innerSheetPackage">Inner Sheet Package</Label>
                       <Select onValueChange={handleInnerSheetPackageChange} value={innerSheetPackage}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="innerSheetPackage">
                           <SelectValue placeholder="Select Inner Sheet Package" />
                         </SelectTrigger>
                         <SelectContent>
@@ -658,8 +712,11 @@ export default function CostCalculationPage() {
                           <SelectItem value="125">125 Sheets</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="outerSheetPackage">Outer Sheet Package</Label>
                       <Select onValueChange={handleSheetPackageChange} value={sheetPackage}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="outerSheetPackage">
                           <SelectValue placeholder="Select Outer Sheet Package" />
                         </SelectTrigger>
                         <SelectContent>
@@ -668,8 +725,11 @@ export default function CostCalculationPage() {
                           <SelectItem value="125">125 Sheets</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="inkType">Ink Type</Label>
                       <Select onValueChange={handleInkTypeChange} value={selectedInkType}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="inkType">
                           <SelectValue placeholder="Select Ink Type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -682,13 +742,14 @@ export default function CostCalculationPage() {
                       </Select>
                     </div>
                   </div>
-                </form>
-              </CardContent>
-            </Card>
-          </ScrollArea>
-        </div>
-        <div className="drawer-test fixed right-0 top-0 h-full w-1/4 shadow-lg overflow-y-auto transition-transform transform translate-x-0">
-          <DrawerTest
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </ScrollArea>
+      </div>
+      <div className="drawer-test fixed right-0 top-0 h-full w-1/4 shadow-lg overflow-y-auto transition-transform transform translate-x-0">
+      <DrawerTest
             pages={pages}
             length={length}
             breadth={breadth}
@@ -753,9 +814,8 @@ export default function CostCalculationPage() {
             outerLamination={outerLaminationRate}
             inkCost={inkCost}
           />
-        </div>
       </div>
     </div>
-    </>
-  );
+  </div></>
+);
 }

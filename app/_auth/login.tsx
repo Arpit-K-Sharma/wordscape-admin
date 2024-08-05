@@ -23,7 +23,7 @@ export default function AdminLogin() {
     e.preventDefault();
     setLoading(true);
 
-    const success = await adminLogin(email, password, "ROLE_ADMIN");
+    const success = await adminLogin(email, password);
 
     if (success) {
       router.push("/erp/dashboard");

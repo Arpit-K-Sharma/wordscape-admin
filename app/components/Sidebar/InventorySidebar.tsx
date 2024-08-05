@@ -17,6 +17,7 @@ import {
   Package,
   ShoppingCart,
   PackagePlus,
+  Home,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LogoOnly from "../../../public/images/LogoOnly.png";
@@ -47,6 +48,15 @@ const InventorySidebar: React.FC = () => {
         </div>
 
         <nav className="flex-grow overflow-y-auto">
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm bg-gray-200"
+            onClick={() => router.push("/erp/dashboard")}
+          >
+            <Home className="mr-2 h-4 w-4" />
+            Home
+          </Button>
+
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
