@@ -1,4 +1,4 @@
-import axios from './axiosInstance';
+import axios from '../../_axios/axiosInstance';
 import { Ink } from '../../Schema/erpSchema/inkSchema';
 
 export const getInks = async (): Promise<Ink[]> => {

@@ -1,11 +1,25 @@
 "use client"
+import React from "react";
+import { usePathname } from "next/navigation";
 import PaperThicknessPage from "./_components/paperThickness"
-const page = () => {
-    return (
-        <div>
-            <PaperThicknessPage/>
-        </div>
-    )
-}
+import { AuthorizationWrapper } from "@/app/util/authContext";
 
-export default page
+const Page = () => {
+  const pathname = usePathname();
+
+  return (
+    <AuthorizationWrapper pathname={pathname}>
+      <PaperThicknessPage/>
+    </AuthorizationWrapper>
+  );
+};
+
+export default Page;
+
+
+
+
+
+
+
+

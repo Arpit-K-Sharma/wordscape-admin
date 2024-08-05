@@ -1,4 +1,4 @@
-import axios from './axiosInstance';
+import axios from '../../_axios/axiosInstance';
 import { Order, SelectedOrder } from '../../Schema/erpSchema/OrderSchema';
 import {OrderResponse} from '../../erp/order/_components/order'
 

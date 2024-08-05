@@ -1,4 +1,4 @@
-import axios from './axiosInstance';
+import axios from '../../_axios/axiosInstance';
 import { CoverTreatment } from '../../Schema/erpSchema/coverTreatmentSchema';
 
 export const getCoverTreatments = async (): Promise<CoverTreatment[]> => {

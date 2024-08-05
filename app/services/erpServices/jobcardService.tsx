@@ -1,4 +1,4 @@
-import axios from './axiosInstance';
+import axios from '../../_axios/axiosInstance';
 import { Order, JobCard, CookiesData } from '../../Schema/erpSchema/jobcardSchema';
 
 

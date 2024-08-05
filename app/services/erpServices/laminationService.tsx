@@ -1,4 +1,4 @@
-import axios from './axiosInstance';
+import axios from '../../_axios/axiosInstance';
 import { Lamination } from '../../Schema/erpSchema/laminationSchema';
 
 export const getLaminations = async (): Promise<Lamination[]> => {

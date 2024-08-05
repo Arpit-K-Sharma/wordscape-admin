@@ -1,4 +1,4 @@
-import axios from './axiosInstance';
+import axios from '../../_axios/axiosInstance';
 import { User, UserFormData } from '../../Schema/erpSchema/userSchema';
 
 const API_URL = '/users'; 

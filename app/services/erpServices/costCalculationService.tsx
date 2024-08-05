@@ -1,4 +1,4 @@
-import axios from './axiosInstance';
+import axios from '../../_axios/axiosInstance';
 import { PaperSize, SheetSize, Paper, Plate, Binding, Lamination, CoverTreatment, Ink } from '../../Schema/erpSchema/costCalculationSchema';
 
 export const getPaperSizes = async (): Promise<PaperSize[]> => {

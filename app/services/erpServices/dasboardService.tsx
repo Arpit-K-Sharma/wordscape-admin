@@ -1,6 +1,5 @@
 // services/orderService.ts
-
-import axios from './axiosInstance';
+import axios from '../../_axios/axiosInstance';
 import { Order, TrackingData } from '../../Schema/erpSchema/dashboardSchema'
 
 export const fetchOrders = async (pageSize: number = 5, sortField: string = 'date'): Promise<Order[]> => {

@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LogoOnly from "../../../public/images/LogoOnly.png";
-import { Clipboard } from 'lucide-react';
+import { Clipboard } from "lucide-react";
 
 const ErpSidebar: React.FC = () => {
   const router = useRouter();
@@ -55,7 +55,7 @@ const ErpSidebar: React.FC = () => {
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/erp/Dashboard")}
+            onClick={() => router.push("/erp/dashboard")}
           >
             <LayoutDashboard className="mr-2 h-4 w-4" />
             Admin Dashboard
@@ -200,6 +200,27 @@ const ErpSidebar: React.FC = () => {
               </>
             )}
           </div>
+
+          {/* New Inventory Button */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/inventory")}
+          >
+            <Warehouse className="mr-2 h-4 w-4" />
+            Inventory
+          </Button>
+
+          {/* New Human Resources Button */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/hr")}
+          >
+            <Users className="mr-2 h-4 w-4" />
+            Human Resources
+          </Button>
+
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"

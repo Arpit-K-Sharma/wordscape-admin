@@ -1,12 +1,25 @@
-"use client"
+"use client";
+import React from "react";
+import { usePathname } from "next/navigation";
 import LaminationPage from "./_components/lamination"
+import { AuthorizationWrapper } from "@/app/util/authContext";
 
-const page = () => {
-    return (
-        <div>
-            <LaminationPage/>
-        </div>
-    )
-}
+const Page = () => {
+  const pathname = usePathname();
 
-export default page
+  return (
+    <AuthorizationWrapper pathname={pathname}>
+      <LaminationPage/>
+    </AuthorizationWrapper>
+  );
+};
+
+export default Page;
+
+
+
+
+
+
+
+

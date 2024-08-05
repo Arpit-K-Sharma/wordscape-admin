@@ -26,7 +26,7 @@ export default function AdminLogin() {
     const success = await adminLogin(email, password, "ROLE_ADMIN");
 
     if (success) {
-      router.push("/inventory");
+      router.push("/erp/dashboard");
     } else {
       setLoading(false);
       toast.error("Failed to login");

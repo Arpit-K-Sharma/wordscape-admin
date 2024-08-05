@@ -1,12 +1,25 @@
 "use client"
-import PlatesPage from "./_components/Plates"
+import React from "react";
+import { usePathname } from "next/navigation";
+import PlatesPage from "./_components/Plates";
+import { AuthorizationWrapper } from "@/app/util/authContext";
 
-const page = () => {
-    return (
-        <div>
-            <PlatesPage/>
-        </div>
-    )
-}
+const Page = () => {
+  const pathname = usePathname();
 
-export default page
+  return (
+    <AuthorizationWrapper pathname={pathname}>
+      <PlatesPage/>
+    </AuthorizationWrapper>
+  );
+};
+
+export default Page;
+
+
+
+
+
+
+
+

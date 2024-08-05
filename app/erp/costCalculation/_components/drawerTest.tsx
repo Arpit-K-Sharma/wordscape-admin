@@ -111,14 +111,36 @@ const DrawerTest = ({
           <li>
             <h3 className="text-3xl font-semibold mt-4">Total Cost</h3>
             <p>The cost of inner paper is Rs. <b>{Math.floor(innerPageCost)}</b></p>
-            <p>The cost of outer paper is Rs. <b>{Math.floor(outerPageCost)}</b></p>
+            <p>The cost of outer paper is Rs. <b>{Math.floor(outerPageCost) * totalPacket}</b></p>
             <p>The cost of lamination is Rs. <b>{Math.floor(costLamination)}</b></p>
             <p>The cost of binding is Rs.<b>{Math.floor(bindingFinalCost)}</b></p>
             <p>The cost of printing on a plate is Rs.<b>{Math.floor(pricePrint)}</b></p>
             <p>The cost of a plate with the selected ink is Rs.<b>{Math.floor(pricePlate)}</b></p>
-            <p>Total Cost: Rs. <b>{totalCost}</b></p>
+            <p>Total Cost (Excluding Vat): Rs. <b>{
+              Math.floor(innerPageCost) +
+                Math.floor(outerPageCost) * totalPacket +
+                Math.floor(costLamination) +
+                Math.floor(bindingFinalCost) +
+                Math.floor(pricePrint) +
+                Math.floor(pricePlate)
+            }</b></p>
           </li>
-          
+          <Separator className="my-6" />
+          <li>
+            <h3 className="text-2xl font-semibold mt-4">Total (with 20% margin): Rs </h3>
+            <b>
+              {Math.floor(
+                (Math.floor(innerPageCost) +
+                  Math.floor(outerPageCost) * totalPacket +
+                  Math.floor(costLamination) +
+                  Math.floor(bindingFinalCost) +
+                  Math.floor(pricePrint) +
+                  Math.floor(pricePlate)) *
+                1.2
+              )}
+            </b>
+          </li>
+
         </ul>
       </div>
     </div>

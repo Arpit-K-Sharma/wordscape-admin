@@ -1,12 +1,23 @@
-"use client"
+"use client";
+import React from "react";
+import { usePathname } from "next/navigation";
 import CoverTreatmentPage from "./_components/CoverTreatment"
+import { AuthorizationWrapper } from "@/app/util/authContext";
 
-const page = () => {
-    return (
-        <div>
-            <CoverTreatmentPage/>
-        </div>
-    )
-}
+const Page = () => {
+  const pathname = usePathname();
 
-export default page
+  return (
+    <AuthorizationWrapper pathname={pathname}>
+      <CoverTreatmentPage/>
+    </AuthorizationWrapper>
+  );
+};
+
+export default Page;
+
+
+
+
+
+

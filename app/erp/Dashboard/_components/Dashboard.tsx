@@ -353,7 +353,7 @@ const AdminDashboard: React.FC = () => {
               </Table>
               <Button
                 className="mt-4 w-full"
-                onClick={() => router.push("/admin/orders")}
+                onClick={() => router.push("/erp/order")}
               >
                 View all orders
               </Button>

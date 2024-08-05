@@ -367,7 +367,7 @@ export default function CostCalculationPage() {
     outerPaperPrice: number,
     sheetPackage: string
   ): number => {
-    let calc = ((sheetValue * selectedOuterPaperThickness * outerPaperPrice) / 3100 / 4) * totalPacket(quantity, paperFit);
+    let calc = ((sheetValue * selectedOuterPaperThickness * outerPaperPrice) / 3100 / 2) * totalPacket(quantity, paperFit);
 
     if (sheetPackage === "250") {
       calc /= 2;

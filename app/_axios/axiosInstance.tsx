@@ -2,7 +2,6 @@ import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
 import { jwtDecode, JwtPayload } from "jwt-decode";
-import JwtDecode from "jwt-decode";
 
 interface CustomJwtPayload extends JwtPayload {
   id: string;
@@ -13,7 +12,9 @@ interface ErrorResponseData {
   message?: string;
 }
 
-const baseURL = "https://erp-api.wordscapepress.com";
+// const baseURL = "https://erp-api.wordscapepress.com";
+const baseURL = "http://localhost:8081";
+
 
 const axiosInstance = axios.create({
   baseURL: baseURL,

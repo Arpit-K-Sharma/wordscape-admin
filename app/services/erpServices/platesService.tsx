@@ -1,4 +1,4 @@
-import axios from './axiosInstance';
+import axios from '../../_axios/axiosInstance';
 import { Plate } from '../../Schema/erpSchema/platesSchema';
 
 export const getPlates = async (): Promise<Plate[]> => {

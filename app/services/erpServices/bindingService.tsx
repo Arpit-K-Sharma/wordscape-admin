@@ -1,4 +1,4 @@
-import axios from './axiosInstance';
+import axios from '../../_axios/axiosInstance';
 import { Binding } from '../../Schema/erpSchema/bindingSchema';
 
 export const getBindings = async (): Promise<Binding[]> => {

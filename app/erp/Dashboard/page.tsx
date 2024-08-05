@@ -1,12 +1,22 @@
-"use client"
-import AdminDashboard from '../Dashboard/_components/Dashboard'
+"use client";
+import React from "react";
+import { usePathname } from "next/navigation";
+import AdminDashboard from './_components/Dashboard'
+import { AuthorizationWrapper } from "@/app/util/authContext";
 
-const page = () => {
-    return (
-        <div>
-            <AdminDashboard />
-        </div>
-    )
-}
+const Page = () => {
+  const pathname = usePathname();
 
-export default page
+  return (
+    <AuthorizationWrapper pathname={pathname}>
+      <AdminDashboard />
+    </AuthorizationWrapper>
+  );
+};
+
+export default Page;
+
+
+
+
+

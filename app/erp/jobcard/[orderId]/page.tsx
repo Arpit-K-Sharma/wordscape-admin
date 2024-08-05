@@ -1,14 +1,25 @@
-"use client"
+"use client";
+import React from "react";
+import { usePathname } from "next/navigation";
 import JobCardPage from "../_components/jobcard"
+import { AuthorizationWrapper } from "@/app/util/authContext";
 
 const page = ({ params }: { params: { orderId: string } }) => {
-    return (
-        <div>
-            <JobCardPage ordersId={params.orderId}/>
-        </div>
-    )
-}
+  const pathname = usePathname();
 
-export default page
+  return (
+    <AuthorizationWrapper pathname={pathname}>
+      <JobCardPage ordersId={params.orderId}/>
+    </AuthorizationWrapper>
+  );
+};
+
+export default page;
+
+
+
+
+
+
 
 

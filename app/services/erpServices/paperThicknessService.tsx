@@ -1,4 +1,4 @@
-import axios from './axiosInstance';
+import axios from '../../_axios/axiosInstance';
 import { PaperThickness } from '../../Schema/erpSchema/paperThickness';
 
 export const getPaperThicknesses = async (): Promise<PaperThickness[]> => {

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'react-hot-toast';
-import { Search, User, Clock, XCircle, CheckCircle, Trash2, Timer, Maximize2, FileText, Hash, Book, Car, Calendar, Scissors, Paintbrush, Layers, Printer, Droplet, MessageSquare, DollarSign, InfoIcon } from 'lucide-react';
+import { Search, User, Clock, XCircle, CheckCircle, Trash2, Timer, Maximize2, FileText, Hash, Book, Car, Calendar, Scissors, Paintbrush, Layers, Printer, Droplet, MessageSquare, DollarSign, InfoIcon, Download, Eye } from 'lucide-react';
 import { Order, SelectedOrder, Step } from '../../../Schema/erpSchema/OrderSchema';
 import * as orderService from '../../../services/erpServices/orderService';
 import ErpSidebar from '../../_components/ErpSidebar';
-
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
+import { Hourglass, CheckCircle2, XOctagon, HelpCircle } from 'lucide-react';
 export interface OrderResponse {
   response: Order[];
   totalElements: number;
@@ -227,6 +227,27 @@ const Orders: React.FC = () => {
       console.error("Failed to update deadline:", error);
     }
   };
+  const generatePageNumbers = () => {
+    const totalPages = Math.ceil(pageLimit || 0);
+    const currentPage = page + 1;
+    const pageNumbers: (number | string)[] = [];
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      if (currentPage <= 4) {
+        pageNumbers.push(1, 2, 3, 4, 5, '...', totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pageNumbers.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pageNumbers.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+
+    return pageNumbers;
+  };
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -277,55 +298,58 @@ const Orders: React.FC = () => {
         </div>
 
         <Table className="bg-white rounded-lg overflow-hidden ">
-          <TableHeader >
+          <TableHeader className='font-semibold'>
             <TableRow >
-              <TableHead className='text-white bg-[#07071f]'>Order ID</TableHead>
-              <TableHead className='text-white bg-[#07071f]'>
+              <TableHead className='text-white bg-gray-800 '>Order ID</TableHead>
+              <TableHead className='text-white bg-gray-800'>
                 <Button
-                  className='bg-[#07071f] text-white'
+                  className='bg-gray-800 text-white'
                   variant="ghost"
                   onClick={() => handleSort("date")}
                 >
                   Date {sortDirection.startsWith("date_") ? (sortDirection === "date_asc" ? "↑" : "↓") : ""}
                 </Button>
               </TableHead>
-              <TableHead className='text-white bg-[#07071f] text-center'>Delivery Date</TableHead>
-              <TableHead className='text-white bg-[#07071f] text-center'>Order Details</TableHead>
-              <TableHead className='text-white bg-[#07071f] text-center'>Job Card</TableHead>
-              <TableHead className='text-white bg-[#07071f] text-center'>View Tracking</TableHead>
-              <TableHead className='text-white bg-[#07071f] text-center'>Status</TableHead>
-              <TableHead className='text-white bg-[#07071f] text-center'>View Invoice</TableHead>
-              <TableHead className='text-white bg-[#07071f] text-center'>Files</TableHead>
-              <TableHead className='text-white bg-[#07071f] text-center'>Cancel Order</TableHead>
+              <TableHead className='text-white bg-gray-800 text-center'>Delivery Date</TableHead>
+              <TableHead className='text-white bg-gray-800 text-center'>Order Details</TableHead>
+              <TableHead className='text-white bg-gray-800 text-center'>Job Card</TableHead>
+              <TableHead className='text-white bg-gray-800 text-center'>View Tracking</TableHead>
+              <TableHead className='text-white bg-gray-800 text-center'>Status</TableHead>
+              <TableHead className='text-white bg-gray-800 text-center'>View Invoice</TableHead>
+              <TableHead className='text-white bg-gray-800 text-center'>Files</TableHead>
+              <TableHead className='text-white bg-gray-800 text-center'>Cancel Order</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredOrderDetails && filteredOrderDetails.map((details) => (
               <TableRow key={details.orderId}>
-                <TableCell className='w-[50px] truncate'>{details.orderId}</TableCell>
+                <TableCell>
+                  <span className='block w-[100px] truncate'>{details.orderId}</span>
+                </TableCell>
                 <TableCell>{new Date(details.date).toLocaleDateString()}</TableCell>
                 <TableCell className='text-center'>
                   {details.delivery && details.delivery.deliveryDate
                     ? new Date(details.delivery.deliveryDate).toLocaleDateString()
                     : "N/A"}
                 </TableCell>
-                <TableCell>
-                  <Button variant="secondary" onClick={() => handleViewDetails(details.orderId)}>
-                    View details
+                <TableCell className='text-center'>
+                  <Button variant="ghost" onClick={() => handleViewDetails(details.orderId)}>
+                    <Eye className="h-5 w-5" />
                   </Button>
                 </TableCell>
-                <TableCell>
-                  <Button variant="secondary" onClick={() => handleJobCard(details.orderId)}>
+                <TableCell className='text-center'>
+                  <Button variant="secondary" className='bg-gray-100' onClick={() => handleJobCard(details.orderId)}>
                     Job card
                   </Button>
                 </TableCell>
-                <TableCell>
+                <TableCell className='text-center'>
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button
                         variant="secondary"
                         onClick={() => { handleTracking(details.orderId); setOrderid(details.orderId); }}
                         disabled={details.status === "CANCELED"}
+                        className=' bg-white border border-gray-300'
                       >
                         Track It
                       </Button>
@@ -354,29 +378,38 @@ const Orders: React.FC = () => {
                     </DialogContent>
                   </Dialog>
                 </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
+                <TableCell className='text-center pl-[30px]'>
+                  <div className={`flex items-center gap-1 rounded-2xl w-fit p-0.3 px-2 ${details.status === "PENDING"
+                    ? "bg-[#fffbf3] border border-[#ffa500]text-[10px] text-[#ffa500] font-medium"
+                    : details.status === "APPROVED" || details.status === "COMPLETED"
+                      ? "bg-[#f8fff8] border border-[#c5ffd3] text-[10px]  text-[#28a745] font-medium"
+                      : details.status === "CANCELED"
+                        ? "bg-[#fff9f9] border border-[#f9bebe] text-[10px] text-[#cf1d1d] font-medium"
+                        : "bg-gray-100 border border-gray-300 text-gray-500"
+                    }`}>
                     {details.status === "PENDING" ? (
-                      <Clock className="text-orange-500" size={20} />
+                      <Hourglass className="text-[#ffa500]" size={15} />
                     ) : details.status === "APPROVED" || details.status === "COMPLETED" ? (
-                      <CheckCircle className="text-green-500" size={20} />
+                      <CheckCircle2 className="text-[#28a745] " size={15} />
                     ) : details.status === "CANCELED" ? (
-                      <XCircle className="text-red-500" size={20} />
-                    ) : null}
+                      <XCircle className="text-[#cf1d1d]" size={15} />
+                    ) : (
+                      <HelpCircle className="text-gray-500" size={15} />
+                    )}
                     {details.status}
                   </div>
                 </TableCell>
-                <TableCell>
-                  <Button variant="secondary" onClick={() => handleViewInvoice(details.orderId)}>
-                    View Invoice
+                <TableCell className='text-center'>
+                  <Button variant="ghost" onClick={() => handleViewInvoice(details.orderId)}>
+                    <FileText className="h-5 w-5" />
                   </Button>
                 </TableCell>
-                <TableCell>
-                  <Button variant="secondary" onClick={() => handleDownloadFile(details.orderId)}>
-                    Download
+                <TableCell className='text-center'>
+                  <Button variant="ghost" onClick={() => handleDownloadFile(details.orderId)}>
+                    <Download className="h-5 w-5" />
                   </Button>
                 </TableCell>
-                <TableCell>
+                <TableCell className='text-center'>
                   <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                     <DialogTrigger asChild>
                       <Button variant="ghost" onClick={() => handleCancel(details.orderId)}>
@@ -403,15 +436,35 @@ const Orders: React.FC = () => {
         </Table>
 
         {/* Pagination */}
-        <div className="flex justify-end mt-4 gap-2">
-          <Button variant="outline" onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0}>
-            Previous
+        <div className="flex justify-center items-center mt-4 gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setPage(Math.max(0, page - 1))}
+            disabled={page === 0}
+            className="px-2 py-1"
+          >
+            <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" disabled>
-            Page {page + 1}
-          </Button>
-          <Button variant="outline" onClick={() => setPage(page + 1)} disabled={pageLimit !== undefined && page >= pageLimit - 1}>
-            Next
+
+          {generatePageNumbers().map((pageNum, index) => (
+            <Button
+              key={index}
+              variant={pageNum === page + 1 ? "default" : "outline"}
+              onClick={() => typeof pageNum === 'number' && setPage(pageNum - 1)}
+              disabled={typeof pageNum !== 'number'}
+              className="px-3 py-1 min-w-[40px]"
+            >
+              {pageNum}
+            </Button>
+          ))}
+
+          <Button
+            variant="outline"
+            onClick={() => setPage(page + 1)}
+            disabled={pageLimit !== undefined && page >= pageLimit - 1}
+            className="px-2 py-1"
+          >
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
 

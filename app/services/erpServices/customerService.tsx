@@ -1,4 +1,4 @@
-import axios from './axiosInstance';
+import axios from '../../_axios/axiosInstance';
 import { Customer, CustomerResponse } from '../../Schema/erpSchema/customerSchema';
 
 export const getCustomers = async (page: number): Promise<CustomerResponse> => {

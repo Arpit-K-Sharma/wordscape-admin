@@ -1,4 +1,4 @@
-import axios from './axiosInstance';
+import axios from '../../_axios/axiosInstance';
 import { PaperSize } from '../../Schema/erpSchema/paperSizeSchema';
 
 export const getPaperSizes = async (): Promise<PaperSize[]> => {
