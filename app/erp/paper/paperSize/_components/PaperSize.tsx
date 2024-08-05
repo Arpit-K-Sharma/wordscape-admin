@@ -17,7 +17,7 @@ const PaperSizeComponent: React.FC = () => {
     const [paperSizeDataState, setPaperSizeDataState] = useState<PaperSize[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const router = useRouter();
-    const form = useForm<Omit<PaperSize, 'paperSizeId'>>();
+    const form = useForm<Omit<PaperSize, 'id'>>();
 
     useEffect(() => {
         fetchPaperSizes();
@@ -32,7 +32,7 @@ const PaperSizeComponent: React.FC = () => {
         }
     };
 
-    const handleAddPaperSize = async (data: Omit<PaperSize, 'paperSizeId'>) => {
+    const handleAddPaperSize = async (data: Omit<PaperSize, 'id'>) => {
         try {
             await addPaperSize(data);
             await fetchPaperSizes();
@@ -43,7 +43,7 @@ const PaperSizeComponent: React.FC = () => {
         }
     };
 
-    const handleUpdate = async (id: string, updatedData: Omit<PaperSize, 'paperSizeId'>) => {
+    const handleUpdate = async (id: string, updatedData: Omit<PaperSize, 'id'>) => {
         try {
             await updatePaperSize(id, updatedData);
             await fetchPaperSizes();
@@ -58,112 +58,112 @@ const PaperSizeComponent: React.FC = () => {
 
     const handleSave = (row: PaperSize) => {
         const updatedData = {
-            paperSize: (document.getElementById(`paper_size_${row.paperSizeId}`) as HTMLInputElement).value,
-            dimensions: (document.getElementById(`dimensions_${row.paperSizeId}`) as HTMLInputElement).value,
-            paperLength: parseFloat((document.getElementById(`paper_length_${row.paperSizeId}`) as HTMLInputElement).value),
-            paperBreadth: parseFloat((document.getElementById(`paper_breadth_${row.paperSizeId}`) as HTMLInputElement).value),
+            paperSize: (document.getElementById(`paper_size_${row.id}`) as HTMLInputElement).value,
+            dimensions: (document.getElementById(`dimensions_${row.id}`) as HTMLInputElement).value,
+            paperLength: parseFloat((document.getElementById(`paper_length_${row.id}`) as HTMLInputElement).value),
+            paperBreadth: parseFloat((document.getElementById(`paper_breadth_${row.id}`) as HTMLInputElement).value),
         };
-        handleUpdate(row.paperSizeId, updatedData);
+        handleUpdate(row.id, updatedData);
         setEditingData(null);
     };
 
     return (
         <div className="flex h-screen bg-gray-100">
-    <div className="flex-shrink-0">
-        <ErpSidebar />
-    </div>
-    <div className="flex-grow overflow-auto">
-        <div className="p-7 text-zinc-800">
-            <div className="flex items-center justify-center mb-10">
-                <h1 className="text-center text-4xl font-archivo font-semibold">Paper Size</h1>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <HelpCircle className="ml-2 h-6 w-6 text-gray-500 cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>This page displays a list of paper sizes and their dimensions. You can add, edit, and manage paper sizes here.</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+            <div className="flex-shrink-0">
+                <ErpSidebar />
             </div>
-            <div className="flex justify-center">
-                <div className="w-11/12 bg-white rounded-lg shadow-md overflow-hidden">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-[#131527] hover:bg-[#131527]">
-                                <TableHead className="text-white">S.N</TableHead>
-                                <TableHead className="text-white">Paper Size</TableHead>
-                                <TableHead className="text-white">Dimensions</TableHead>
-                                <TableHead className="text-white">Length (in)</TableHead>
-                                <TableHead className="text-white">Breadth (in)</TableHead>
-                                <TableHead className="text-white">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {paperSizeDataState.map((row) => (
-                                <TableRow key={row.paperSizeId}>
-                                    <TableCell>{row.paperSizeId}</TableCell>
-                                    <TableCell>
-                                        {editingData && editingData.paperSizeId === row.paperSizeId ? (
-                                            <Input
-                                                id={`paper_size_${row.paperSizeId}`}
-                                                defaultValue={row.paperSize}
-                                                required
-                                            />
-                                        ) : (
-                                            row.paperSize
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        {editingData && editingData.paperSizeId === row.paperSizeId ? (
-                                            <Input
-                                                id={`dimensions_${row.paperSizeId}`}
-                                                defaultValue={row.dimensions}
-                                                required
-                                            />
-                                        ) : (
-                                            row.dimensions
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        {editingData && editingData.paperSizeId === row.paperSizeId ? (
-                                            <Input
-                                                id={`paper_length_${row.paperSizeId}`}
-                                                type="number"
-                                                defaultValue={row.paperLength}
-                                                step="0.1"
-                                                required
-                                            />
-                                        ) : (
-                                            row.paperLength
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        {editingData && editingData.paperSizeId === row.paperSizeId ? (
-                                            <Input
-                                                id={`paper_breadth_${row.paperSizeId}`}
-                                                type="number"
-                                                defaultValue={row.paperBreadth}
-                                                step="0.1"
-                                                required
-                                            />
-                                        ) : (
-                                            row.paperBreadth
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        {editingData && editingData.paperSizeId === row.paperSizeId ? (
-                                            <Button onClick={() => handleSave(row)}>Save</Button>
-                                        ) : (
-                                            <Button onClick={() => handleEdit(row)}>Edit</Button>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+            <div className="flex-grow overflow-auto">
+                <div className="p-7 text-zinc-800">
+                    <div className="flex items-center justify-center mb-10">
+                        <h1 className="text-center text-4xl font-archivo font-semibold">Paper Size</h1>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <HelpCircle className="ml-2 h-6 w-6 text-gray-500 cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>This page displays a list of paper sizes and their dimensions. You can add, edit, and manage paper sizes here.</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
+                    <div className="flex justify-center">
+                        <div className="w-11/12 bg-white rounded-lg shadow-md overflow-hidden">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-[#131527] hover:bg-[#131527]">
+                                        <TableHead className="text-white">S.N</TableHead>
+                                        <TableHead className="text-white">Paper Size</TableHead>
+                                        <TableHead className="text-white">Dimensions</TableHead>
+                                        <TableHead className="text-white">Length (in)</TableHead>
+                                        <TableHead className="text-white">Breadth (in)</TableHead>
+                                        <TableHead className="text-white">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {paperSizeDataState.map((row) => (
+                                        <TableRow key={row.id}>
+                                            <TableCell>{row.id}</TableCell>
+                                            <TableCell>
+                                                {editingData && editingData.id === row.id ? (
+                                                    <Input
+                                                        id={`paper_size_${row.id}`}
+                                                        defaultValue={row.paperSize}
+                                                        required
+                                                    />
+                                                ) : (
+                                                    row.paperSize
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {editingData && editingData.id === row.id ? (
+                                                    <Input
+                                                        id={`dimensions_${row.id}`}
+                                                        defaultValue={row.dimensions}
+                                                        required
+                                                    />
+                                                ) : (
+                                                    row.dimensions
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {editingData && editingData.id === row.id ? (
+                                                    <Input
+                                                        id={`paper_length_${row.id}`}
+                                                        type="number"
+                                                        defaultValue={row.paperLength}
+                                                        step="0.1"
+                                                        required
+                                                    />
+                                                ) : (
+                                                    row.paperLength
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {editingData && editingData.id === row.id ? (
+                                                    <Input
+                                                        id={`paper_breadth_${row.id}`}
+                                                        type="number"
+                                                        defaultValue={row.paperBreadth}
+                                                        step="0.1"
+                                                        required
+                                                    />
+                                                ) : (
+                                                    row.paperBreadth
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {editingData && editingData.id === row.id ? (
+                                                    <Button onClick={() => handleSave(row)}>Save</Button>
+                                                ) : (
+                                                    <Button onClick={() => handleEdit(row)}>Edit</Button>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </div>
                     <div className="mt-4 text-center">
                         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -229,10 +229,10 @@ const PaperSizeComponent: React.FC = () => {
                                 </Form>
                             </DialogContent>
                         </Dialog>
-                    
+
+                    </div>
                 </div>
             </div>
-        </div>
         </div>
     );
 };

@@ -50,7 +50,7 @@ export default function SheetsPage() {
     }
   };
 
-  const handleUpdate = async (id: number, updatedData: Partial<Sheet>) => {
+  const handleUpdate = async (id: string, updatedData: Partial<Sheet>) => {
     try {
       await updateSheet(id, updatedData);
       fetchSheets();
@@ -65,12 +65,12 @@ export default function SheetsPage() {
 
   const handleSave = (row: Sheet) => {
     const updatedData = {
-      sheetSize: (document.getElementById(`sheetSize_${row.sheetSizeId}`) as HTMLInputElement).value,
-      sheetLength: parseInt((document.getElementById(`sheetLength_${row.sheetSizeId}`) as HTMLInputElement).value, 10),
-      sheetBreadth: parseInt((document.getElementById(`sheetBreadth_${row.sheetSizeId}`) as HTMLInputElement).value, 10),
-      value: parseInt((document.getElementById(`value_${row.sheetSizeId}`) as HTMLInputElement).value, 10),
+      sheetSize: (document.getElementById(`sheetSize_${row.id}`) as HTMLInputElement).value,
+      sheetLength: parseInt((document.getElementById(`sheetLength_${row.id}`) as HTMLInputElement).value, 10),
+      sheetBreadth: parseInt((document.getElementById(`sheetBreadth_${row.id}`) as HTMLInputElement).value, 10),
+      value: parseInt((document.getElementById(`value_${row.id}`) as HTMLInputElement).value, 10),
     };
-    handleUpdate(row.sheetSizeId, updatedData);
+    handleUpdate(row.id, updatedData);
     setEditingData(null);
   };
 
@@ -109,17 +109,17 @@ export default function SheetsPage() {
               </TableHeader>
               <TableBody>
                 {sheetDataState.map((row, index) => (
-                  <TableRow key={row.sheetSizeId} className="hover:bg-gray-50">
+                  <TableRow key={row.id} className="hover:bg-gray-50">
                     <TableCell className="font-medium text-center">
                       <span className="truncate block w-12" title={`${index + 1}`}>
                         {index + 1}
                       </span>
                     </TableCell>
                     <TableCell className='text-center'>
-                      {editingData && editingData.sheetSizeId === row.sheetSizeId ? (
+                      {editingData && editingData.id === row.id ? (
                         <Input
                           type="text"
-                          id={`sheetSize_${row.sheetSizeId}`}
+                          id={`sheetSize_${row.id}`}
                           defaultValue={row.sheetSize}
                           required
                           className="w-full"
@@ -129,10 +129,10 @@ export default function SheetsPage() {
                       )}
                     </TableCell>
                     <TableCell className='text-center'>
-                      {editingData && editingData.sheetSizeId === row.sheetSizeId ? (
+                      {editingData && editingData.id === row.id ? (
                         <Input
                           type="number"
-                          id={`sheetLength_${row.sheetSizeId}`}
+                          id={`sheetLength_${row.id}`}
                           defaultValue={row.sheetLength}
                           required
                           className="w-full"
@@ -142,10 +142,10 @@ export default function SheetsPage() {
                       )}
                     </TableCell>
                     <TableCell className='text-center'>
-                      {editingData && editingData.sheetSizeId === row.sheetSizeId ? (
+                      {editingData && editingData.id === row.id ? (
                         <Input
                           type="number"
-                          id={`sheetBreadth_${row.sheetSizeId}`}
+                          id={`sheetBreadth_${row.id}`}
                           defaultValue={row.sheetBreadth}
                           required
                           className="w-full"
@@ -155,10 +155,10 @@ export default function SheetsPage() {
                       )}
                     </TableCell>
                     <TableCell className='text-center'>
-                      {editingData && editingData.sheetSizeId === row.sheetSizeId ? (
+                      {editingData && editingData.id === row.id ? (
                         <Input
                           type="number"
-                          id={`value_${row.sheetSizeId}`}
+                          id={`value_${row.id}`}
                           defaultValue={row.value}
                           required
                           className="w-full"
@@ -168,7 +168,7 @@ export default function SheetsPage() {
                       )}
                     </TableCell>
                     <TableCell className='text-center'>
-                      {editingData && editingData.sheetSizeId === row.sheetSizeId ? (
+                      {editingData && editingData.id === row.id ? (
                         <Button onClick={() => handleSave(row)} className="w-[100px]">Save</Button>
                       ) : (
                         <Button onClick={() => handleEdit(row)} className="w-[100px]">Edit</Button>

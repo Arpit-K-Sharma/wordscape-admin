@@ -1,5 +1,5 @@
 export interface Lamination {
-    laminationId: number;
+    id: any;
     laminationType: string;
     rate: number;
   }

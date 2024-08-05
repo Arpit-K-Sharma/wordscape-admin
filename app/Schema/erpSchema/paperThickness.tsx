@@ -1,4 +1,4 @@
 export interface PaperThickness {
-    thicknessId: number;
+    id: any;
     thickness: number;
   }

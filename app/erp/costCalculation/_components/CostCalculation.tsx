@@ -471,7 +471,7 @@ return (
                         </SelectTrigger>
                         <SelectContent>
                           {paperSizes.map((size) => (
-                            <SelectItem key={size.paperSizeId} value={size.paperSize}>
+                            <SelectItem key={size.id} value={size.paperSize}>
                               {size.paperSize}
                             </SelectItem>
                           ))}

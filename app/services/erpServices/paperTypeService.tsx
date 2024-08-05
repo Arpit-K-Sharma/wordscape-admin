@@ -2,8 +2,8 @@ import axios from '../../_axios/axiosInstance';
 import { Paper } from '../../Schema/erpSchema/paperTypeSchema';
 
 export const getPapers = async (): Promise<Paper[]> => {
-    const response = await axios.get<Paper[]>('/papers');
-    return response.data.sort((a, b) => a.paperId - b.paperId);
+    const response = await axios.get<{data: Paper[]}>('/papers');
+    return response.data.data.sort((a, b) => a.paperId - b.paperId);
 };
 
 export const addPaper = async (paper: Omit<Paper, 'paperId'>): Promise<Paper> => {

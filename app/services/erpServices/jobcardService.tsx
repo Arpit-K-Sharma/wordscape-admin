@@ -2,7 +2,7 @@ import axios from '../../_axios/axiosInstance';
 import { Order, JobCard, CookiesData } from '../../Schema/erpSchema/jobcardSchema';
 
 
-let baseUrl: string = "http://localhost:8081"
+let baseUrl: string = "http://localhost:8000"
 
 
 export const fetchOrders = async (): Promise<Order[]> => {

@@ -1,17 +1,13 @@
 import axios from '../../_axios/axiosInstance';
 import { Customer, CustomerResponse } from '../../Schema/erpSchema/customerSchema';
 
-export const getCustomers = async (page: number): Promise<CustomerResponse> => {
-  const response = await axios.get(`/customers?pageNumber=${page}`);
-  console.log(response.data)
+const url = "http://localhost:8000"
+
+export const getCustomers = async (page: number): Promise<{customers: Customer[], total_elements: number}> => {
+  const response = await axios.get(`${url}/customers?skip=${page}&limit=10&sort_field=id&sort_direction=asc`);
   return response.data;
 };
 
-export const addCustomer = async (customerData: Omit<Customer, 'customerId'>): Promise<Customer> => {
-  const response = await axios.post('/customers', customerData);
-  return response.data;
-};
-
-export const deactivateCustomer = async (customerId: number): Promise<void> => {
+export const deactivateCustomer = async (customerId: string): Promise<void> => {
   await axios.put(`/customers/deactivate/${customerId}`);
 };

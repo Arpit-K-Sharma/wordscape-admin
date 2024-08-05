@@ -1,5 +1,6 @@
 export interface Plate {
-    plateId: number;
+    id: any;
+    reprint: number;
     plateSize: string;
     plateLength: number;
     plateBreadth: number;

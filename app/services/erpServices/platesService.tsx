@@ -2,11 +2,11 @@ import axios from '../../_axios/axiosInstance';
 import { Plate } from '../../Schema/erpSchema/platesSchema';
 
 export const getPlates = async (): Promise<Plate[]> => {
-  const response = await axios.get<Plate[]>('/plates');
-  return response.data;
+  const response = await axios.get<{data: Plate[]}>('/plates');
+  return response.data.data;
 };
 
-export const addPlate = async (plateData: Omit<Plate, 'plateId'>): Promise<Plate> => {
+export const addPlate = async (plateData: Omit<Plate, 'id'>): Promise<Plate> => {
   const response = await axios.post<Plate>('/plates', plateData);
   return response.data;
 };

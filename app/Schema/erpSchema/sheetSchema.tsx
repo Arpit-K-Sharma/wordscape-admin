@@ -1,5 +1,5 @@
 export interface Sheet {
-    sheetSizeId: number;
+    id: string;
     sheetSize: string;
     sheetLength: number;
     sheetBreadth: number;

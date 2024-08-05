@@ -2,8 +2,8 @@ import axios from '../../_axios/axiosInstance';
 import { PaperThickness } from '../../Schema/erpSchema/paperThickness';
 
 export const getPaperThicknesses = async (): Promise<PaperThickness[]> => {
-  const response = await axios.get<PaperThickness[]>('/paperThickness');
-  return response.data.sort((a, b) => a.thicknessId - b.thicknessId);
+  const response = await axios.get<{data: PaperThickness[]}>('/paperThickness');
+  return response.data.data.sort((a, b) => a.id - b.id);
 };
 
 export const addPaperThickness = async (thickness: number): Promise<PaperThickness> => {

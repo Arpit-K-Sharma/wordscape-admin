@@ -1,5 +1,5 @@
 export interface Binding {
-    bindingId: number;
+    id: any;
     bindingType: string;
     rate: number;
   }

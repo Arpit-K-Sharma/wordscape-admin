@@ -1,5 +1,5 @@
 export interface PaperSize {
-    paperSizeId: number;
+    id: string;
     paperSize: string;
     paperLength: number;
     paperBreadth: number;

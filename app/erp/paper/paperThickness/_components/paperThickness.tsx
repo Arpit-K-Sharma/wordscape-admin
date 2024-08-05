@@ -60,9 +60,9 @@ export default function PaperThicknessPage() {
 
   const handleSave = (row: PaperThickness) => {
     const updatedData = {
-      thickness: parseInt((document.getElementById(`thickness_${row.thicknessId}`) as HTMLInputElement).value)
+      thickness: parseInt((document.getElementById(`thickness_${row.id}`) as HTMLInputElement).value)
     };
-    handleUpdate(row.thicknessId, updatedData);
+    handleUpdate(row.id, updatedData);
     setEditingData(null);
   };
 
@@ -97,17 +97,17 @@ export default function PaperThicknessPage() {
               </TableHeader>
               <TableBody>
                 {paperThicknessDataState.map((row) => (
-                  <TableRow key={row.thicknessId} className="hover:bg-gray-50">
+                  <TableRow key={row.id} className="hover:bg-gray-50">
                     <TableCell className="font-medium">
-                      <span className="truncate block w-[150px]" title={row.thicknessId.toString()}>
-                        {row.thicknessId}
+                      <span className="truncate block w-[150px]" title={row.id.toString()}>
+                        {row.id}
                       </span>
                     </TableCell>
                     <TableCell className='text-center'>
-                      {editingData && editingData.thicknessId === row.thicknessId ? (
+                      {editingData && editingData.id === row.id ? (
                         <Input
                           type="number"
-                          id={`thickness_${row.thicknessId}`}
+                          id={`thickness_${row.id}`}
                           defaultValue={row.thickness}
                           required
                           className="w-full"
@@ -117,7 +117,7 @@ export default function PaperThicknessPage() {
                       )}
                     </TableCell>
                     <TableCell className='text-center'>
-                      {editingData && editingData.thicknessId === row.thicknessId ? (
+                      {editingData && editingData.id === row.id ? (
                         <Button onClick={() => handleSave(row)} className="w-[100px]">Save</Button>
                       ) : (
                         <Button onClick={() => handleEdit(row)} className="w-[100px]">Edit</Button>

@@ -2,11 +2,11 @@ import axios from '../../_axios/axiosInstance';
 import { Binding } from '../../Schema/erpSchema/bindingSchema';
 
 export const getBindings = async (): Promise<Binding[]> => {
-  const response = await axios.get<Binding[]>('/bindings');
-  return response.data.sort((a, b) => a.bindingId - b.bindingId);
+  const response = await axios.get<{data: Binding[]}>('/bindings');
+  return response.data.data.sort((a, b) => a.id - b.id);
 };
 
-export const addBinding = async (bindingData: Omit<Binding, 'bindingId'>): Promise<Binding> => {
+export const addBinding = async (bindingData: Omit<Binding, 'id'>): Promise<Binding> => {
   const response = await axios.post<Binding>('/bindings', bindingData);
   return response.data;
 };

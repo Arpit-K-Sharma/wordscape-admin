@@ -63,10 +63,10 @@ export default function BindingPage() {
 
   const handleSave = (row: Binding) => {
     const updatedData = {
-      bindingType: (document.getElementById(`binding_type_${row.bindingId}`) as HTMLInputElement).value,
-      rate: parseFloat((document.getElementById(`rate_${row.bindingId}`) as HTMLInputElement).value),
+      bindingType: (document.getElementById(`binding_type_${row.id}`) as HTMLInputElement).value,
+      rate: parseFloat((document.getElementById(`rate_${row.id}`) as HTMLInputElement).value),
     };
-    handleUpdate(row.bindingId, updatedData);
+    handleUpdate(row.id, updatedData);
     setEditingData(null);
   };
 
@@ -102,17 +102,17 @@ export default function BindingPage() {
           </TableHeader>
           <TableBody>
             {bindingDataState.map((row) => (
-              <TableRow key={row.bindingId} className="hover:bg-gray-50">
+              <TableRow key={row.id} className="hover:bg-gray-50">
                 <TableCell className="font-medium text-center">
-                  <span className="truncate block w-[120px]" title={row.bindingId.toString()}>
-                    {row.bindingId}
+                  <span className="truncate block w-[120px]" title={row.id.toString()}>
+                    {row.id}
                   </span>
                 </TableCell>
                 <TableCell className="text-center">
-                  {editingData && editingData.bindingId === row.bindingId ? (
+                  {editingData && editingData.id === row.id ? (
                     <Input
                       type="text"
-                      id={`binding_type_${row.bindingId}`}
+                      id={`binding_type_${row.id}`}
                       defaultValue={row.bindingType}
                       required
                       className="w-full"
@@ -122,10 +122,10 @@ export default function BindingPage() {
                   )}
                 </TableCell>
                 <TableCell className="text-center">
-                  {editingData && editingData.bindingId === row.bindingId ? (
+                  {editingData && editingData.id === row.id ? (
                     <Input
                       type="number"
-                      id={`rate_${row.bindingId}`}
+                      id={`rate_${row.id}`}
                       defaultValue={row.rate}
                       required
                       className="w-full"
@@ -135,7 +135,7 @@ export default function BindingPage() {
                   )}
                 </TableCell>
                 <TableCell className="text-center">
-                  {editingData && editingData.bindingId === row.bindingId ? (
+                  {editingData && editingData.id === row.id ? (
                     <Button onClick={() => handleSave(row)} className="w-[100px]">Save</Button>
                   ) : (
                     <Button onClick={() => handleEdit(row)} className="w-[100px]">Edit</Button>

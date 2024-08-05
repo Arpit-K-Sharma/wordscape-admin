@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Customer } from '../../../Schema/erpSchema/customerSchema';
-import { getCustomers, addCustomer, deactivateCustomer } from '../../../services/erpServices/customerService';
+import { getCustomers, deactivateCustomer } from '../../../services/erpServices/customerService';
 import ErpSidebar from '../../_components/ErpSidebar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Trash2, HelpCircle } from 'lucide-react';
@@ -18,7 +18,7 @@ export default function Customers() {
     const [pageLimit, setPageLimit] = useState(0);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [deleteCustomerId, setDeleteCustomerId] = useState<number | null>(null);
+    const [deleteCustomerId, setDeleteCustomerId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchCustomers();
@@ -27,32 +27,10 @@ export default function Customers() {
     const fetchCustomers = async () => {
         try {
             const data = await getCustomers(page);
-            setCustomers(data.response);
-            setPageLimit(Math.ceil(data.totalElements / 10) - 1);
+            setCustomers(data.customers);
+            setPageLimit(Math.ceil(data.total_elements / 10) - 1);
         } catch (error) {
             console.error('Error fetching customers:', error);
-        }
-    };
-
-    const handleAddCustomer = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const form = event.currentTarget;
-        const formData = new FormData(form);
-        const customerData = {
-            userId: formData.get('userId') as string,
-            fullName: formData.get('fullName') as string,
-            address: formData.get('address') as string,
-            email: formData.get('email') as string,
-            companyName: formData.get('companyName') as string,
-            status: formData.get('status') === 'true',
-        };
-
-        try {
-            await addCustomer(customerData);
-            setIsAddDialogOpen(false);
-            fetchCustomers();
-        } catch (error) {
-            console.error('Error adding customer:', error);
         }
     };
 
@@ -103,8 +81,8 @@ export default function Customers() {
                             </TableHeader>
                             <TableBody>
                                 {customers.map((customer) => (
-                                    <TableRow key={customer.customerId}>
-                                        <TableCell className="truncate max-w-[100px]">{customer.userId}</TableCell>
+                                    <TableRow key={customer._id}>
+                                        <TableCell className="truncate max-w-[100px]">{customer._id}</TableCell>
                                         <TableCell>{customer.fullName}</TableCell>
                                         <TableCell>{customer.address}</TableCell>
                                         <TableCell>{customer.email}</TableCell>
@@ -115,7 +93,7 @@ export default function Customers() {
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => {
-                                                        setDeleteCustomerId(customer.customerId);
+                                                        setDeleteCustomerId(customer._id);
                                                         setIsDeleteDialogOpen(true);
                                                     }}
                                                 >
@@ -147,32 +125,7 @@ export default function Customers() {
                         </Button>
                     </div>
 
-                <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button className="mt-4">Add Customer</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Add Customer</DialogTitle>
-                        </DialogHeader>
-                        <form onSubmit={handleAddCustomer}>
-                            <Input name="fullName" placeholder="Full Name" className="mt-4" />
-                            <Input name="address" placeholder="Address" className="mt-4" />
-                            <Input name="email" type="email" placeholder="Email" className="mt-4" />
-                            <Input name="companyName" placeholder="Company Name" className="mt-4" />
-                            <Select name="status">
-                                <SelectTrigger className="mt-4">
-                                    <SelectValue placeholder="Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="true">Active</SelectItem>
-                                    <SelectItem value="false">Inactive</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Button type="submit" className="mt-4">Add</Button>
-                        </form>
-                    </DialogContent>
-                </Dialog>
+                
 
                 <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                     <DialogContent>

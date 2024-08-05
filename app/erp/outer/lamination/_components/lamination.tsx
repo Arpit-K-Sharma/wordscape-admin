@@ -49,7 +49,7 @@ export default function LaminationPage() {
     }
   };
 
-  const handleUpdate = async (id: number, updatedData: Partial<Lamination>) => {
+  const handleUpdate = async (id: string, updatedData: Partial<Lamination>) => {
     try {
       await updateLamination(id, updatedData);
       fetchLaminations();
@@ -64,10 +64,10 @@ export default function LaminationPage() {
 
   const handleSave = (row: Lamination) => {
     const updatedData = {
-      laminationType: (document.getElementById(`lamination_type_${row.laminationId}`) as HTMLInputElement).value,
-      rate: parseFloat((document.getElementById(`rate_${row.laminationId}`) as HTMLInputElement).value),
+      laminationType: (document.getElementById(`lamination_type_${row.id}`) as HTMLInputElement).value,
+      rate: parseFloat((document.getElementById(`rate_${row.id}`) as HTMLInputElement).value),
     };
-    handleUpdate(row.laminationId, updatedData);
+    handleUpdate(row.id, updatedData);
     setEditingData(null);
   };
 
@@ -103,17 +103,17 @@ export default function LaminationPage() {
               </TableHeader>
               <TableBody>
                 {laminationData.map((row) => (
-                  <TableRow key={row.laminationId} className="hover:bg-gray-50">
+                  <TableRow key={row.id} className="hover:bg-gray-50">
                     <TableCell className="font-medium text-center">
-                      <span className="truncate block w-[120px" title={row.laminationId.toString()}>
-                        {row.laminationId}
+                      <span className="truncate block w-[120px" title={row.id.toString()}>
+                        {row.id}
                       </span>
                     </TableCell>
                     <TableCell className='text-center'>
-                      {editingData && editingData.laminationId === row.laminationId ? (
+                      {editingData && editingData.id === row.id ? (
                         <Input
                           type="text"
-                          id={`lamination_type_${row.laminationId}`}
+                          id={`lamination_type_${row.id}`}
                           defaultValue={row.laminationType}
                           required
                           className="w-full"
@@ -123,10 +123,10 @@ export default function LaminationPage() {
                       )}
                     </TableCell>
                     <TableCell className='text-center'>
-                      {editingData && editingData.laminationId === row.laminationId ? (
+                      {editingData && editingData.id === row.id ? (
                         <Input
                           type="number"
-                          id={`rate_${row.laminationId}`}
+                          id={`rate_${row.id}`}
                           defaultValue={row.rate}
                           required
                           className="w-full"
@@ -136,7 +136,7 @@ export default function LaminationPage() {
                       )}
                     </TableCell>
                     <TableCell className='text-center'>
-                      {editingData && editingData.laminationId === row.laminationId ? (
+                      {editingData && editingData.id === row.id ? (
                         <Button onClick={() => handleSave(row)} className="w-[100px]">Save</Button>
                       ) : (
                         <Button onClick={() => handleEdit(row)} className="w-[100px]">Edit</Button>
