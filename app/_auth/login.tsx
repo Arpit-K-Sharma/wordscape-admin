@@ -26,7 +26,7 @@ export default function AdminLogin() {
     const success = await adminLogin(email, password);
 
     if (success) {
-      router.push("/erp/dashboard");
+      router.push("/erp");
     } else {
       setLoading(false);
       toast.error("Failed to login");

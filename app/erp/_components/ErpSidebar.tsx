@@ -29,6 +29,7 @@ import {
 import { useRouter } from "next/navigation";
 import LogoOnly from "../../../public/images/LogoOnly.png";
 import { Clipboard } from "lucide-react";
+import Cookies from "js-cookie";
 
 const ErpSidebar: React.FC = () => {
   const router = useRouter();
@@ -36,6 +37,11 @@ const ErpSidebar: React.FC = () => {
   const [paperCategoryOpen, setPaperCategoryOpen] = useState(false);
   const [outerCategoryOpen, setOuterCategoryOpen] = useState(false);
   const [tasksCategoryOpen, setTasksCategoryOpen] = useState(false);
+
+  const handleLogout = () => {
+    Cookies.remove("accessToken");
+    router.push("/");
+  };
 
   return (
     <aside className="w-56 bg-white font-archivo h-screen">
@@ -241,7 +247,7 @@ const ErpSidebar: React.FC = () => {
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/")}
+            onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Log Out
