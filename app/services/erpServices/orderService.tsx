@@ -36,7 +36,7 @@ export const updateTracking = async (
   orderId: string,
   stepData: Record<string, boolean>
 ): Promise<void> => {
-  await axios.post(`${API_URL}/projectTracking/${orderId}`, stepData);
+  await axios.put(`${API_URL}/projectTracking/${orderId}`, stepData);
 };
 
 export const cancelOrder = async (orderId: string): Promise<void> => {

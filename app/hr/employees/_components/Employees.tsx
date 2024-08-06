@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import axios from "@/app/_axios/axiosInstance";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { employeeService } from "@/app/services/hrServices/employeeService";
@@ -104,7 +104,7 @@ const EmployeesPage: React.FC = () => {
     address: "",
     phoneNumber: "",
     position: "",
-    dailyWage: 0,
+    dailyWage: null,
     dept_ids: [] as string[],
   });
 
