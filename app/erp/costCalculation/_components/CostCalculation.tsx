@@ -578,14 +578,14 @@ export default function CostCalculationPage() {
 
   return (
     <>
-      <div className="flex h-screen">
-        <div className="flex-shrink-0">
+      <div className="flex h-screen bg-gray-100  ">
+        <div className="flex-shrink-0 ">
           <ErpSidebar />
         </div>
-        <div className="cost-calc-container bg-gray-100 w-[60%] min-h-screen border flex">
-          <div className="main-content flex-1 p-2 h-screen overflow-hidden">
+        <div className="cost-calc-container bg-gray-100 w-[100%] min-h-screen flex">
+          <div className="main-content flex-1 ml-[10px] h-screen overflow-hidden">
             <ScrollArea>
-              <Card className="shadow-lg h-[calc(112vh-120px)] overflow-y-auto">
+              <Card className="shadow-lg h-screen border border-none overflow-y-auto">
                 <div className="text-center p-4 mt-2 flex justify-center items-center">
                   <h1 className="text-4xl font-bold text-gray-800">
                     Cost Calculator
@@ -1009,8 +1009,8 @@ export default function CostCalculationPage() {
               </Card>
             </ScrollArea>
           </div>
-          </div>
-          <div className="drawer-test rounded-[20px] my-[50px] fixed right-0 top-0 h-full w-1/4 shadow-lg overflow-y-auto transition-transform transform translate-x-0 bg-black">
+
+          <div className="drawer-test rounded-[20px] right-0 top-0 h-full w-[33%] shadow-lg overflow-y-auto transition-transform transform translate-x-0">
             <DrawerTest
               pages={pages}
               length={length}
@@ -1092,7 +1092,7 @@ export default function CostCalculationPage() {
               inkCost={inkCost}
             />
           </div>
-       
+        </div>
       </div>
     </>
   );
