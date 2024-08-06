@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Archivo } from "next/font/google";
 import "./globals.css";
-import { AuthorizationWrapper } from "./util/authContext";
+import ClientLayout from "./ClientLayout";
 
 // Load Google Fonts
 const inter = Inter({ subsets: ["latin"] });
@@ -16,14 +16,14 @@ export const metadata: Metadata = {
 // Define the layout component
 export default function RootLayout({
   children,
-  types,
 }: {
   children: React.ReactNode;
-  types: any;
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} font-archivo`}>{children}</body>
+      <body className={`${inter.className} font-archivo`}>
+        <ClientLayout>{children}</ClientLayout>
+      </body>
     </html>
   );
 }
