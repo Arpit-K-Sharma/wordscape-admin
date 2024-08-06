@@ -51,7 +51,7 @@ const InventorySidebar: React.FC = () => {
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm bg-gray-200"
-            onClick={() => router.push("/erp/dashboard")}
+            onClick={() => router.push("/erp")}
           >
             <Home className="mr-2 h-4 w-4" />
             Home

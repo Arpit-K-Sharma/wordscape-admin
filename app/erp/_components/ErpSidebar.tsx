@@ -61,7 +61,7 @@ const ErpSidebar: React.FC = () => {
           <Button
             variant="ghost"
             className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/erp/dashboard")}
+            onClick={() => router.push("/erp")}
           >
             <LayoutDashboard className="mr-2 h-4 w-4" />
             Admin Dashboard
@@ -178,14 +178,6 @@ const ErpSidebar: React.FC = () => {
                 >
                   <Edit className="mr-2 h-4 w-4" />
                   Binding
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start mb-2 text-sm pl-8 "
-                  onClick={() => router.push("/erp/outer/coverTreatment")}
-                >
-                  <ShieldCheck className="mr-2 h-4 w-4" />
-                  Cover Treatment
                 </Button>
                 <Button
                   variant="ghost"
