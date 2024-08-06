@@ -493,18 +493,25 @@ const Orders: React.FC = () => {
                             className="w-full"
                           />
                           <ul className="mt-4 space-y-2">
-                            {steps.map((step, index) => (
-                              <li
-                                key={index}
-                                className={`flex items-center ${
-                                  step.active
-                                    ? "text-primary"
-                                    : "text-muted-foreground"
-                                }`}
-                              >
-                                {step.active ? "✓" : "○"} {step.name}
-                              </li>
-                            ))}
+                            {steps.map((step, index) => {
+                              const isLatestActive =
+                                step.active &&
+                                steps.slice(index + 1).every((s) => !s.active);
+                              return (
+                                <li
+                                  key={index}
+                                  className={`flex items-center px-3 py-1 ${
+                                    step.active
+                                      ? isLatestActive
+                                        ? "text-zinc-900 font-black text-lg bg-slate-100 border border-zinc-900 rounded-full"
+                                        : "text-primary"
+                                      : "text-muted-foreground"
+                                  }`}
+                                >
+                                  {step.active ? "✓" : "○"} {step.name}
+                                </li>
+                              );
+                            })}
                           </ul>
                         </div>
                         <div className="flex justify-between">

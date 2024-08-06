@@ -582,8 +582,8 @@ export default function CostCalculationPage() {
         <div className="flex-shrink-0 ">
           <ErpSidebar />
         </div>
-        <div className="cost-calc-container bg-gray-100 w-[100%] min-h-screen flex">
-          <div className="main-content flex-1 ml-[10px] h-screen overflow-hidden">
+        <div className="cost-calc-container bg-gray-100 w-[100%] min-h-screen flex gap-[10px]">
+          <div className="main-content flex-1 ml-[10px]  h-screen overflow-hidden">
             <ScrollArea>
               <Card className="shadow-lg h-screen border border-none overflow-y-auto">
                 <div className="text-center p-4 mt-2 flex justify-center items-center">
