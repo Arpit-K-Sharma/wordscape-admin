@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 
 const Page = () => {
-  const router = useRouter();
   const pathname = usePathname();
 
   return (

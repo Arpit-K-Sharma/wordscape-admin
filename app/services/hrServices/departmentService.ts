@@ -1,6 +1,4 @@
-// departmentService.ts
-
-import axios from "axios";
+import axios from "../../_axios/axiosInstance";
 
 export interface Department {
   id?: string;
@@ -18,7 +16,7 @@ export interface Staff {
   departmentNames: string[];
 }
 
-const API_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const departmentService = {
   getDepartments: async (): Promise<Department[]> => {

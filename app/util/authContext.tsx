@@ -39,9 +39,9 @@ export const AuthorizationWrapper = ({
       setShowUnauthorized(true);
       const timer = setTimeout(() => {
         router.push("/");
-      }, 5000); // Redirect after 5 seconds
+      }, 5000);
 
-      return () => clearTimeout(timer); // Cleanup the timer on unmount
+      return () => clearTimeout(timer);
     }
   }, [isAuthorized, pathname, router]);
 

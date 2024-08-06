@@ -1,6 +1,4 @@
-// attendanceService.ts
-
-import axios from "axios";
+import axios from "../../_axios/axiosInstance";
 import { format } from "date-fns";
 import { Staff } from "./staffService";
 import {

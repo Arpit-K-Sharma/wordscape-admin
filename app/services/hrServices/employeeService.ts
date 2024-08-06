@@ -36,7 +36,7 @@ export interface NewStaffData {
   dept_ids: string[];
 }
 
-const BASE_URL = "https://admin-api.wordscapepress.com";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export const employeeService = {
   getAllEmployees: async (): Promise<Employee[]> => {

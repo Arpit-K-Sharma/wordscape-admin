@@ -1,4 +1,5 @@
-import axios from "axios";
+import axios from "../../_axios/axiosInstance";
+
 import { InventoryItem } from "@/app/Schema/inventorySchema";
 import {
   InventoryResponse,

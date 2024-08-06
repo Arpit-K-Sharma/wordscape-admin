@@ -2,7 +2,7 @@ import axios from "../../_axios/axiosInstance";
 import { Order, SelectedOrder } from "../../Schema/erpSchema/OrderSchema";
 import { OrderResponse } from "../../erp/order/_components/order";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const API_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export const fetchOrders = async (
   page: number,
@@ -10,7 +10,7 @@ export const fetchOrders = async (
   sortDirection: string
 ): Promise<OrderResponse> => {
   const response = await axios.get(
-    `${BASE_URL}/orders?pageNumber=${page}&sortField=${sortField}&sortDirection=${sortDirection}`
+    `${API_URL}/orders?skip=${page}&sortField=${sortField}&sortDirection=${sortDirection}`
   );
   return {
     response: response.data.orders,

@@ -1,5 +1,5 @@
 import { InventoryItems } from "@/app/Schema/inventorySchema";
-import axios from "axios";
+import axios from "../../_axios/axiosInstance";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 

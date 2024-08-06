@@ -1,7 +1,6 @@
-import axios from "axios";
+import axios from "../../_axios/axiosInstance";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
 
 export interface PurchaseEntry {
   _id: string;

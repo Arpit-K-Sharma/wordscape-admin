@@ -13,7 +13,7 @@ interface ErrorResponseData {
 }
 
 // const baseURL = "https://erp-api.wordscapepress.com";
-const baseURL = "http://127.0.0.1:8000";
+const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const axiosInstance = axios.create({
   baseURL: baseURL,
@@ -24,7 +24,7 @@ axiosInstance.interceptors.request.use(
   (config) => {
     const token = Cookies.get("accessToken");
     if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers["Authorization"] = `bearer ${token}`;
     }
     return config;
   },
@@ -40,7 +40,7 @@ axiosInstance.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      console.log("error comming")
+      console.log("error comming");
     }
     return Promise.reject(error);
   }

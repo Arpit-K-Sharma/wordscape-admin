@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../../_axios/axiosInstance";
 
 interface Item {
   inventoryId: string;

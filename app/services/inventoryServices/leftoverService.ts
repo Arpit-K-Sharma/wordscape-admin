@@ -1,4 +1,5 @@
-import axios from "axios";
+import axios from "../../_axios/axiosInstance";
+
 import { Leftover, LeftoverItem } from "../../Schema/leftOverSchema";
 
 let API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;

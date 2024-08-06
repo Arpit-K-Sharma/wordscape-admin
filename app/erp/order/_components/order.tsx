@@ -31,7 +31,7 @@ import {
   SelectedOrder,
   Step,
 } from "../../../Schema/erpSchema/OrderSchema";
-import {  Clipboard } from "lucide-react";
+import { Clipboard } from "lucide-react";
 import * as orderService from "../../../services/erpServices/orderService";
 import ErpSidebar from "../../_components/ErpSidebar";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -438,8 +438,8 @@ const Orders: React.FC = () => {
                   <TableCell className="text-center">
                     {details.delivery && details.delivery.deliveryDate
                       ? new Date(
-                        details.delivery.deliveryDate
-                      ).toLocaleDateString()
+                          details.delivery.deliveryDate
+                        ).toLocaleDateString()
                       : "N/A"}
                   </TableCell>
                   <TableCell className="text-center">
@@ -496,10 +496,11 @@ const Orders: React.FC = () => {
                             {steps.map((step, index) => (
                               <li
                                 key={index}
-                                className={`flex items-center ${step.active
-                                  ? "text-primary"
-                                  : "text-muted-foreground"
-                                  }`}
+                                className={`flex items-center ${
+                                  step.active
+                                    ? "text-primary"
+                                    : "text-muted-foreground"
+                                }`}
                               >
                                 {step.active ? "✓" : "○"} {step.name}
                               </li>
@@ -515,15 +516,16 @@ const Orders: React.FC = () => {
                   </TableCell>
                   <TableCell className="text-center pl-[30px]">
                     <div
-                      className={`flex items-center gap-1 rounded-2xl w-[90px] text-center p-0.3 px-2 ${details.status === "PENDING"
-                        ? "bg-[#fffbf3] border border-[#f8e4bf] text-[10px] text-[#ffa500] font-medium"
-                        : details.status === "APPROVED" ||
-                          details.status === "COMPLETED"
+                      className={`flex items-center gap-1 rounded-2xl w-[90px] text-center p-0.3 px-2 ${
+                        details.status === "PENDING"
+                          ? "bg-[#fffbf3] border border-[#f8e4bf] text-[10px] text-[#ffa500] font-medium"
+                          : details.status === "APPROVED" ||
+                            details.status === "COMPLETED"
                           ? "bg-[#f8fff8] border border-[#c5ffd3] text-[10px]  text-[#28a745] font-medium"
                           : details.status === "CANCELED"
-                            ? "bg-[#fff9f9] border border-[#f9bebe] text-[10px] text-[#cf1d1d] font-medium"
-                            : "bg-gray-100 border border-gray-300 text-gray-500"
-                        }`}
+                          ? "bg-[#fff9f9] border border-[#f9bebe] text-[10px] text-[#cf1d1d] font-medium"
+                          : "bg-gray-100 border border-gray-300 text-gray-500"
+                      }`}
                     >
                       {details.status === "PENDING" ? (
                         <Hourglass className="text-[#ffa500]" size={15} />
@@ -754,8 +756,8 @@ const Orders: React.FC = () => {
                       value={
                         selectedOrder.deadline
                           ? new Date(selectedOrder.deadline)
-                            .toISOString()
-                            .split("T")[0]
+                              .toISOString()
+                              .split("T")[0]
                           : ""
                       }
                       onChange={(e) =>
