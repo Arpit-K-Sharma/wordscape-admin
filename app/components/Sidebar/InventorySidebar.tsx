@@ -35,7 +35,7 @@ const InventorySidebar: React.FC = () => {
 
   return (
     <aside className="w-56 bg-white font-archivo">
-      <div className="p-3 flex flex-col mt-2">
+      <div className="p-3 flex flex-col">
         <div className="flex items-center mb-4 max-sm:ml-[50px]">
           <Image
             src={LogoOnly}

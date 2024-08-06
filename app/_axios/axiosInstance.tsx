@@ -11,7 +11,6 @@ interface CustomJwtPayload extends JwtPayload {
 interface ErrorResponseData {
   message?: string;
 }
-
 // const baseURL = "https://erp-api.wordscapepress.com";
 const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
 

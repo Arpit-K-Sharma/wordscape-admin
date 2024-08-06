@@ -1,4 +1,4 @@
-import axios from "../../_axios/axiosInstance";
+import axios from "@/app/_axios/axiosInstance";
 
 const API_URL = process.env.NEXT_PUBLIC_BASE_URL;
 

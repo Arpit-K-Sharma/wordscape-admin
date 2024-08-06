@@ -1,6 +1,4 @@
-// employeeService.ts
-
-import axios from "axios";
+import axios from "../../_axios/axiosInstance";
 
 export interface Employee {
   _id: string;

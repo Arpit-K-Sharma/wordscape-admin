@@ -32,7 +32,7 @@ const HRSidebar: React.FC = () => {
 
   return (
     <aside className="w-56 bg-white shadow-md font-archivo">
-      <div className="p-3 flex flex-col mt-2">
+      <div className="p-3 flex flex-col">
         <div className="flex items-center mb-4">
           <Image
             src={LogoOnly}
