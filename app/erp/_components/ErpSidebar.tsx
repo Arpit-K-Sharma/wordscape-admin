@@ -135,14 +135,14 @@ const ErpSidebar: React.FC = () => {
                   <Ruler className="mr-2 h-4 w-4" />
                   Paper Sizes
                 </Button>
-                <Button
+                {/* <Button
                   variant="ghost"
                   className="w-full justify-start mb-2 text-sm pl-8 "
                   onClick={() => router.push("/erp/paper/paperThickness")}
                 >
                   <Layers className="mr-2 h-4 w-4" />
                   Paper Thickness
-                </Button>
+                </Button> */}
                 <Button
                   variant="ghost"
                   className="w-full justify-start mb-2 text-sm pl-8 "
@@ -200,24 +200,6 @@ const ErpSidebar: React.FC = () => {
           </div>
 
           {/* New Inventory Button */}
-          <Button
-            variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/inventory")}
-          >
-            <Warehouse className="mr-2 h-4 w-4" />
-            Inventory
-          </Button>
-
-          {/* New Human Resources Button */}
-          <Button
-            variant="ghost"
-            className="w-full justify-start mb-2 text-sm"
-            onClick={() => router.push("/hr")}
-          >
-            <Users className="mr-2 h-4 w-4" />
-            Human Resources
-          </Button>
 
           <Button
             variant="ghost"
@@ -234,6 +216,25 @@ const ErpSidebar: React.FC = () => {
           >
             <Clipboard className="mr-2 h-4 w-4" />
             Orders
+          </Button>
+
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-sm"
+            onClick={() => router.push("/inventory")}
+          >
+            <Warehouse className="mr-2 h-4 w-4" />
+            Inventory
+          </Button>
+
+          {/* New Human Resources Button */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-5 text-sm "
+            onClick={() => router.push("/hr")}
+          >
+            <Users className="mr-2 h-4 w-4" />
+            Human Resources
           </Button>
 
           <Button

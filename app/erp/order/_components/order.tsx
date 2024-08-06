@@ -503,7 +503,7 @@ const Orders: React.FC = () => {
                                   className={`flex items-center px-3 py-1 ${
                                     step.active
                                       ? isLatestActive
-                                        ? "text-zinc-900 font-black text-lg bg-slate-100 border border-zinc-900 rounded-full"
+                                        ? "text-zinc-900 font-black text-lg bg-slate-100 border border-zinc-300 rounded-full"
                                         : "text-primary"
                                       : "text-muted-foreground"
                                   }`}
