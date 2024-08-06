@@ -31,6 +31,7 @@ import {
   SelectedOrder,
   Step,
 } from "../../../Schema/erpSchema/OrderSchema";
+import {  Clipboard } from "lucide-react";
 import * as orderService from "../../../services/erpServices/orderService";
 import ErpSidebar from "../../_components/ErpSidebar";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -376,10 +377,10 @@ const Orders: React.FC = () => {
           />
         </div>
 
-        <Table className="bg-white rounded-lg overflow-hidden ">
+        <Table className="bg-white rounded-lg overflow-hidden">
           <TableHeader className="font-semibold">
             <TableRow>
-              <TableHead className="text-white bg-gray-800 ">
+              <TableHead className="text-white bg-gray-800 pl-4 ">
                 Order ID
               </TableHead>
               <TableHead className="text-white bg-gray-800">
@@ -402,10 +403,10 @@ const Orders: React.FC = () => {
               <TableHead className="text-white bg-gray-800 text-center">
                 Order Details
               </TableHead>
-              <TableHead className="text-white bg-gray-800 text-center">
+              <TableHead className="text-white bg-gray-800 text-center pr-[40px]">
                 Job Card
               </TableHead>
-              <TableHead className="text-white bg-gray-800 text-center">
+              <TableHead className="text-white bg-gray-800 text-center pr-[25px]">
                 View Tracking
               </TableHead>
               <TableHead className="text-white bg-gray-800 text-center">
@@ -427,7 +428,7 @@ const Orders: React.FC = () => {
               filteredOrderDetails.map((details) => (
                 <TableRow key={details.orderId}>
                   <TableCell>
-                    <span className="block w-[100px] truncate">
+                    <span className="block w-[100px] truncate pl-2.5 ">
                       {details.orderId}
                     </span>
                   </TableCell>
@@ -437,8 +438,8 @@ const Orders: React.FC = () => {
                   <TableCell className="text-center">
                     {details.delivery && details.delivery.deliveryDate
                       ? new Date(
-                          details.delivery.deliveryDate
-                        ).toLocaleDateString()
+                        details.delivery.deliveryDate
+                      ).toLocaleDateString()
                       : "N/A"}
                   </TableCell>
                   <TableCell className="text-center">
@@ -452,9 +453,10 @@ const Orders: React.FC = () => {
                   <TableCell className="text-center">
                     <Button
                       variant="secondary"
-                      className="bg-gray-100"
+                      className="bg-gray-800 hover:bg-gray-700 text-white flex items-center gap-2"
                       onClick={() => handleJobCard(details.orderId)}
                     >
+                      <Clipboard className="w-4 h-4" />
                       Job card
                     </Button>
                   </TableCell>
@@ -468,8 +470,9 @@ const Orders: React.FC = () => {
                             setOrderid(details.orderId);
                           }}
                           disabled={details.status === "CANCELED"}
-                          className=" bg-white border border-gray-300"
+                          className="bg-white border border-gray-300 flex items-center gap-2"
                         >
+                          <Search className="w-4 h-4" />
                           Track It
                         </Button>
                       </DialogTrigger>
@@ -493,11 +496,10 @@ const Orders: React.FC = () => {
                             {steps.map((step, index) => (
                               <li
                                 key={index}
-                                className={`flex items-center ${
-                                  step.active
-                                    ? "text-primary"
-                                    : "text-muted-foreground"
-                                }`}
+                                className={`flex items-center ${step.active
+                                  ? "text-primary"
+                                  : "text-muted-foreground"
+                                  }`}
                               >
                                 {step.active ? "✓" : "○"} {step.name}
                               </li>
@@ -513,16 +515,15 @@ const Orders: React.FC = () => {
                   </TableCell>
                   <TableCell className="text-center pl-[30px]">
                     <div
-                      className={`flex items-center gap-1 rounded-2xl w-fit p-0.3 px-2 ${
-                        details.status === "PENDING"
-                          ? "bg-[#fffbf3] border border-[#ffa500]text-[10px] text-[#ffa500] font-medium"
-                          : details.status === "APPROVED" ||
-                            details.status === "COMPLETED"
+                      className={`flex items-center gap-1 rounded-2xl w-[90px] text-center p-0.3 px-2 ${details.status === "PENDING"
+                        ? "bg-[#fffbf3] border border-[#f8e4bf] text-[10px] text-[#ffa500] font-medium"
+                        : details.status === "APPROVED" ||
+                          details.status === "COMPLETED"
                           ? "bg-[#f8fff8] border border-[#c5ffd3] text-[10px]  text-[#28a745] font-medium"
                           : details.status === "CANCELED"
-                          ? "bg-[#fff9f9] border border-[#f9bebe] text-[10px] text-[#cf1d1d] font-medium"
-                          : "bg-gray-100 border border-gray-300 text-gray-500"
-                      }`}
+                            ? "bg-[#fff9f9] border border-[#f9bebe] text-[10px] text-[#cf1d1d] font-medium"
+                            : "bg-gray-100 border border-gray-300 text-gray-500"
+                        }`}
                     >
                       {details.status === "PENDING" ? (
                         <Hourglass className="text-[#ffa500]" size={15} />
@@ -753,8 +754,8 @@ const Orders: React.FC = () => {
                       value={
                         selectedOrder.deadline
                           ? new Date(selectedOrder.deadline)
-                              .toISOString()
-                              .split("T")[0]
+                            .toISOString()
+                            .split("T")[0]
                           : ""
                       }
                       onChange={(e) =>

@@ -1009,7 +1009,8 @@ export default function CostCalculationPage() {
               </Card>
             </ScrollArea>
           </div>
-          <div className="drawer-test fixed right-0 top-0 h-full w-1/4 shadow-lg overflow-y-auto transition-transform transform translate-x-0">
+          </div>
+          <div className="drawer-test rounded-[20px] my-[50px] fixed right-0 top-0 h-full w-1/4 shadow-lg overflow-y-auto transition-transform transform translate-x-0 bg-black">
             <DrawerTest
               pages={pages}
               length={length}
@@ -1091,7 +1092,7 @@ export default function CostCalculationPage() {
               inkCost={inkCost}
             />
           </div>
-        </div>
+       
       </div>
     </>
   );
