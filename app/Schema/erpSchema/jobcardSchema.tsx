@@ -73,7 +73,7 @@ export interface Order {
       paymentMethod: string;
       serviceRequired: string[];
     };
-    deliveryDetail: {
+    delivery: {
       deliveryId: number;
       destination: null;
       deliveryDate: null;

@@ -127,7 +127,7 @@ export default function JobCardPage({ ordersId }: { ordersId: string }) {
     if (jobCard) {
       let paperData = { paperDetail: jobCard?.paperDetailData }
       let binderyData = { binderyData: jobCard?.bindingData }
-      let deliveryData = { deliveryDetail: jobCard?.deliveryDetail }
+      let deliveryData = { deliveryDetail: jobCard?.delivery }
       let PaperUnitsData = { paperData: jobCard?.paperData }
       let paymentData = { servicePaymentList: jobCard?.prePressUnitList }
       let plateData = { plateDetailData: jobCard?.plateDetailData }
