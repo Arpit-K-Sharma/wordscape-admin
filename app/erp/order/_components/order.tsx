@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast, Toaster } from "react-hot-toast";
 import {
@@ -25,6 +25,9 @@ import {
   InfoIcon,
   Download,
   Eye,
+  Activity,
+  Milestone,
+  ListChecks,
 } from "lucide-react";
 import {
   Order,
@@ -97,27 +100,69 @@ const Orders: React.FC = () => {
   ]);
   const [orderid, setOrderid] = useState<string>();
   const [page, setPage] = useState<number>(0);
-  const [pageLimit, setPageLimit] = useState<number>();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLUListElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const [field, direction] = sortDirection.split("_");
-        console.log(field, direction);
-        const response = await orderService.fetchOrders(page, field, direction);
-        console.log(response);
-        setFilteredOrderDetails(response.response);
-        setPageLimit(Math.round(response.totalElements) / 10);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      }
-    };
+  const [totalElements, setTotalElements] = useState<number>(0);
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(totalElements / itemsPerPage);
 
-    fetchOrders();
-  }, [page, sortDirection]);
+  const [isHolding, setIsHolding] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const holdStartTimeRef = useRef<number>(0);
+  const [isPressed, setIsPressed] = useState(false);
+
+
+
+  const clearIntervalIfAny = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+  const changePage = useCallback((direction: 'next' | 'prev') => {
+    setPage((prevPage) => {
+      const newPage = direction === 'next'
+        ? Math.min(totalPages - 1, prevPage + 1)
+        : Math.max(0, prevPage - 1);
+      return newPage;
+    });
+  }, [totalPages]);
+
+  const fetchOrders = useCallback(async (pageNumber: number) => {
+    try {
+      const [field, direction] = sortDirection.split("_");
+      const response = await orderService.fetchOrders(pageNumber, field, direction);
+      setFilteredOrderDetails(response.response);
+      setTotalElements(response.totalElements);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    }
+  }, [sortDirection]);
+  const handleMouseDown = useCallback((direction: 'next' | 'prev') => {
+    setIsPressed(true);
+    setIsHolding(true);
+    intervalRef.current = setInterval(() => changePage(direction), 200);
+  }, [changePage]);
+
+  const handleMouseUp = useCallback(() => {
+    if (isPressed) {
+      setIsPressed(false);
+      setIsHolding(false);
+      clearIntervalIfAny();
+      fetchOrders(page);
+    }
+  }, [fetchOrders, page, isPressed]);
+
+  const handleClick = useCallback((direction: 'next' | 'prev') => {
+    changePage(direction);
+    fetchOrders(page + (direction === 'next' ? 1 : -1));
+  }, [changePage, fetchOrders, page]);
+
+  useEffect(() => {
+    fetchOrders(0);
+  }, []);
 
   const toggleEdit = () => {
     setIsEditable(!isEditable);
@@ -169,11 +214,7 @@ const Orders: React.FC = () => {
         ...step,
         active: index <= lastActiveIndex + 1,
       }));
-
-      // Call handleDone with the new step data
       handleDone(newSteps);
-
-      // Update the UI
       setSteps(newSteps);
     }
   };
@@ -189,10 +230,8 @@ const Orders: React.FC = () => {
         active: index < lastActiveIndex,
       }));
 
-      // Call handleDone with the new step data
       handleDone(newSteps);
 
-      // Update the UI
       setSteps(newSteps);
     }
   };
@@ -231,11 +270,7 @@ const Orders: React.FC = () => {
         order.orderId === orderid ? { ...order, status: "CANCELED" } : order
       );
       setFilteredOrderDetails(filtered);
-
-      // Close the dialog
       setIsDeleteDialogOpen(false);
-
-      // Show success toast
       toast.success("Order cancelled successfully", { id: "order-cancel" });
     } catch (error) {
       console.error("Error Cancelling Order:", error);
@@ -284,43 +319,6 @@ const Orders: React.FC = () => {
     } catch (error) {
       console.error("Failed to update deadline:", error);
     }
-  };
-  const generatePageNumbers = () => {
-    const totalPages = Math.ceil(pageLimit || 0);
-    const currentPage = page + 1;
-    const pageNumbers: (number | string)[] = [];
-
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      if (currentPage <= 4) {
-        pageNumbers.push(1, 2, 3, 4, 5, "...", totalPages);
-      } else if (currentPage >= totalPages - 3) {
-        pageNumbers.push(
-          1,
-          "...",
-          totalPages - 4,
-          totalPages - 3,
-          totalPages - 2,
-          totalPages - 1,
-          totalPages
-        );
-      } else {
-        pageNumbers.push(
-          1,
-          "...",
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          "...",
-          totalPages
-        );
-      }
-    }
-
-    return pageNumbers;
   };
 
   return (
@@ -438,8 +436,8 @@ const Orders: React.FC = () => {
                   <TableCell className="text-center">
                     {details.delivery && details.delivery.deliveryDate
                       ? new Date(
-                          details.delivery.deliveryDate
-                        ).toLocaleDateString()
+                        details.delivery.deliveryDate
+                      ).toLocaleDateString()
                       : "N/A"}
                   </TableCell>
                   <TableCell className="text-center">
@@ -472,7 +470,7 @@ const Orders: React.FC = () => {
                           disabled={details.status === "CANCELED"}
                           className="bg-white border border-gray-300 flex items-center gap-2"
                         >
-                          <Search className="w-4 h-4" />
+                          <ListChecks className="w-4 h-4" />
                           Track It
                         </Button>
                       </DialogTrigger>
@@ -500,13 +498,12 @@ const Orders: React.FC = () => {
                               return (
                                 <li
                                   key={index}
-                                  className={`flex items-center px-3 py-1 ${
-                                    step.active
-                                      ? isLatestActive
-                                        ? "text-zinc-900 font-black text-lg bg-slate-100 border border-zinc-300 rounded-full"
-                                        : "text-primary"
-                                      : "text-muted-foreground"
-                                  }`}
+                                  className={`flex items-center px-3 py-1 ${step.active
+                                    ? isLatestActive
+                                      ? "text-zinc-900 font-black text-lg bg-slate-100 border border-zinc-300 rounded-full"
+                                      : "text-primary"
+                                    : "text-muted-foreground"
+                                    }`}
                                 >
                                   {step.active ? "✓" : "○"} {step.name}
                                 </li>
@@ -523,16 +520,15 @@ const Orders: React.FC = () => {
                   </TableCell>
                   <TableCell className="text-center pl-[30px]">
                     <div
-                      className={`flex items-center gap-1 rounded-2xl w-[90px] text-center p-0.3 px-2 ${
-                        details.status === "PENDING"
-                          ? "bg-[#fffbf3] border border-[#f8e4bf] text-[10px] text-[#ffa500] font-medium"
-                          : details.status === "APPROVED" ||
-                            details.status === "COMPLETED"
+                      className={`flex items-center gap-1 rounded-2xl w-[90px] text-center p-0.3 px-2 ${details.status === "PENDING"
+                        ? "bg-[#fffbf3] border border-[#f8e4bf] text-[10px] text-[#ffa500] font-medium"
+                        : details.status === "APPROVED" ||
+                          details.status === "COMPLETED"
                           ? "bg-[#f8fff8] border border-[#c5ffd3] text-[10px]  text-[#28a745] font-medium"
                           : details.status === "CANCELED"
-                          ? "bg-[#fff9f9] border border-[#f9bebe] text-[10px] text-[#cf1d1d] font-medium"
-                          : "bg-gray-100 border border-gray-300 text-gray-500"
-                      }`}
+                            ? "bg-[#fff9f9] border border-[#f9bebe] text-[10px] text-[#cf1d1d] font-medium"
+                            : "bg-gray-100 border border-gray-300 text-gray-500"
+                        }`}
                     >
                       {details.status === "PENDING" ? (
                         <Hourglass className="text-[#ffa500]" size={15} />
@@ -603,35 +599,35 @@ const Orders: React.FC = () => {
         </Table>
 
         {/* Pagination */}
-        <div className="flex justify-center items-center mt-4 gap-2">
+        <div className="flex justify-end items-end mt-4 gap-2">
           <Button
             variant="outline"
-            onClick={() => setPage(Math.max(0, page - 1))}
+            onClick={() => handleClick('prev')}
+            onMouseDown={() => handleMouseDown('prev')}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onTouchStart={() => handleMouseDown('prev')}
+            onTouchEnd={handleMouseUp}
             disabled={page === 0}
-            className="px-2 py-1"
+            className="px-2 py-1 bg-gray-900"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4 text-white" />
           </Button>
 
-          {generatePageNumbers().map((pageNum, index) => (
-            <Button
-              key={index}
-              variant={pageNum === page + 1 ? "default" : "outline"}
-              onClick={() =>
-                typeof pageNum === "number" && setPage(pageNum - 1)
-              }
-              disabled={typeof pageNum !== "number"}
-              className="px-3 py-1 min-w-[40px]"
-            >
-              {pageNum}
-            </Button>
-          ))}
+          <span className="px-3 py-1 min-w-[40px] bg-white text-center">
+            {page + 1}
+          </span>
 
           <Button
             variant="outline"
-            onClick={() => setPage(page + 1)}
-            disabled={pageLimit !== undefined && page >= pageLimit - 1}
-            className="px-2 py-1"
+            onClick={() => handleClick('next')}
+            onMouseDown={() => handleMouseDown('next')}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onTouchStart={() => handleMouseDown('next')}
+            onTouchEnd={handleMouseUp}
+            disabled={page >= totalPages - 1}
+            className="px-2 py-1  bg-gray-800 text-white"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -763,8 +759,8 @@ const Orders: React.FC = () => {
                       value={
                         selectedOrder.deadline
                           ? new Date(selectedOrder.deadline)
-                              .toISOString()
-                              .split("T")[0]
+                            .toISOString()
+                            .split("T")[0]
                           : ""
                       }
                       onChange={(e) =>

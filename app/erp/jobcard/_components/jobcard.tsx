@@ -127,7 +127,7 @@ export default function JobCardPage({ ordersId }: { ordersId: string }) {
     if (jobCard) {
       let paperData = { paperDetail: jobCard?.paperDetailData }
       let binderyData = { binderyData: jobCard?.bindingData }
-      let deliveryData = { deliveryDetail: jobCard?.delivery }
+      let deliveryData = { deliveryDetail: jobCard?.deliveryDetail }
       let PaperUnitsData = { paperData: jobCard?.paperData }
       let paymentData = { servicePaymentList: jobCard?.prePressUnitList }
       let plateData = { plateDetailData: jobCard?.plateDetailData }
@@ -153,7 +153,7 @@ export default function JobCardPage({ ordersId }: { ordersId: string }) {
   useEffect(() => {
 
     const handleJobCard = async () => {
-      if (orders.length > 0 && ordersId) {
+      if (ordersId) {
 
         await fetchJobCard(ordersId as string).then(setJobCard).catch(console.error);
 

@@ -1010,7 +1010,7 @@ export default function CostCalculationPage() {
             </ScrollArea>
           </div>
 
-          <div className="drawer-test rounded-[20px] right-0 top-0 h-full w-[33%] shadow-lg overflow-y-auto transition-transform transform translate-x-0">
+          <div className="drawer-test rounded-[10px] right-0 top-0 h-full w-[33%] shadow-lg overflow-y-auto transition-transform transform translate-x-0">
             <DrawerTest
               pages={pages}
               length={length}

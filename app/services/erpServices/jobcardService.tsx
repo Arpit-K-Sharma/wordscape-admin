@@ -7,8 +7,8 @@ let baseUrl: string = "http://localhost:8000"
 
 export const fetchOrders = async (): Promise<Order[]> => {
   const response = await axios.get(`${baseUrl}/orders`);
-  console.log(response.data.response)
-  return response.data.response;
+  console.log("this is the order", response.data.orders)
+  return response.data.orders;
 };
 
 export const fetchJobCard = async (orderId: string): Promise<JobCard> => {
