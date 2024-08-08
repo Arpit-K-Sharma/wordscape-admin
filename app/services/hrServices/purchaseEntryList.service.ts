@@ -1,4 +1,6 @@
-import axios, { isAxiosError } from "../../_axios/axiosInstance";
+import axios from "../../_axios/axiosInstance";
+import { isAxiosError } from "axios";
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export interface PurchaseEntry {
@@ -110,7 +112,7 @@ export const purchaseEntryService = {
       );
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
+      if (isAxiosError(error)) {
         console.error("Axios error:", error.response?.data || error.message);
         throw new Error(
           error.response?.data?.message ||

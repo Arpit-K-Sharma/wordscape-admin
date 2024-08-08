@@ -1,26 +1,17 @@
-"use client"
+"use client";
 import React from "react";
 import { usePathname } from "next/navigation";
-import SheetsPage from "./_components/Sheets"
+import SheetsPage from "./_components/Sheets";
 import { AuthorizationWrapper } from "@/app/util/authContext";
 
-const page = () => {
+const Page = () => {
   const pathname = usePathname();
 
   return (
     <AuthorizationWrapper pathname={pathname}>
-      <SheetsPage/>
+      <SheetsPage />
     </AuthorizationWrapper>
   );
 };
 
-export default page;
-
-
-
-
-
-
-
-
-
+export default Page;

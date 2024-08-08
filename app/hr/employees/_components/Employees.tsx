@@ -104,7 +104,7 @@ const EmployeesPage: React.FC = () => {
     address: "",
     phoneNumber: "",
     position: "",
-    dailyWage: null,
+    dailyWage: undefined as number | undefined,
     dept_ids: [] as string[],
   });
 
@@ -178,7 +178,7 @@ const EmployeesPage: React.FC = () => {
         address: "",
         phoneNumber: "",
         position: "",
-        dailyWage: 0,
+        dailyWage: undefined,
         dept_ids: [],
       });
     } catch (error) {
@@ -186,11 +186,6 @@ const EmployeesPage: React.FC = () => {
       toast.error("Failed to add staff");
     }
   };
-
-  // const handleDeleteStaff = (_id: string) => {
-  //   setStaffToDelete(_id);
-  //   setIsDeleteDialogOpen(true);
-  // };
 
   const confirmDeleteStaff = async () => {
     if (staffToDelete) {
@@ -231,7 +226,10 @@ const EmployeesPage: React.FC = () => {
         phoneNumber: editingEmployee.phoneNumber,
         status: editingEmployee.status,
         position: editingEmployee.position,
-        dailyWage: editingEmployee.dailyWage,
+        dailyWage:
+          editingEmployee.dailyWage !== null
+            ? editingEmployee.dailyWage
+            : undefined,
         dept_ids: editingEmployee.dept_ids,
       };
       if (editingEmployee.password) {
@@ -840,11 +838,13 @@ const EmployeesPage: React.FC = () => {
               <Input
                 id="dailyWage"
                 type="number"
-                value={newStaff.dailyWage}
+                value={newStaff.dailyWage || ""}
                 onChange={(e) =>
                   setNewStaff({
                     ...newStaff,
-                    dailyWage: Number(e.target.value),
+                    dailyWage: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
                   })
                 }
                 className="col-span-3"

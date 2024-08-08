@@ -62,6 +62,12 @@ const Leaves: React.FC = () => {
   const [leaveToHandle, setLeaveToHandle] = useState<string>("");
   const [handleStatus, setHandleStatus] = useState<string>("");
 
+  const formatDate = (date: Date | string | undefined): string => {
+    if (!date) return "Select date";
+    if (date instanceof Date) return date.toISOString().split("T")[0];
+    return date || "Select date";
+  };
+
   interface LeaveResponse {
     data: LeaveManagement[];
   }
@@ -300,11 +306,7 @@ const Leaves: React.FC = () => {
                 </Label>
                 <Input
                   id="startDate"
-                  value={
-                    startDate
-                      ? startDate.split("T")[0]
-                      : "Select date"
-                  }
+                  value={formatDate(startDate)}
                   onClick={() => handleDateClick("start")}
                   readOnly
                   className="col-span-3"
@@ -316,11 +318,7 @@ const Leaves: React.FC = () => {
                 </Label>
                 <Input
                   id="endDate"
-                  value={
-                    endDate
-                      ? endDate.split("T")[0]
-                      : "Select date"
-                  }
+                  value={formatDate(endDate)}
                   onClick={() => handleDateClick("end")}
                   readOnly
                   className="col-span-3"
@@ -529,11 +527,7 @@ const Leaves: React.FC = () => {
                 </Label>
                 <Input
                   id="startDate"
-                  value={
-                    startDate
-                      ? startDate.split("T")[0]
-                      : "Select date"
-                  }
+                  value={formatDate(startDate)}
                   onClick={() => handleDateClick("start")}
                   readOnly
                   className="col-span-3"
@@ -545,11 +539,7 @@ const Leaves: React.FC = () => {
                 </Label>
                 <Input
                   id="endDate"
-                  value={
-                    endDate
-                      ? endDate.split("T")[0]
-                      : "Select date"
-                  }
+                  value={formatDate(endDate)}
                   onClick={() => handleDateClick("end")}
                   readOnly
                   className="col-span-3"

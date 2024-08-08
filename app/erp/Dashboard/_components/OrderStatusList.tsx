@@ -1,17 +1,30 @@
 // components/OrderStatusList.tsx
-"use client"
-import React, { useEffect, useState } from 'react';
-import Avatar from 'react-avatar';
-import { Order, TrackingData, TrackingStage } from '../../../Schema/erpSchema/dashboardSchema';
-import { fetchTrackingData } from '../../../services/erpServices/dasboardService';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+"use client";
+import React, { useEffect, useState } from "react";
+import Avatar from "react-avatar";
+import {
+  Order,
+  TrackingData,
+  TrackingStage,
+} from "../../../Schema/erpSchema/dashboardSchema";
+import { fetchTrackingData } from "../../../services/erpServices/dasboardService";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface OrderStatusListProps {
   orderDetails: Order[];
 }
 
 const OrderStatusList: React.FC<OrderStatusListProps> = ({ orderDetails }) => {
-  const [trackingData, setTrackingData] = useState<{ [key: string]: string }>({});
+  const [trackingData, setTrackingData] = useState<{ [key: string]: string }>(
+    {}
+  );
 
   useEffect(() => {
     const fetchAllTrackingData = async () => {
@@ -21,7 +34,10 @@ const OrderStatusList: React.FC<OrderStatusListProps> = ({ orderDetails }) => {
             const data = await fetchTrackingData(order.orderId);
             return [order.orderId, getLastCompletedStage(data)];
           } catch (error) {
-            console.error(`Error fetching tracking data for order ${order.orderId}:`, error);
+            console.error(
+              `Error fetching tracking data for order ${order.orderId}:`,
+              error
+            );
             return [order.orderId, "Error"];
           }
         })
@@ -31,7 +47,6 @@ const OrderStatusList: React.FC<OrderStatusListProps> = ({ orderDetails }) => {
 
     fetchAllTrackingData();
   }, [orderDetails]);
-
 
   const getLastCompletedStage = (data: TrackingData): string => {
     const stages: TrackingStage[] = [
@@ -59,8 +74,8 @@ const OrderStatusList: React.FC<OrderStatusListProps> = ({ orderDetails }) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-1/2" >Customer Name</TableHead>
-            <TableHead className="w-1/2 text-center" >Tracking Stage</TableHead>
+            <TableHead className="w-1/2">Customer Name</TableHead>
+            <TableHead className="w-1/2 text-center">Tracking Stage</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -75,7 +90,7 @@ const OrderStatusList: React.FC<OrderStatusListProps> = ({ orderDetails }) => {
                 />
                 <span className="truncate">{order.customer || "N/A"}</span>
               </TableCell>
-              <TableCell className='text-center'>
+              <TableCell className="text-center">
                 <span>{trackingData[order.orderId] || "Loading..."}</span>
               </TableCell>
             </TableRow>

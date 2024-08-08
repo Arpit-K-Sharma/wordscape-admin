@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { usePathname } from "next/navigation";
-import AdminDashboard from "./dashboard/_components/Dashboard";
+import AdminDashboard from "./Dashboard/Dashboard";
 import { AuthorizationWrapper } from "@/app/util/authContext";
 
 const Page = () => {
