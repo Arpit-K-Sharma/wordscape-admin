@@ -2,8 +2,7 @@ import axios from '../../_axios/axiosInstance';
 import { Order, JobCard, CookiesData } from '../../Schema/erpSchema/jobcardSchema';
 
 
-let baseUrl: string = "http://localhost:8000"
-
+let baseUrl: string = process.env.NEXT_PUBLIC_API_UR || '';
 
 export const fetchOrders = async (): Promise<Order[]> => {
   const response = await axios.get(`${baseUrl}/orders`);
@@ -13,7 +12,7 @@ export const fetchOrders = async (): Promise<Order[]> => {
 
 export const fetchJobCard = async (orderId: string): Promise<JobCard> => {
   const response = await axios.get(`${baseUrl}/jobCard/${orderId}`);
-  console.log("this is the json data",response.data)
+  console.log("this is the json data", response.data)
   return response.data;
 };
 

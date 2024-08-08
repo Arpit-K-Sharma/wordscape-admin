@@ -4,7 +4,7 @@ import { useForm, useFieldArray, Control } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FiTrash2 } from "react-icons/fi";
-import { Button } from "@/components/ui/button";  
+import { Button } from "@/components/ui/button";
 import {
     Form,
     FormControl,
@@ -71,9 +71,11 @@ function TypeForm({
     const [item, setItem] = useState<TypeFormProps[]>([]);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
+    const baseUrl = process.env.NEXT_PUBLIC_API_UR || '';
+
     const onSubmit = async (data: TypeFormValues) => {
         try {
-            const url = "http://localhost:8000/inventory";
+            const url = `${baseUrl}/inventory`;
             await toast.promise(
                 axios.post<TypeFormProps>(url, data),
                 {
@@ -99,7 +101,7 @@ function TypeForm({
     };
 
 
-    const { control, handleSubmit} = form;
+    const { control, handleSubmit } = form;
 
     const { fields, append, remove } = useFieldArray({
         control,
