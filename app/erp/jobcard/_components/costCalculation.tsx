@@ -41,7 +41,7 @@ interface CostCalculation {
   };
 }
 
-export default function Costbreakdown({ data, onChildData, onSave}: CostbreakdownProps) {
+export default function Costbreakdown({ data, onChildData, onSave }: CostbreakdownProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [costCalculation, setCostCalculation] = useState<CostCalculation>({
     plates: 0,
@@ -71,173 +71,197 @@ export default function Costbreakdown({ data, onChildData, onSave}: Costbreakdow
 
   useEffect(() => {
     let costCalculationData = Cookies.get("costCalculation");
-    // if (costCalculationData != null ) {
-    //   let data = JSON.parse(costCalculationData);
-    //   if(data.costCalculation != null){
-    //     setCostCalculation(data.costCalculation);
-    //   }
-    // }
+    if (costCalculationData != null) {
+      let data = JSON.parse(costCalculationData);
+      if (data.costCalculation != null) {
+          setCostCalculation({
+            plates: data.costCalculation.plates || 0,
+            printing: data.costCalculation.printing || 0,
+            paper: data.costCalculation.paper || 0,
+            coverPaper: data.costCalculation.coverPaper || 0,
+            innerPaper: data.costCalculation.innerPaper || 0,
+            otherPaper: data.costCalculation.otherPaper || 0,
+            lamination: data.costCalculation.lamination || 0,
+            binding: data.costCalculation.binding || 0,
+            finishing: data.costCalculation.finishing || 0,
+            extraCharges: data.costCalculation.extraCharges || 0,
+            deliveryCharges: data.costCalculation.deliveryCharges || 0,
+            subTotal: data.costCalculation.subTotal || 0,
+            vat: data.costCalculation.vat || 0,
+            grandTotal: data.costCalculation.grandTotal || 0,
+            preparedBy: data.costCalculation.preparedBy || "",
+            approvedBy: data.costCalculation.approvedBy || "",
+            billingInfo: {
+              approvalStatus: data.costCalculation.billingInfo?.approvalStatus || "",
+              invoiceIssueDate: data.costCalculation.billingInfo?.invoiceIssueDate || "",
+              invoiceNo: data.costCalculation.billingInfo?.invoiceNo || "",
+              customerName: data.costCalculation.billingInfo?.customerName || "",
+              issuedBy: data.costCalculation.billingInfo?.issuedBy || "",
+            }
+          });
+      }
+    }
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
+const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { name, value, type } = e.target;
 
-    if (type === "radio") {
+  if (type === "radio") {
+    setCostCalculation((prevState) => ({
+      ...prevState,
+      billingInfo: {
+        ...prevState.billingInfo,
+        approvalStatus: value,
+      },
+    }));
+  } else {
+    let parsedValue: string | number = value;
+
+    if (["preparedBy", "approvedBy"].includes(name)) {
+      setCostCalculation((prevState) => ({
+        ...prevState,
+        [name]: parsedValue.toString().trim(),
+      }));
+    } else if (["grandTotal", "subTotal", "vat"].includes(name)) {
+      setCostCalculation((prevState) => ({
+        ...prevState,
+        [name]: parseFloat(parsedValue.toString()),
+      }));
+    } else if (
+      ["invoiceIssueDate", "invoiceNo", "customerName", "issuedBy"].includes(
+        name
+      )
+    ) {
       setCostCalculation((prevState) => ({
         ...prevState,
         billingInfo: {
           ...prevState.billingInfo,
-          approvalStatus: value,
+          [name]: parsedValue.toString().trim(),
         },
       }));
     } else {
-      let parsedValue: string | number = value;
-
-      if (["preparedBy", "approvedBy"].includes(name)) {
-        setCostCalculation((prevState) => ({
-          ...prevState,
-          [name]: parsedValue.toString().trim(),
-        }));
-      } else if (["grandTotal", "subTotal", "vat"].includes(name)) {
-        setCostCalculation((prevState) => ({
-          ...prevState,
-          [name]: parseFloat(parsedValue.toString()),
-        }));
-      } else if (
-        ["invoiceIssueDate", "invoiceNo", "customerName", "issuedBy"].includes(
-          name
-        )
-      ) {
-        setCostCalculation((prevState) => ({
-          ...prevState,
-          billingInfo: {
-            ...prevState.billingInfo,
-            [name]: parsedValue.toString().trim(),
-          },
-        }));
-      } else {
-        setCostCalculation((prevState) => ({
-          ...prevState,
-          [name]: parseFloat(parsedValue.toString()),
-        }));
-      }
+      setCostCalculation((prevState) => ({
+        ...prevState,
+        [name]: parseFloat(parsedValue.toString()),
+      }));
     }
+  }
+};
+
+const handleSave = () => {
+  const dataToSave = {
+    costCalculation: costCalculation,
   };
 
-  const handleSave = () => {
-    const dataToSave = {
-      ...costCalculation,
-    };
+  Cookies.set("costCalculation", JSON.stringify(dataToSave));
+  console.log("Cost Calc ", dataToSave);
+  onSave();
+  onChildData(false);
+  setIsSaved(true);
+};
 
-    Cookies.set("costCalculation", JSON.stringify(dataToSave));
-    console.log("Cost Calc " , dataToSave);
-    onSave();
-    onChildData(false);
-    setIsSaved(true);
-  };
-
-  return (
-    <div className="p-6 bg-white rounded-lg shadow overflow-y-auto max-h-[85vh]">
-      <h2 className="text-2xl font-bold mb-6 text-center">Cost Calculation</h2>
-      <div className="grid gap-4 mb-6">
-        {Object.entries(costCalculation).map(([key, value]) => {
-          if (key !== "billingInfo" && key !== "costCalculationId") {
-            return (
-              <div key={key} className="grid grid-cols-2 items-center gap-4">
-                <Label htmlFor={key} className="text-right">
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </Label>
-                <Input
-                  id={key}
-                  type={typeof value === 'number' ? 'number' : 'text'}
-                  value={value}
-                  onChange={handleChange}
-                  name={key}
-                />
-              </div>
-            );
+return (
+  <div className="p-6 bg-white rounded-lg shadow overflow-y-auto max-h-[85vh]">
+    <h2 className="text-2xl font-bold mb-6 text-center">Cost Calculation</h2>
+    <div className="grid gap-4 mb-6">
+      {Object.entries(costCalculation).map(([key, value]) => {
+        if (key !== "billingInfo" && key !== "costCalculationId") {
+          return (
+            <div key={key} className="grid grid-cols-2 items-center gap-4">
+              <Label htmlFor={key} className="text-right">
+                {key.charAt(0).toUpperCase() + key.slice(1)}
+              </Label>
+              <Input
+                id={key}
+                type={typeof value === 'number' ? 'number' : 'text'}
+                value={value}
+                onChange={handleChange}
+                name={key}
+              />
+            </div>
+          );
+        }
+        return null;
+      })}
+    </div>
+    <div className="grid gap-4 mb-6">
+      <div className="grid grid-cols-2 items-center gap-4">
+        <Label htmlFor="invoiceIssueDate" className="text-right">
+          Invoice Issue Date
+        </Label>
+        <Input
+          id="invoiceIssueDate"
+          type="date"
+          value={costCalculation.billingInfo.invoiceIssueDate}
+          onChange={handleChange}
+          name="invoiceIssueDate"
+        />
+      </div>
+      <div className="grid grid-cols-2 items-center gap-4">
+        <Label htmlFor="invoiceNo" className="text-right">
+          Invoice No.
+        </Label>
+        <Input
+          id="invoiceNo"
+          value={costCalculation.billingInfo.invoiceNo}
+          onChange={handleChange}
+          name="invoiceNo"
+        />
+      </div>
+      <div className="grid grid-cols-2 items-center gap-4">
+        <Label className="text-right">Approval Status</Label>
+        <RadioGroup
+          value={costCalculation.billingInfo.approvalStatus}
+          onValueChange={(value) =>
+            setCostCalculation((prevState) => ({
+              ...prevState,
+              billingInfo: {
+                ...prevState.billingInfo,
+                approvalStatus: value,
+              },
+            }))
           }
-          return null;
-        })}
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="required" id="required" />
+            <Label htmlFor="required">Required</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="approved" id="approved" />
+            <Label htmlFor="approved">Approved</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="reviseneeded" id="reviseneeded" />
+            <Label htmlFor="reviseneeded">Revise needed</Label>
+          </div>
+        </RadioGroup>
       </div>
-      <div className="grid gap-4 mb-6">
-        <div className="grid grid-cols-2 items-center gap-4">
-          <Label htmlFor="invoiceIssueDate" className="text-right">
-            Invoice Issue Date
-          </Label>
-          <Input
-            id="invoiceIssueDate"
-            type="date"
-            value={costCalculation.billingInfo.invoiceIssueDate}
-            onChange={handleChange}
-            name="invoiceIssueDate"
-          />
-        </div>
-        <div className="grid grid-cols-2 items-center gap-4">
-          <Label htmlFor="invoiceNo" className="text-right">
-            Invoice No.
-          </Label>
-          <Input
-            id="invoiceNo"
-            value={costCalculation.billingInfo.invoiceNo}
-            onChange={handleChange}
-            name="invoiceNo"
-          />
-        </div>
-        <div className="grid grid-cols-2 items-center gap-4">
-          <Label className="text-right">Approval Status</Label>
-          <RadioGroup
-            value={costCalculation.billingInfo.approvalStatus}
-            onValueChange={(value) =>
-              setCostCalculation((prevState) => ({
-                ...prevState,
-                billingInfo: {
-                  ...prevState.billingInfo,
-                  approvalStatus: value,
-                },
-              }))
-            }
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="required" id="required" />
-              <Label htmlFor="required">Required</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="approved" id="approved" />
-              <Label htmlFor="approved">Approved</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="reviseneeded" id="reviseneeded" />
-              <Label htmlFor="reviseneeded">Revise needed</Label>
-            </div>
-          </RadioGroup>
-        </div>
-        <div className="grid grid-cols-2 items-center gap-4">
-          <Label htmlFor="customerName" className="text-right">
-            Customer Name
-          </Label>
-          <Input
-            id="customerName"
-            value={costCalculation.billingInfo.customerName}
-            onChange={handleChange}
-            name="customerName"
-          />
-        </div>
-        <div className="grid grid-cols-2 items-center gap-4">
-          <Label htmlFor="issuedBy" className="text-right">
-            Issued By
-          </Label>
-          <Input
-            id="issuedBy"
-            value={costCalculation.billingInfo.issuedBy}
-            onChange={handleChange}
-            name="issuedBy"
-          />
-        </div>
+      <div className="grid grid-cols-2 items-center gap-4">
+        <Label htmlFor="customerName" className="text-right">
+          Customer Name
+        </Label>
+        <Input
+          id="customerName"
+          value={costCalculation.billingInfo.customerName}
+          onChange={handleChange}
+          name="customerName"
+        />
       </div>
-      <div className="flex justify-end">
-        <Button onClick={handleSave}>{isSaved && <FaCheck className="text-green-500 mr-2" />}Save</Button>
+      <div className="grid grid-cols-2 items-center gap-4">
+        <Label htmlFor="issuedBy" className="text-right">
+          Issued By
+        </Label>
+        <Input
+          id="issuedBy"
+          value={costCalculation.billingInfo.issuedBy}
+          onChange={handleChange}
+          name="issuedBy"
+        />
       </div>
     </div>
-  );
+    <div className="flex justify-end">
+      <Button onClick={handleSave}>{isSaved && <FaCheck className="text-green-500 mr-2" />}Save</Button>
+    </div>
+  </div>
+);
 }

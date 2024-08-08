@@ -139,7 +139,7 @@ export default function Bindery({ data, onChildData, onSave }: BinderyProps) {
           <div className="mb-6">
             <h4 className="text-lg font-semibold mb-2">Selected Options:</h4>
             <ul className="space-y-2">
-              {selectedOptions.map((option, index) => (
+              {selectedOptions.length > 0 ? selectedOptions.map((option, index) => (
                 <li key={index} className="flex items-center justify-between bg-gray-100 p-2 rounded">
                   <span>{option}</span>
                   <Button
@@ -152,7 +152,7 @@ export default function Bindery({ data, onChildData, onSave }: BinderyProps) {
                     <FiX />
                   </Button>
                 </li>
-              ))}
+              )) : null}
             </ul>
           </div>
         </div>

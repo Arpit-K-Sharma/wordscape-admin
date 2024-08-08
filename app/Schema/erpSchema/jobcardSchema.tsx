@@ -73,7 +73,7 @@ export interface Order {
       paymentMethod: string;
       serviceRequired: string[];
     };
-    delivery: {
+    deliveryDetail: {
       deliveryId: number;
       destination: null;
       deliveryDate: null;
@@ -167,7 +167,7 @@ export interface Order {
         produced: string | null;
       }>;
     };
-    bindingData: {
+    binderyData: {
       bindingUnitId: number;
       binderySelectedOption: string[];
       filledInBy: string;

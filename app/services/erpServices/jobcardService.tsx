@@ -17,10 +17,6 @@ export const fetchJobCard = async (orderId: string): Promise<JobCard> => {
   return response.data;
 };
 
-export const updateJobCard = async (orderId: string, data: CookiesData): Promise<string> => {
-  const response = await axios.put(`${baseUrl}/jobCard/update/${orderId}`, data);
-  return response.data;
-};
 
 export const createJobCard = async (orderId: string, data: CookiesData): Promise<string> => {
   const response = await axios.post(`${baseUrl}/jobCard/${orderId}`, data);

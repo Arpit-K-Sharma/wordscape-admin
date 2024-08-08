@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Order, JobCard, CookiesData } from '../../../Schema/erpSchema/jobcardSchema';
-import { fetchOrders, fetchJobCard, updateJobCard, createJobCard } from '../../../services/erpServices/jobcardService';
+import { fetchOrders, fetchJobCard, createJobCard } from '../../../services/erpServices/jobcardService';
 import { parseCookie, clearCookies } from '../../../util/jobard';
 import JobcardMenu from "./jobCardMenu";
 import ErpSidebar from "../../_components/ErpSidebar";
@@ -61,11 +61,11 @@ const components: Array<{ name: string; component: React.ComponentType<CommonCom
   { name: "Cost Breakdown", component: Costbreakdown },
 ];
 
-function ErrorFallback({ error }) {
+function ErrorFallback({ error }: { error: Error }) {
   return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre>{error.message}</pre>
+    <div role="alert" className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+      <h2 className="text-lg font-semibold mb-2">Something went wrong:</h2>
+      <p>{error.message}</p>
     </div>
   )
 }
@@ -126,15 +126,15 @@ export default function JobCardPage({ ordersId }: { ordersId: string }) {
   useEffect(() => {
     if (jobCard) {
       let paperData = { paperDetail: jobCard?.paperDetailData }
-      let binderyData = { binderyData: jobCard?.bindingData }
-      let deliveryData = { deliveryDetail: jobCard?.delivery }
+      let binderyData = { binderyData: jobCard?.binderyData }
+      let deliveryData = { deliveryDetail: jobCard?.deliveryDetail }
       let PaperUnitsData = { paperData: jobCard?.paperData }
       let paymentData = { servicePaymentList: jobCard?.prePressUnitList }
       let plateData = { plateDetailData: jobCard?.plateDetailData }
       let prePressData = { prePressUnitList: jobCard?.prePressData }
       let pressUnitData = { pressUnitData: jobCard?.pressUnitData }
-      let costCalculation = { costCalculation: jobCard?.costCalculation }
-
+      let costCalculations = { costCalculation: jobCard?.costCalculation }
+      console.log(costCalculations)
       // console.log(paperData, binderyData, deliveryData, PaperUnitsData, paymentData, plateData, prePressData, pressUnitData, costCalculation)
       Cookies.set('paperData', JSON.stringify(paperData))
       Cookies.set('binderyData', JSON.stringify(binderyData))
@@ -144,7 +144,7 @@ export default function JobCardPage({ ordersId }: { ordersId: string }) {
       Cookies.set('plateData', JSON.stringify(plateData))
       Cookies.set('prePressData', JSON.stringify(prePressData))
       Cookies.set('pressUnitData', JSON.stringify(pressUnitData))
-      Cookies.set('costCalculation', JSON.stringify(costCalculation))
+      Cookies.set('costCalculation', JSON.stringify(costCalculations))
       setOk(true);
     }
 
@@ -158,7 +158,7 @@ export default function JobCardPage({ ordersId }: { ordersId: string }) {
         await fetchJobCard(ordersId as string).then(setJobCard).catch(console.error);
 
         // Cookies.remove('paperData')
-        // Cookies.remove('binderyData')
+        Cookies.remove('binderyData')
         // Cookies.remove('deliveryData')
         // Cookies.remove('PaperUnitsData')
         // Cookies.remove('paymentData')
@@ -214,18 +214,18 @@ export default function JobCardPage({ ordersId }: { ordersId: string }) {
     setSpinner(true);
     const cookiesData = getCookiesData();
     try {
-      const response = await updateJobCard(orderId!, cookiesData);
+      const response = await createJobCard(orderId!, cookiesData);
       setSpinner(false);
-      toast.success(response);
+      toast.success(typeof response === 'string' ? response : 'Job card updated successfully');
       clearCookies();
       setReload(reload + 1);
     } catch (error) {
       console.error("Error updating job card:", error);
       setSpinner(false);
-      toast.error("Failed to update job card");
+      toast.error(error instanceof Error ? error.message : "Failed to update job card");
     }
   };
-
+  
   const onSubmit = async () => {
     if (!allComponentsSaved) {
       toast.error("Please save all components before submitting.");
@@ -236,13 +236,13 @@ export default function JobCardPage({ ordersId }: { ordersId: string }) {
     try {
       const response = await createJobCard(orderId!, cookiesData);
       setSpinner(false);
-      toast.success(response);
+      toast.success(typeof response === 'string' ? response : 'Job card created successfully');
       clearCookies();
       setReload(reload + 1);
     } catch (error) {
       console.error("Error creating job card:", error);
       setSpinner(false);
-      toast.error("Failed to create job card");
+      toast.error(error instanceof Error ? error.message : "Failed to create job card");
     }
   };
 
@@ -317,19 +317,19 @@ export default function JobCardPage({ ordersId }: { ordersId: string }) {
 
             {/* Component navigation buttons */}
             <div className="space-y-2">
-        {components.map((comp, index) => (
-          <Button
-            key={comp.name}
-            onClick={() => setCurrentComponentIndex(index)}
-            variant={currentComponentIndex === index ? "default" : "outline"}
-            className="w-full "
-          >
-            {getIconForComponent(comp.name)}
-            <span className="ml-2">{comp.name}</span>
-            {savedComponents.has(index) && <FaCheck className="text-green-500 ml-2" />}
-          </Button>
-        ))}
-      </div>
+              {components.map((comp, index) => (
+                <Button
+                  key={comp.name}
+                  onClick={() => setCurrentComponentIndex(index)}
+                  variant={currentComponentIndex === index ? "default" : "outline"}
+                  className="w-full "
+                >
+                  {getIconForComponent(comp.name)}
+                  <span className="ml-2">{comp.name}</span>
+                  {savedComponents.has(index) && <FaCheck className="text-green-500 ml-2" />}
+                </Button>
+              ))}
+            </div>
 
             {/* PDF Download and Submit/Update buttons */}
             <div className="mt-8 space-y-4">

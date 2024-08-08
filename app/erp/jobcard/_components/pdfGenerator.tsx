@@ -337,7 +337,7 @@ const PDFGenerator: React.FC<PDFGeneratorProps> = ({ data }) => {
               </Text>
             </View>
           </View>
-          {Object.entries(billingInfo).map(([key, value], index) => (
+          {billingInfo && Object.entries(billingInfo).map(([key, value], index) => (
             <View
               style={[
                 styles.tableRow,
