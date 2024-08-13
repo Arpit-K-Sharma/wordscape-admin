@@ -42,14 +42,14 @@ export const updateTracking = async (
 export const cancelOrder = async (orderId: string): Promise<void> => {
   await axios.put(`${API_URL}/orders/cancel/${orderId}`);
 };
-
-export const downloadFile = async (orderId: string): Promise<Blob> => {
-  const response = await axios.get(
-    `${API_URL}/orders/files/download/${orderId}`,
-    {
-      responseType: "arraybuffer",
-    }
-  );
+export const getFileName = async (orderId: string): Promise<string[]> => {
+  const response = await axios.get(`${API_URL}/orders/${orderId}/filenames`);
+  return response.data.data.pdfFile;
+};
+export const downloadFile = async (fileName: string): Promise<Blob> => {
+  const response = await axios.get(`${API_URL}/orders/file/${fileName}`, {
+    responseType: "arraybuffer",
+  });
   return new Blob([response.data], { type: "application/pdf" });
 };
 

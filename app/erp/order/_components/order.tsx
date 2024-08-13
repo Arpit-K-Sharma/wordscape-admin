@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast, Toaster } from "react-hot-toast";
+import { AiOutlineLoading } from "react-icons/ai";
 import {
   Search,
   User,
@@ -72,6 +73,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Hourglass, CheckCircle2, XOctagon, HelpCircle } from "lucide-react";
+import { Spinner } from "@nextui-org/react";
 export interface OrderResponse {
   response: Order[];
   totalElements: number;
@@ -85,6 +87,7 @@ const Orders: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<SelectedOrder | null>(
     null
   );
+  const [fileName, setFileName] = useState<string[]>([]);
   const [orderDetails, setOrderDetails] = useState<Order[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [steps, setSteps] = useState<Step[]>([
@@ -103,6 +106,8 @@ const Orders: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLUListElement>(null);
   const router = useRouter();
+  const [isDownloadDialogOpen, setIsDownloadDialogOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const [totalElements, setTotalElements] = useState<number>(0);
   const itemsPerPage = 10;
@@ -113,38 +118,50 @@ const Orders: React.FC = () => {
   const holdStartTimeRef = useRef<number>(0);
   const [isPressed, setIsPressed] = useState(false);
 
-
-
   const clearIntervalIfAny = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
   };
-  const changePage = useCallback((direction: 'next' | 'prev') => {
-    setPage((prevPage) => {
-      const newPage = direction === 'next'
-        ? Math.min(totalPages - 1, prevPage + 1)
-        : Math.max(0, prevPage - 1);
-      return newPage;
-    });
-  }, [totalPages]);
+  const changePage = useCallback(
+    (direction: "next" | "prev") => {
+      setPage((prevPage) => {
+        const newPage =
+          direction === "next"
+            ? Math.min(totalPages - 1, prevPage + 1)
+            : Math.max(0, prevPage - 1);
+        return newPage;
+      });
+    },
+    [totalPages]
+  );
 
-  const fetchOrders = useCallback(async (pageNumber: number) => {
-    try {
-      const [field, direction] = sortDirection.split("_");
-      const response = await orderService.fetchOrders(pageNumber, field, direction);
-      setFilteredOrderDetails(response.response);
-      setTotalElements(response.totalElements);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    }
-  }, [sortDirection]);
-  const handleMouseDown = useCallback((direction: 'next' | 'prev') => {
-    setIsPressed(true);
-    setIsHolding(true);
-    intervalRef.current = setInterval(() => changePage(direction), 200);
-  }, [changePage]);
+  const fetchOrders = useCallback(
+    async (pageNumber: number) => {
+      try {
+        const [field, direction] = sortDirection.split("_");
+        const response = await orderService.fetchOrders(
+          pageNumber,
+          field,
+          direction
+        );
+        setFilteredOrderDetails(response.response);
+        setTotalElements(response.totalElements);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    },
+    [sortDirection]
+  );
+  const handleMouseDown = useCallback(
+    (direction: "next" | "prev") => {
+      setIsPressed(true);
+      setIsHolding(true);
+      intervalRef.current = setInterval(() => changePage(direction), 200);
+    },
+    [changePage]
+  );
 
   const handleMouseUp = useCallback(() => {
     if (isPressed) {
@@ -155,10 +172,13 @@ const Orders: React.FC = () => {
     }
   }, [fetchOrders, page, isPressed]);
 
-  const handleClick = useCallback((direction: 'next' | 'prev') => {
-    changePage(direction);
-    fetchOrders(page + (direction === 'next' ? 1 : -1));
-  }, [changePage, fetchOrders, page]);
+  const handleClick = useCallback(
+    (direction: "next" | "prev") => {
+      changePage(direction);
+      fetchOrders(page + (direction === "next" ? 1 : -1));
+    },
+    [changePage, fetchOrders, page]
+  );
 
   useEffect(() => {
     fetchOrders(0);
@@ -280,16 +300,21 @@ const Orders: React.FC = () => {
 
   const handleDownloadFile = async (orderId: string) => {
     try {
-      const blob = await orderService.downloadFile(orderId);
-      if (blob.size === 0) {
-        toast.error("PDF wasn't uploaded by Customer");
-        return;
-      }
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
+      const blob = await orderService.getFileName(orderId);
+      setFileName(blob);
+      setIsDownloadDialogOpen(true);
+
+      // if (blob.size === 0) {
+      //   toast.error("PDF wasn't uploaded by Customer");
+      //   return;
+      // }
+      // const url = URL.createObjectURL(blob);
+      // window.open(url, "_blank");
     } catch (error) {
       console.error("Error downloading file:", error);
-      toast.error("PDF does not exist.");
+      toast.error("Order does not have any pdf.");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -318,6 +343,33 @@ const Orders: React.FC = () => {
       alert("Deadline updated successfully!");
     } catch (error) {
       console.error("Failed to update deadline:", error);
+    }
+  };
+
+  const handleFileDownloadWithFileName = async (fileName: string) => {
+    try {
+      const blob = await orderService.downloadFile(fileName);
+      if (blob.size === 0) {
+        toast.error("PDF wasn't uploaded by Customer");
+        setIsDownloading(false);
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = fileName;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setIsDownloading(false);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      toast.error("PDF does not exist.");
+      setIsDownloading(false);
+      setIsDownloadDialogOpen(false);
     }
   };
 
@@ -436,8 +488,8 @@ const Orders: React.FC = () => {
                   <TableCell className="text-center">
                     {details.delivery && details.delivery.deliveryDate
                       ? new Date(
-                        details.delivery.deliveryDate
-                      ).toLocaleDateString()
+                          details.delivery.deliveryDate
+                        ).toLocaleDateString()
                       : "N/A"}
                   </TableCell>
                   <TableCell className="text-center">
@@ -498,12 +550,13 @@ const Orders: React.FC = () => {
                               return (
                                 <li
                                   key={index}
-                                  className={`flex items-center px-3 py-1 ${step.active
-                                    ? isLatestActive
-                                      ? "text-zinc-900 font-black text-lg bg-slate-100 border border-zinc-300 rounded-full"
-                                      : "text-primary"
-                                    : "text-muted-foreground"
-                                    }`}
+                                  className={`flex items-center px-3 py-1 ${
+                                    step.active
+                                      ? isLatestActive
+                                        ? "text-zinc-900 font-black text-lg bg-slate-100 border border-zinc-300 rounded-full"
+                                        : "text-primary"
+                                      : "text-muted-foreground"
+                                  }`}
                                 >
                                   {step.active ? "✓" : "○"} {step.name}
                                 </li>
@@ -520,15 +573,16 @@ const Orders: React.FC = () => {
                   </TableCell>
                   <TableCell className="text-center pl-[30px]">
                     <div
-                      className={`flex items-center gap-1 rounded-2xl w-[90px] text-center p-0.3 px-2 ${details.status === "PENDING"
-                        ? "bg-[#fffbf3] border border-[#f8e4bf] text-[10px] text-[#ffa500] font-medium"
-                        : details.status === "APPROVED" ||
-                          details.status === "COMPLETED"
+                      className={`flex items-center gap-1 rounded-2xl w-[90px] text-center p-0.3 px-2 ${
+                        details.status === "PENDING"
+                          ? "bg-[#fffbf3] border border-[#f8e4bf] text-[10px] text-[#ffa500] font-medium"
+                          : details.status === "APPROVED" ||
+                            details.status === "COMPLETED"
                           ? "bg-[#f8fff8] border border-[#c5ffd3] text-[10px]  text-[#28a745] font-medium"
                           : details.status === "CANCELED"
-                            ? "bg-[#fff9f9] border border-[#f9bebe] text-[10px] text-[#cf1d1d] font-medium"
-                            : "bg-gray-100 border border-gray-300 text-gray-500"
-                        }`}
+                          ? "bg-[#fff9f9] border border-[#f9bebe] text-[10px] text-[#cf1d1d] font-medium"
+                          : "bg-gray-100 border border-gray-300 text-gray-500"
+                      }`}
                     >
                       {details.status === "PENDING" ? (
                         <Hourglass className="text-[#ffa500]" size={15} />
@@ -602,11 +656,11 @@ const Orders: React.FC = () => {
         <div className="flex justify-end items-end mt-4 gap-2">
           <Button
             variant="outline"
-            onClick={() => handleClick('prev')}
-            onMouseDown={() => handleMouseDown('prev')}
+            onClick={() => handleClick("prev")}
+            onMouseDown={() => handleMouseDown("prev")}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            onTouchStart={() => handleMouseDown('prev')}
+            onTouchStart={() => handleMouseDown("prev")}
             onTouchEnd={handleMouseUp}
             disabled={page === 0}
             className="px-2 py-1 bg-gray-900"
@@ -620,11 +674,11 @@ const Orders: React.FC = () => {
 
           <Button
             variant="outline"
-            onClick={() => handleClick('next')}
-            onMouseDown={() => handleMouseDown('next')}
+            onClick={() => handleClick("next")}
+            onMouseDown={() => handleMouseDown("next")}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            onTouchStart={() => handleMouseDown('next')}
+            onTouchStart={() => handleMouseDown("next")}
             onTouchEnd={handleMouseUp}
             disabled={page >= totalPages - 1}
             className="px-2 py-1  bg-gray-800 text-white"
@@ -632,6 +686,45 @@ const Orders: React.FC = () => {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
+
+        <Dialog
+          open={isDownloadDialogOpen}
+          onOpenChange={setIsDownloadDialogOpen}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Download File</DialogTitle>
+              <DialogDescription>
+                Click the button below to download the individual file
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex-col ">
+              {fileName.map((file, index) => (
+                <div
+                  key={index}
+                  className="flex items-center mb-2 justify-between"
+                >
+                  <span className=" w-[200px] truncate">{file}</span>
+                  {isDownloading ? (
+                    <AiOutlineLoading className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      className="bg-gray-900 text-white"
+                      onClick={(e) => {
+                        setIsDownloading(true);
+                        handleFileDownloadWithFileName(file);
+                      }}
+                    >
+                      <Download className="h-5 w-5 mr-2" />
+                      Download
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Order Details Sheet */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -759,8 +852,8 @@ const Orders: React.FC = () => {
                       value={
                         selectedOrder.deadline
                           ? new Date(selectedOrder.deadline)
-                            .toISOString()
-                            .split("T")[0]
+                              .toISOString()
+                              .split("T")[0]
                           : ""
                       }
                       onChange={(e) =>
