@@ -257,7 +257,7 @@ const Leaves: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex">
       <HRSidebar />
       <main className="flex-1 p-6">
         <h1 className="text-2xl font-bold mb-6">Leave Management</h1>
