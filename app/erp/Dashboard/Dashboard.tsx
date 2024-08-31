@@ -257,11 +257,11 @@ const AdminDashboard: React.FC = () => {
     ]);
 
     const intervalId = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % inventoryItems.length);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % inventoryItems?.length);
     }, 3000);
 
     return () => clearInterval(intervalId);
-  }, [inventoryItems.length]);
+  }, [inventoryItems?.length]);
 
   const handleCancel = async (id: string) => {
     try {

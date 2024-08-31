@@ -118,13 +118,7 @@ const Dashboard = () => {
     };
 
     fetchInventoryData();
-
-    const intervalId = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % inventoryItems.length);
-    }, 3000);
-
-    return () => clearInterval(intervalId);
-  }, [inventoryItems.length]);
+  });
 
   const handleRequestPO = (orderId: string) => {
     router.push(`/inventory/entry/${orderId}`);
@@ -187,23 +181,26 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <AnimatePresence mode="wait">
-                {inventoryItems[currentIndex] && (
-                  <motion.div
-                    key={inventoryItems[currentIndex].item[0].itemName}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <div className="text-2xl font-bold">
-                      {inventoryItems[currentIndex].item[0].itemName}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Type: {inventoryItems[currentIndex].type} | Availability:{" "}
-                      {inventoryItems[currentIndex].item[0].availability}
-                    </p>
-                  </motion.div>
-                )}
+                {inventoryItems &&
+                  inventoryItems.length > 0 &&
+                  inventoryItems[currentIndex] && (
+                    <motion.div
+                      key={inventoryItems[currentIndex].item[0].itemName}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <div className="text-2xl font-bold">
+                        {inventoryItems[currentIndex].item[0].itemName}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Type: {inventoryItems[currentIndex].type} |
+                        Availability:{" "}
+                        {inventoryItems[currentIndex].item[0].availability}
+                      </p>
+                    </motion.div>
+                  )}
               </AnimatePresence>
             </CardContent>
           </Card>

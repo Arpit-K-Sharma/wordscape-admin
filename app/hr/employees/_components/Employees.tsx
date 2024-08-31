@@ -271,7 +271,7 @@ const EmployeesPage: React.FC = () => {
             Add Staff
           </Button>
         </div>
-        {employees.length > 0 ? (
+        {employees && employees.length && employees.length > 0 ? (
           <Table className="w-full bg-white border border-grey-900 rounded-lg shadow-sm">
             <TableHeader>
               <TableRow className="bg-gray-800">
@@ -616,41 +616,44 @@ const EmployeesPage: React.FC = () => {
                                 Departments
                               </Label>
                               <div className="col-span-3 space-y-2">
-                                {departments.map((dept) => (
-                                  <div
-                                    key={dept.id}
-                                    className="flex items-center space-x-2"
-                                  >
-                                    <Checkbox
-                                      id={`updateDept-${dept.id}`}
-                                      checked={editingEmployee?.dept_ids?.includes(
-                                        dept.id ?? ""
-                                      )}
-                                      onCheckedChange={(checked) => {
-                                        setEditingEmployee((prev) => {
-                                          if (!prev) return prev;
-                                          const newDeptIds = checked
-                                            ? [
-                                                ...(prev.dept_ids || []),
-                                                dept.id,
-                                              ].filter(
-                                                (id): id is string => id != null
-                                              )
-                                            : (prev.dept_ids || []).filter(
-                                                (id) => id !== dept.id
-                                              );
-                                          return {
-                                            ...prev,
-                                            dept_ids: newDeptIds,
-                                          };
-                                        });
-                                      }}
-                                    />
-                                    <Label htmlFor={`updateDept-${dept.id}`}>
-                                      {dept.department_name}
-                                    </Label>
-                                  </div>
-                                ))}
+                                {departments &&
+                                  departments.length &&
+                                  departments.map((dept) => (
+                                    <div
+                                      key={dept.id}
+                                      className="flex items-center space-x-2"
+                                    >
+                                      <Checkbox
+                                        id={`updateDept-${dept.id}`}
+                                        checked={editingEmployee?.dept_ids?.includes(
+                                          dept.id ?? ""
+                                        )}
+                                        onCheckedChange={(checked) => {
+                                          setEditingEmployee((prev) => {
+                                            if (!prev) return prev;
+                                            const newDeptIds = checked
+                                              ? [
+                                                  ...(prev.dept_ids || []),
+                                                  dept.id,
+                                                ].filter(
+                                                  (id): id is string =>
+                                                    id != null
+                                                )
+                                              : (prev.dept_ids || []).filter(
+                                                  (id) => id !== dept.id
+                                                );
+                                            return {
+                                              ...prev,
+                                              dept_ids: newDeptIds,
+                                            };
+                                          });
+                                        }}
+                                      />
+                                      <Label htmlFor={`updateDept-${dept.id}`}>
+                                        {dept.department_name}
+                                      </Label>
+                                    </div>
+                                  ))}
                               </div>
                             </div>
                           </div>
@@ -856,27 +859,29 @@ const EmployeesPage: React.FC = () => {
                 Departments
               </Label>
               <div className="col-span-3 space-y-2">
-                {departments.map((dept) => (
-                  <div key={dept.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`newDept-${dept.id}`}
-                      checked={newStaff.dept_ids.includes(dept.id ?? "")}
-                      onCheckedChange={(checked) => {
-                        setNewStaff((prev) => {
-                          const newDeptIds = checked
-                            ? [...prev.dept_ids, dept.id].filter(
-                                (id): id is string => id != null
-                              )
-                            : prev.dept_ids.filter((id) => id !== dept.id);
-                          return { ...prev, dept_ids: newDeptIds };
-                        });
-                      }}
-                    />
-                    <Label htmlFor={`newDept-${dept.id}`}>
-                      {dept.department_name}
-                    </Label>
-                  </div>
-                ))}
+                {departments &&
+                  departments.length > 0 &&
+                  departments.map((dept) => (
+                    <div key={dept.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`newDept-${dept.id}`}
+                        checked={newStaff.dept_ids.includes(dept.id ?? "")}
+                        onCheckedChange={(checked) => {
+                          setNewStaff((prev) => {
+                            const newDeptIds = checked
+                              ? [...prev.dept_ids, dept.id].filter(
+                                  (id): id is string => id != null
+                                )
+                              : prev.dept_ids.filter((id) => id !== dept.id);
+                            return { ...prev, dept_ids: newDeptIds };
+                          });
+                        }}
+                      />
+                      <Label htmlFor={`newDept-${dept.id}`}>
+                        {dept.department_name}
+                      </Label>
+                    </div>
+                  ))}
               </div>
             </div>
           </div>
